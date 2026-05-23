@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
     QSlider, QCheckBox, QDoubleSpinBox, QSpinBox, QLineEdit,
     QGroupBox, QGridLayout, QFileDialog, QProgressBar,
     QMenuBar, QMenu, QSizePolicy, QStatusBar, QToolBar,
-    QColorDialog, QApplication, QMessageBox,
+    QColorDialog, QApplication, QMessageBox, QListWidget,
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QPointF
 from PyQt6.QtGui import (
@@ -614,27 +614,25 @@ class MainWindow(QMainWindow):
         self.filter_chain_layout.setSpacing(4)
         layout.addWidget(self.filter_chain_container)
 
-        # Add Filter dropdown/button
-        add_row = QHBoxLayout()
-        self.add_filter_combo = QComboBox()
+        # Add Filter list/button
+        self.add_filter_list = QListWidget()
         from app.filters import AVAILABLE_FILTERS
-        self.add_filter_combo.addItems(sorted(AVAILABLE_FILTERS.keys()))
-        add_row.addWidget(self.add_filter_combo, 1)
+        self.add_filter_list.addItems(sorted(AVAILABLE_FILTERS.keys()))
+        self.add_filter_list.setFixedHeight(120)
+        layout.addWidget(self.add_filter_list)
 
-        add_btn = QPushButton("Add Filter")
+        add_btn = QPushButton("Add Selected Filter")
         add_btn.clicked.connect(self._on_add_filter_clicked)
-        add_row.addWidget(add_btn)
-        
-        layout.addLayout(add_row)
+        layout.addWidget(add_btn)
 
         group.set_content(content)
         self.settings_layout.addWidget(group)
         self._rebuild_filter_chain_ui()
 
     def _on_add_filter_clicked(self):
-        name = self.add_filter_combo.currentText()
-        if name:
-            self._add_filter(name)
+        item = self.add_filter_list.currentItem()
+        if item:
+            self._add_filter(item.text())
 
     def _rebuild_filter_chain_ui(self):
         # Clear existing
@@ -742,14 +740,13 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(content)
         layout.setSpacing(6)
 
-        # PFM Selector
-        pfm_row = QHBoxLayout()
-        pfm_row.addWidget(QLabel("PFM:"))
-        self.pfm_combo = QComboBox()
-        self.pfm_combo.addItems([p.name for p in self.available_pfms])
-        self.pfm_combo.currentIndexChanged.connect(self._on_pfm_changed)
-        pfm_row.addWidget(self.pfm_combo, 1)
-        layout.addLayout(pfm_row)
+        # PFM Selector List
+        layout.addWidget(QLabel("Select PFM:"))
+        self.pfm_list = QListWidget()
+        self.pfm_list.addItems([p.name for p in self.available_pfms])
+        self.pfm_list.setFixedHeight(120)
+        self.pfm_list.currentRowChanged.connect(self._on_pfm_changed)
+        layout.addWidget(self.pfm_list)
 
         # Preset selector
         preset_row = QHBoxLayout()
@@ -781,7 +778,7 @@ class MainWindow(QMainWindow):
         self.settings_layout.addWidget(group)
 
         # Build initial PFM settings UI
-        self._rebuild_pfm_settings_ui()
+        self.pfm_list.setCurrentRow(0)
 
     def _rebuild_pfm_settings_ui(self):
         """Rebuild the PFM settings widgets from the current PFM's settings."""
@@ -1016,7 +1013,8 @@ class MainWindow(QMainWindow):
         # Update viewport with image
         h, w = img.shape
         qi = QImage(img.data, w, h, w, QImage.Format.Format_Grayscale8)
-        self.viewport.canvas.set_display_image(qi.copy())
+        self.image_viewport.canvas.set_display_image(qi.copy())
+        self.viewport.canvas.set_display_image(None)
 
         # Update drawing area from image dimensions
         if self.drawing_area.use_original_sizing:
@@ -1024,6 +1022,10 @@ class MainWindow(QMainWindow):
             self.drawing_area.width = w * 0.264583
             self.drawing_area.height = h * 0.264583
 
+        self.image_viewport.canvas.set_canvas_size(
+            self.drawing_area.width_mm, self.drawing_area.height_mm)
+        self.image_viewport.canvas.fit_to_view()
+        
         self.viewport.canvas.set_canvas_size(
             self.drawing_area.width_mm, self.drawing_area.height_mm)
         self.viewport.canvas.fit_to_view()
@@ -1086,7 +1088,9 @@ class MainWindow(QMainWindow):
         else:
             qi = QImage(self.processed_image.data, w, h, w * 3,
                         QImage.Format.Format_RGB888)
-        self.viewport.canvas.set_display_image(qi.copy())
+        self.image_viewport.canvas.set_display_image(qi.copy())
+        # The plotter viewport can be empty or show it too, but user asked for side-by-side
+        self.viewport.canvas.set_display_image(None)
 
     def _on_pfm_changed(self, index):
         if 0 <= index < len(self.available_pfms):
@@ -1179,18 +1183,12 @@ class MainWindow(QMainWindow):
 
         self.drawing_geometries = []
         self.viewport.canvas.set_drawing_paths([])
+        self.viewport.canvas.set_display_image(None)
         self.progress_bar.setValue(0)
         self.progress_label.setText("Reset")
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self._elapsed_timer.stop()
-
-        # Re-show image
-        if self.processed_image is not None:
-            h, w = self.processed_image.shape[:2]
-            qi = QImage(self.processed_image.data, w, h, w,
-                        QImage.Format.Format_Grayscale8)
-            self.viewport.canvas.set_display_image(qi.copy())
 
     def _on_processing_progress(self, prog: PFMProgress):
         self.progress_bar.setValue(int(prog.progress * 100))
@@ -1538,6 +1536,9 @@ class MainWindow(QMainWindow):
     # =====================================================================
     # Misc Handlers
     # =====================================================================
+
+    def _toggle_sidebar(self):
+        self.settings_scroll.setVisible(not self.settings_scroll.isVisible())
 
     def _toggle_fullscreen(self):
         if self.isFullScreen():
