@@ -1,0 +1,192 @@
+# PFM Auto-Comparison
+
+Source: https://docs.drawingbotv3.com/en/latest/_sources/pfms.rst.txt
+
+
+## Repo modules (app/pfm)
+
+- adaptive_pfms.py
+- composite_pfms.py
+- grid_pfms.py
+- hatch_extras.py
+- hatch_lines.py
+- hatch_premium.py
+- lbg_pfms.py
+- letters_pfms.py
+- maze_tsp_pfms.py
+- mosaic_pfms.py
+- pfm_utils.py
+- sketch_beziers.py
+- sketch_curves.py
+- sketch_extras.py
+- sketch_lines.py
+- sketch_shapes.py
+- sketch_special.py
+- sketch_spirals.py
+- sketch_squares.py
+- sketch_waves.py
+- special_pfms.py
+- spiral_dbv3.py
+- stipple_dots.py
+- stipple_extras.py
+- streamline_pfms.py
+- voronoi_pfms.py
+
+## Extracted official PFM headings
+
+- adaptive circular scribbles
+- adaptive dashes
+- adaptive diagram
+- adaptive letters
+- adaptive shapes
+- adaptive stippling
+- adaptive tree
+- adaptive triangulation
+- adaptive tsp
+- default adaptive pfm settings
+- default composite pfm settings
+- default grid pfm settings
+- default hatch settings
+- default lbg settings
+- default streamline settings
+- default voronoi settings
+- ecs drawing
+- grid dashes
+- grid letters
+- grid shapes
+- hatch circular scribbles
+- hatch sawtooth
+- how do they work?
+- how they work
+- layers pfm
+- lbg circular scribbles
+- lbg dashes
+- lbg diagram
+- lbg letters
+- lbg shapes
+- lbg stippling
+- lbg tree
+- lbg triangulation
+- lbg tsp
+- mosaic custom
+- mosaic rectangles
+- mosaic segments
+- mosaic triangulation
+- mosaic voronoi
+- pen calibration
+- sketch catmull-roms
+- sketch cubic beziers
+- sketch curves
+- sketch flow field
+- sketch lines
+- sketch quad beziers
+- sketch shapes
+- sketch sobel edges
+- sketch squares
+- sketch superformula
+- sketch sweeping curves
+- sketch waves
+- spiral circular scribbles
+- spiral sawtooth
+- streamlines edge field
+- streamlines flow field
+- streamlines superformula
+- svg converter
+- voronoi dashes
+- voronoi diagram
+- voronoi shapes
+- voronoi stippling
+- voronoi tree
+- voronoi triangulation
+- voronoi tsp
+
+## Missing in repo (documented PFMs not matched by module-derived names)
+
+- adaptive circular scribbles
+- adaptive dashes
+- adaptive diagram
+- adaptive letters
+- adaptive shapes
+- adaptive stippling
+- adaptive tree
+- adaptive triangulation
+- adaptive tsp
+- default adaptive pfm settings
+- default composite pfm settings
+- default grid pfm settings
+- default hatch settings
+- default lbg settings
+- default streamline settings
+- default voronoi settings
+- ecs drawing
+- grid dashes
+- grid letters
+- grid shapes
+- hatch circular scribbles
+- hatch sawtooth
+- how do they work?
+- how they work
+- layers pfm
+- lbg circular scribbles
+- lbg dashes
+- lbg diagram
+- lbg letters
+- lbg shapes
+- lbg stippling
+- lbg tree
+- lbg triangulation
+- lbg tsp
+- mosaic custom
+- mosaic rectangles
+- mosaic segments
+- mosaic triangulation
+- mosaic voronoi
+- pen calibration
+- sketch catmull-roms
+- sketch cubic beziers
+- sketch flow field
+- sketch quad beziers
+- sketch sobel edges
+- sketch superformula
+- sketch sweeping curves
+- spiral circular scribbles
+- spiral sawtooth
+- streamlines edge field
+- streamlines flow field
+- streamlines superformula
+- svg converter
+- voronoi dashes
+- voronoi diagram
+- voronoi shapes
+- voronoi stippling
+- voronoi tree
+- voronoi triangulation
+- voronoi tsp
+
+## Extra in repo (module-derived names not found in docs)
+
+- adaptive pfms
+- composite pfms
+- grid pfms
+- hatch extras
+- hatch lines
+- hatch premium
+- lbg pfms
+- letters pfms
+- maze tsp pfms
+- mosaic pfms
+- pfm utils
+- sketch beziers
+- sketch extras
+- sketch special
+- sketch spirals
+- special pfms
+- spiral dbv3
+- stipple dots
+- stipple extras
+- streamline pfms
+- voronoi pfms
+
+## Notes
+- Matching heuristic: module filename -> title-case with underscores -> compared case-insensitively to doc headings.
+- Some doc headings are category titles rather than atomic PFM names; manual review recommended for short names.

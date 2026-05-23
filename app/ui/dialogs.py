@@ -98,9 +98,11 @@ class ExportSettingsDialog(QDialog):
 
         self.g_use_vpype = QCheckBox("Optimize SVG exports with vpype")
         self.g_use_vpype.setChecked(self.gcode.get("use_vpype", False))
+        self.g_use_vpype.toggled.connect(self._on_vpype_toggled)
         gf.addRow(self.g_use_vpype)
 
         self.g_vpype_pipeline = QLineEdit(self.gcode.get("vpype_pipeline", "linemerge linesimplify"))
+        self.g_vpype_pipeline.setEnabled(self.g_use_vpype.isChecked())
         gf.addRow("VPype Pipeline:", self.g_vpype_pipeline)
         layout.addWidget(g)
 
@@ -137,6 +139,9 @@ class ExportSettingsDialog(QDialog):
             "y_max": self.h_ymax.value(),
         })
         return self.gcode, self.hpgl
+
+    def _on_vpype_toggled(self, checked: bool):
+        self.g_vpype_pipeline.setEnabled(checked)
 
 
 class BatchWorker(QThread):
