@@ -41,7 +41,14 @@ def sample_centroids(
         return []
 
     probs = flat / total
-    indices = rng.choice(len(probs), size=count, p=probs, replace=True)
+    # Support both numpy RNGs (Generator.choice) and Python's random.Random
+    if hasattr(rng, "choices"):
+        # random.Random.choices accepts `weights` and `k`
+        weights = probs.tolist() if isinstance(probs, np.ndarray) else probs
+        indices = rng.choices(range(len(probs)), weights=weights, k=count)
+    else:
+        # Assume a numpy-like RNG with `choice(size=..., p=..., replace=...)`
+        indices = rng.choice(len(probs), size=count, p=probs, replace=True)
     pts = [(float(idx % w), float(idx // w)) for idx in indices]
 
     if lloyd_iters <= 0:

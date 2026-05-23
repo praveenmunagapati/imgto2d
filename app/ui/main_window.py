@@ -595,22 +595,16 @@ class MainWindow(QMainWindow):
         right_layout.setSpacing(6)
 
         self.viewport_splitter = QSplitter(Qt.Orientation.Horizontal)
-        
-        # Image Reference Viewport
-        self.image_viewport = ViewportWidget()
-        self.viewport_splitter.addWidget(self.image_viewport)
-        
-        # Plotter Paths Viewport
+
+        # Single Viewport (combined image + drawing)
         self.viewport = ViewportWidget()
         self.viewport_splitter.addWidget(self.viewport)
-        
-        self.viewport_splitter.setSizes([500, 500])
+
+        self.viewport_splitter.setSizes([1000])
         right_layout.addWidget(self.viewport_splitter, 1)
 
-        self.image_viewport.display_combo.setCurrentText(DisplayMode.IMAGE.value)
-        self.viewport.display_combo.setCurrentText(DisplayMode.DRAWING.value)
-        self.image_viewport.display_mode_changed.connect(
-            lambda t: self.image_viewport.canvas.set_display_mode(DisplayMode(t)))
+        # Default to image display; user can switch via the viewport controls
+        self.viewport.display_combo.setCurrentText(DisplayMode.IMAGE.value)
         self.viewport.display_mode_changed.connect(
             lambda t: self.viewport.canvas.set_display_mode(DisplayMode(t)))
 
@@ -1386,7 +1380,6 @@ class MainWindow(QMainWindow):
         # Update viewport with image
         h, w = img.shape
         qi = QImage(img.data, w, h, w, QImage.Format.Format_Grayscale8)
-        self.image_viewport.canvas.set_display_image(qi.copy())
         self.viewport.canvas.set_display_image(qi.copy())
 
         # Update drawing area from image dimensions
@@ -1400,10 +1393,6 @@ class MainWindow(QMainWindow):
             self.width_spin.blockSignals(False)
             self.height_spin.blockSignals(False)
 
-        self.image_viewport.canvas.set_canvas_size(
-            self.drawing_area.width_mm, self.drawing_area.height_mm)
-        self.image_viewport.canvas.fit_to_view()
-        
         self.viewport.canvas.set_canvas_size(
             self.drawing_area.width_mm, self.drawing_area.height_mm)
         self.viewport.canvas.fit_to_view()
@@ -1455,7 +1444,6 @@ class MainWindow(QMainWindow):
         self.drawing_area.pen_width_mm = self.pen_width_spin.value()
 
         w_mm, h_mm = self.drawing_area.width_mm, self.drawing_area.height_mm
-        self.image_viewport.canvas.set_canvas_size(w_mm, h_mm)
         self.viewport.canvas.set_canvas_size(w_mm, h_mm)
         if self._pixel_geometries:
             self._remap_geometries_to_mm()
@@ -1486,7 +1474,6 @@ class MainWindow(QMainWindow):
             qi = QImage(self.processed_image.data, w, h, w * 3,
                         QImage.Format.Format_RGB888)
         
-        self.image_viewport.canvas.set_display_image(qi.copy())
         self.viewport.canvas.set_display_image(qi.copy())
 
     def _on_colour_sep_changed(self, text: str):
