@@ -47,8 +47,12 @@ class EdgePreserveFilter(ImageFilter):
     @property
     def category(self) -> str: return "Artistic"
     def process(self, image: np.ndarray) -> np.ndarray:
-        if len(image.shape) == 3: return cv2.edgePreservingFilter(image, flags=1, sigma_s=60, sigma_r=0.4)
-        return image
+        if len(image.shape) == 3:
+            return cv2.edgePreservingFilter(image, flags=1, sigma_s=60, sigma_r=0.4)
+        else:
+            bgr = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            res = cv2.edgePreservingFilter(bgr, flags=1, sigma_s=60, sigma_r=0.4)
+            return cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
 
 class StylizationFilter(ImageFilter):
     @property
@@ -56,8 +60,12 @@ class StylizationFilter(ImageFilter):
     @property
     def category(self) -> str: return "Artistic"
     def process(self, image: np.ndarray) -> np.ndarray:
-        if len(image.shape) == 3: return cv2.stylization(image, sigma_s=60, sigma_r=0.45)
-        return image
+        if len(image.shape) == 3:
+            return cv2.stylization(image, sigma_s=60, sigma_r=0.45)
+        else:
+            bgr = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            res = cv2.stylization(bgr, sigma_s=60, sigma_r=0.45)
+            return cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
 
 class DesaturateFilter(ImageFilter):
     @property
@@ -76,12 +84,12 @@ class ColorizeFilter(ImageFilter):
     @property
     def category(self) -> str: return "Color"
     def process(self, image: np.ndarray) -> np.ndarray:
-        if len(image.shape) == 3:
-            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            hsv[:,:,0] = 30 # orange-ish tint
-            hsv[:,:,1] = np.clip(hsv[:,:,1] + 50, 0, 255)
-            return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-        return image
+        if len(image.shape) != 3:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        hsv[:,:,0] = 30 # orange-ish tint
+        hsv[:,:,1] = np.clip(hsv[:,:,1] + 50, 0, 255)
+        return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
 class InvertHueFilter(ImageFilter):
     @property
