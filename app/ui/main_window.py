@@ -403,6 +403,10 @@ class MainWindow(QMainWindow):
         export_pen.triggered.connect(self._export_per_pen)
         file_menu.addAction(export_pen)
 
+        export_anim = QAction("Export Animation...", self)
+        export_anim.triggered.connect(self._export_animation)
+        file_menu.addAction(export_anim)
+
         file_menu.addSeparator()
 
         quit_action = QAction("Quit", self)
@@ -412,6 +416,12 @@ class MainWindow(QMainWindow):
 
         # -- View Menu --
         view_menu = menubar.addMenu("View")
+        
+        toggle_sidebar = QAction("Toggle Sidebar", self)
+        toggle_sidebar.setShortcut(QKeySequence("Ctrl+B"))
+        toggle_sidebar.triggered.connect(self._toggle_sidebar)
+        view_menu.addAction(toggle_sidebar)
+        
         fullscreen = QAction("Fullscreen", self)
         fullscreen.setShortcut(QKeySequence("Ctrl+F"))
         fullscreen.triggered.connect(self._toggle_fullscreen)
@@ -470,14 +480,24 @@ class MainWindow(QMainWindow):
         self.settings_scroll.setWidget(settings_widget)
         self.splitter.addWidget(self.settings_scroll)
 
-        # Right: Viewport
+        # Right: Viewport Splitter
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(6)
 
+        self.viewport_splitter = QSplitter(Qt.Orientation.Horizontal)
+        
+        # Image Reference Viewport
+        self.image_viewport = ViewportWidget()
+        self.viewport_splitter.addWidget(self.image_viewport)
+        
+        # Plotter Paths Viewport
         self.viewport = ViewportWidget()
-        right_layout.addWidget(self.viewport, 1)
+        self.viewport_splitter.addWidget(self.viewport)
+        
+        self.viewport_splitter.setSizes([500, 500])
+        right_layout.addWidget(self.viewport_splitter, 1)
 
         # Plotting controls bar
         controls = self._create_plotting_controls()
@@ -1232,7 +1252,7 @@ class MainWindow(QMainWindow):
 
         path, _ = QFileDialog.getSaveFileName(
             self, "Export Drawing",
-            "", "SVG (*.svg);;PNG (*.png);;GCode (*.gcode);;All (*)")
+            "", "SVG (*.svg);;PNG (*.png);;GCode (*.gcode);;CSV (*.csv);;All (*)")
         if not path:
             return
 
@@ -1242,13 +1262,56 @@ class MainWindow(QMainWindow):
             self._export_png(path)
         elif path.lower().endswith('.gcode'):
             self._export_gcode(path)
+        elif path.lower().endswith('.csv'):
+            self._export_csv(path)
 
         self.progress_label.setText(f"Exported: {os.path.basename(path)}")
 
     def _export_per_pen(self):
-        QMessageBox.information(self, "Export per/pen",
-                                "Per-pen export will be available in a future update.")
+        if not self.drawing_geometries:
+            QMessageBox.information(self, "No Drawing",
+                                    "Process an image first before exporting.")
+            return
 
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export Per-Pen Drawing",
+            "", "GCode (*.gcode);;SVG (*.svg);;CSV (*.csv)")
+        if not path:
+            return
+
+        base, ext = os.path.splitext(path)
+        active_pens = self.drawing_set.active_pens()
+
+        # Group geometries
+        pen_groups = {}
+        for geom in self.drawing_geometries:
+            pi = geom.pen_index % max(1, len(active_pens))
+            if pi not in pen_groups:
+                pen_groups[pi] = []
+            pen_groups[pi].append(geom)
+
+        original_geoms = self.drawing_geometries
+
+        for pi, geoms in pen_groups.items():
+            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
+            # Override geometries temporarily
+            self.drawing_geometries = geoms
+            
+            # Format safe filename
+            safe_name = "".join(c for c in pen.name if c.isalnum() or c in (' ', '_')).rstrip()
+            safe_name = safe_name.replace(' ', '_')
+            out_path = f"{base}_{safe_name}{ext}"
+            
+            if ext.lower() == '.gcode':
+                self._export_gcode(out_path)
+            elif ext.lower() == '.svg':
+                self._export_svg(out_path)
+            elif ext.lower() == '.csv':
+                self._export_csv(out_path)
+
+        # Restore
+        self.drawing_geometries = original_geoms
+        self.progress_label.setText(f"Exported {len(pen_groups)} per-pen files.")
     def _export_svg(self, filepath: str):
         """Export the drawing as an SVG file."""
         da = self.drawing_area
@@ -1344,27 +1407,133 @@ class MainWindow(QMainWindow):
             "G0 F2000",
         ]
 
+        active_pens = self.drawing_set.active_pens()
+
+        # Group geometries by pen
+        pen_groups = {}
         for geom in self.drawing_geometries:
-            if len(geom.path) < 2:
-                continue
-            # Travel to start
-            x0, y0 = geom.path[0]
-            y0_flip = da.height_mm - y0
-            lines.append(f"G0 X{x0:.3f} Y{y0_flip:.3f}")
-            lines.append("M3 S90 ; Pen down")
-            lines.append("G1 F1000")
+            pi = geom.pen_index % max(1, len(active_pens))
+            if pi not in pen_groups:
+                pen_groups[pi] = []
+            pen_groups[pi].append(geom)
 
-            for x, y in geom.path[1:]:
-                y_flip = da.height_mm - y
-                lines.append(f"G1 X{x:.3f} Y{y_flip:.3f}")
+        for pi in sorted(pen_groups.keys()):
+            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
+            
+            lines.append("")
+            lines.append(f"; --- LAYER: {pen.name} ---")
+            lines.append("M5 ; Pen up before move")
+            lines.append("G0 Z5 ; Lift Z")
+            lines.append(f"M0 ; PAUSE - Swap to pen '{pen.name}' and press Resume")
+            lines.append("G0 F2000 ; Reset speed")
+            
+            for geom in pen_groups[pi]:
+                if len(geom.path) < 2:
+                    continue
+                # Travel to start
+                x0, y0 = geom.path[0]
+                y0_flip = da.height_mm - y0
+                lines.append(f"G0 X{x0:.3f} Y{y0_flip:.3f}")
+                lines.append("M3 S90 ; Pen down")
+                lines.append("G1 F1000")
 
-            lines.append("M5 ; Pen up")
+                for x, y in geom.path[1:]:
+                    y_flip = da.height_mm - y
+                    lines.append(f"G1 X{x:.3f} Y{y_flip:.3f}")
+                
+                lines.append("M5 ; Pen up")
 
-        lines.append("G0 X0 Y0")
-        lines.append("M30")
+        lines.append("G0 X0 Y0 ; Return to origin")
+        lines.append("M2 ; End of program")
 
         with open(filepath, 'w') as f:
             f.write('\n'.join(lines))
+            
+    def _export_csv(self, filepath: str):
+        """Export the drawing paths to CSV."""
+        lines = ["PathID,X,Y,PenIndex,PenName"]
+        active_pens = self.drawing_set.active_pens()
+        
+        path_id = 0
+        for geom in self.drawing_geometries:
+            if len(geom.path) < 2:
+                continue
+            pi = geom.pen_index % max(1, len(active_pens))
+            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
+            
+            for x, y in geom.path:
+                lines.append(f"{path_id},{x:.3f},{y:.3f},{pi},{pen.name}")
+            
+            path_id += 1
+            
+        with open(filepath, 'w') as f:
+            f.write('\n'.join(lines))
+
+    def _export_animation(self):
+        if not self.drawing_geometries:
+            QMessageBox.information(self, "No Drawing", "Process an image first before exporting.")
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export Animation", "", "Video (*.mp4)")
+        if not path:
+            return
+
+        self.progress_label.setText("Exporting animation... (UI may freeze)")
+        QApplication.processEvents()
+
+        import cv2
+        import numpy as np
+
+        da = self.drawing_area
+        aspect = da.width_mm / da.height_mm
+        w_px = 1920
+        h_px = int(1920 / aspect)
+        h_px = (h_px // 2) * 2
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(path, fourcc, 60.0, (w_px, h_px))
+
+        canvas = np.ones((h_px, w_px, 3), dtype=np.uint8) * 255
+        scale_x = w_px / da.width_mm
+        scale_y = h_px / da.height_mm
+
+        active_pens = self.drawing_set.active_pens()
+
+        total_paths = sum(1 for g in self.drawing_geometries if len(g.path) >= 2)
+        if total_paths == 0:
+            return
+
+        frames_to_draw = 300
+        paths_per_frame = max(1, total_paths // frames_to_draw)
+
+        drawn = 0
+        for geom in self.drawing_geometries:
+            if len(geom.path) < 2: continue
+
+            pi = geom.pen_index % max(1, len(active_pens))
+            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
+            color = (pen.color_b, pen.color_g, pen.color_r)
+
+            pts = []
+            for px, py in geom.path:
+                pts.append([int(px * scale_x), int(py * scale_y)])
+            pts = np.array(pts, np.int32).reshape((-1, 1, 2))
+
+            thickness = max(1, int(pen.stroke_width * scale_x * 0.2))
+            cv2.polylines(canvas, [pts], isClosed=False, color=color, thickness=thickness)
+
+            drawn += 1
+            if drawn % paths_per_frame == 0:
+                out.write(canvas)
+
+        for _ in range(60):
+            out.write(canvas)
+
+        out.release()
+        self.progress_label.setText(f"Exported animation: {os.path.basename(path)}")
+
+
 
     # =====================================================================
     # Misc Handlers
