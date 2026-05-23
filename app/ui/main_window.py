@@ -1097,6 +1097,11 @@ class MainWindow(QMainWindow):
         self.serial_resume_btn.setEnabled(False)
         self.serial_resume_btn.clicked.connect(self._resume_serial)
         control_btns.addWidget(self.serial_resume_btn)
+
+        self.serial_stream_btn = QPushButton("Stream")
+        self.serial_stream_btn.setEnabled(False)
+        self.serial_stream_btn.clicked.connect(self._stream_current_gcode)
+        control_btns.addWidget(self.serial_stream_btn)
         grid.addLayout(control_btns, row, 0, 1, 2)
         row += 1
 
@@ -1137,8 +1142,10 @@ class MainWindow(QMainWindow):
             self.serial_connect_btn.setText("Disconnect")
             self.serial_pause_btn.setEnabled(False)
             self.serial_resume_btn.setEnabled(False)
+            self.serial_stream_btn.setEnabled(True)
         else:
             self.serial_status_lbl.setText("Connection failed")
+            self.serial_stream_btn.setEnabled(False)
 
     def _pause_serial(self):
         if self.serial_mgr.is_connected:
@@ -1162,6 +1169,7 @@ class MainWindow(QMainWindow):
             self.serial_connect_btn.setText("Connect")
             self.serial_pause_btn.setEnabled(False)
             self.serial_resume_btn.setEnabled(False)
+            self.serial_stream_btn.setEnabled(False)
             self._refresh_serial_ports()
         elif status_type == "stream_start":
             self.serial_status_lbl.setText(message)
