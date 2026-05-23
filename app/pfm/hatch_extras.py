@@ -9,6 +9,10 @@ from app.pfm.hatch_lines import HatchLinesPFM
 # A generic parameterized hatcher
 class BaseMultiHatchPFM(HatchLinesPFM):
     angles_list: List[float] = []
+
+    @property
+    def is_premium(self) -> bool:
+        return True
     
     def _define_settings(self) -> List[PFMSetting]:
         return [

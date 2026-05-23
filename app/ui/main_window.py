@@ -35,6 +35,11 @@ from app.core.drawing_pen import (
     BlendMode, ColourSeparation, BUILTIN_PEN_SETS, create_default_drawing_set,
 )
 from app.core.geometry import ScalingMode, ClippingMode, InputUnits, Orientation
+from app.core.project import Project
+from app.core.coordinates import resize_for_plotting, geometries_to_mm
+from app.export import export_gcode, export_hpgl, export_svg, compute_path_stats
+from app.export.path_export import geometries_to_paths, optimize_paths
+from app.filters import create_filter
 from app.pfm import PathFindingModule, PFMSetting, SettingType, PFMProgress
 from app.pfm.sketch_lines import SketchLinesPFM
 from app.pfm.sketch_squares import SketchSquaresPFM
@@ -49,7 +54,21 @@ from app.pfm.hatch_extras import HATCH_EXTRAS
 from app.pfm.stipple_extras import STIPPLE_EXTRAS
 from app.pfm.maze_tsp_pfms import MAZE_TSP_EXTRAS
 from app.pfm.sketch_extras import SKETCH_EXTRAS
+from app.pfm.sketch_special import SKETCH_SPECIAL_PFMS
+from app.pfm.adaptive_pfms import ADAPTIVE_PFMS
+from app.pfm.voronoi_pfms import VORONOI_PFMS
+from app.pfm.lbg_pfms import LBG_PFMS
+from app.pfm.streamline_pfms import STREAMLINE_PFMS
+from app.pfm.mosaic_pfms import MOSAIC_PFMS
+from app.pfm.composite_pfms import COMPOSITE_PFMS
+from app.pfm.spiral_dbv3 import SPIRAL_DBV3_PFMS
+from app.pfm.grid_pfms import GRID_PFMS
+from app.pfm.hatch_premium import HATCH_PREMIUM_PFMS
+from app.pfm.special_pfms import SPECIAL_PFMS
 from app.ui.viewport import ViewportWidget, DisplayMode
+from app.ui.dialogs import PenEditorDialog, ExportSettingsDialog, BatchDialog
+from app.masks.mask_manager import MaskManager, apply_mask_to_image
+from app.config import PREMIUM_UNLOCKED
 
 
 # ---------------------------------------------------------------------------
@@ -354,30 +373,19 @@ class MainWindow(QMainWindow):
         self.resize(1400, 900)
 
         # Core state
-        self.drawing_area = DrawingArea()
-        self.drawing_set = create_default_drawing_set()
+        self.project = Project()
+        self.project.drawing_set = create_default_drawing_set()
+        self.drawing_area = self.project.drawing_area
+        self.drawing_set = self.project.drawing_set
         self.original_image: Optional[np.ndarray] = None  # Original loaded image
         self.processed_image: Optional[np.ndarray] = None  # After pre-processing
         self.filter_chain = []
         self.drawing_geometries = []
+        self._pixel_geometries = []  # Raw PFM output (pixels), remapped on area change
+        self._plot_image_size: tuple[int, int] = (0, 0)  # (w, h) used for last plot
+        self.mask_manager = MaskManager()
 
-        # Available PFMs
-        self.available_pfms = [
-            SketchLinesPFM(),
-            SketchSquaresPFM(),
-            SketchCurvesPFM(),
-            SketchShapesPFM(),
-            SketchQuadBeziersPFM(),
-            SketchCubicBeziersPFM(),
-            SketchWavesPFM(),
-            SketchSpiralsPFM(),
-            HatchLinesPFM(),
-            StippleDotsPFM(),
-        ]
-        self.available_pfms.extend(HATCH_EXTRAS)
-        self.available_pfms.extend(STIPPLE_EXTRAS)
-        self.available_pfms.extend(MAZE_TSP_EXTRAS)
-        self.available_pfms.extend(SKETCH_EXTRAS)
+        self.available_pfms = self._build_pfm_list()
         self.current_pfm: PathFindingModule = self.available_pfms[0]
 
         # Processing thread
@@ -396,6 +404,39 @@ class MainWindow(QMainWindow):
         self._elapsed_timer = QTimer()
         self._elapsed_timer.timeout.connect(self._update_elapsed)
 
+    def _build_pfm_list(self) -> List[PathFindingModule]:
+        """All PFMs; premium modules included when PREMIUM_UNLOCKED."""
+        pfms = [
+            SketchLinesPFM(),
+            SketchSquaresPFM(),
+            SketchCurvesPFM(),
+            SketchShapesPFM(),
+            SketchQuadBeziersPFM(),
+            SketchCubicBeziersPFM(),
+            SketchWavesPFM(),
+            SketchSpiralsPFM(),
+            HatchLinesPFM(),
+            StippleDotsPFM(),
+        ]
+        pfms.extend(SKETCH_SPECIAL_PFMS)
+        pfms.extend(HATCH_EXTRAS)
+        pfms.extend(HATCH_PREMIUM_PFMS)
+        pfms.extend(STIPPLE_EXTRAS)
+        pfms.extend(SPIRAL_DBV3_PFMS)
+        pfms.extend(SKETCH_EXTRAS)
+        pfms.extend(STREAMLINE_PFMS)
+        pfms.extend(ADAPTIVE_PFMS)
+        pfms.extend(VORONOI_PFMS)
+        pfms.extend(LBG_PFMS)
+        pfms.extend(MOSAIC_PFMS)
+        pfms.extend(GRID_PFMS)
+        pfms.extend(COMPOSITE_PFMS)
+        pfms.extend(MAZE_TSP_EXTRAS)
+        pfms.extend(SPECIAL_PFMS)
+        if not PREMIUM_UNLOCKED:
+            pfms = [p for p in pfms if not p.is_premium]
+        return pfms
+
     # =====================================================================
     # Menu Bar
     # =====================================================================
@@ -411,6 +452,27 @@ class MainWindow(QMainWindow):
         import_action.triggered.connect(self._import_image)
         file_menu.addAction(import_action)
 
+        import_video = QAction("Import Video Frame...", self)
+        import_video.triggered.connect(self._import_video_frame)
+        file_menu.addAction(import_video)
+
+        file_menu.addSeparator()
+
+        open_proj = QAction("Open Project...", self)
+        open_proj.setShortcut(QKeySequence("Ctrl+O"))
+        open_proj.triggered.connect(self._open_project)
+        file_menu.addAction(open_proj)
+
+        save_proj = QAction("Save Project", self)
+        save_proj.setShortcut(QKeySequence("Ctrl+S"))
+        save_proj.triggered.connect(self._save_project)
+        file_menu.addAction(save_proj)
+
+        save_proj_as = QAction("Save Project As...", self)
+        save_proj_as.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        save_proj_as.triggered.connect(self._save_project_as)
+        file_menu.addAction(save_proj_as)
+
         file_menu.addSeparator()
 
         export_drawing = QAction("Export per/drawing...", self)
@@ -425,6 +487,24 @@ class MainWindow(QMainWindow):
         export_anim = QAction("Export Animation...", self)
         export_anim.triggered.connect(self._export_animation)
         file_menu.addAction(export_anim)
+
+        export_settings = QAction("Export Settings...", self)
+        export_settings.triggered.connect(self._show_export_settings)
+        file_menu.addAction(export_settings)
+
+        batch_action = QAction("Batch Processing...", self)
+        batch_action.triggered.connect(self._show_batch_dialog)
+        file_menu.addAction(batch_action)
+
+        file_menu.addSeparator()
+
+        load_mask = QAction("Load Mask Image...", self)
+        load_mask.triggered.connect(self._load_mask)
+        file_menu.addAction(load_mask)
+
+        clear_mask = QAction("Clear Mask", self)
+        clear_mask.triggered.connect(self._clear_mask)
+        file_menu.addAction(clear_mask)
 
         file_menu.addSeparator()
 
@@ -448,8 +528,10 @@ class MainWindow(QMainWindow):
 
         # -- Filters Menu --
         filters_menu = menubar.addMenu("Filters")
-        for name in ["Blur", "Sharpen", "Contrast", "Brightness", "Invert",
-                      "Threshold", "Grayscale", "Edge Detect"]:
+        for name in [
+            "Gaussian Blur", "Sharpen More", "Contrast", "Brightness", "Invert",
+            "Threshold", "Grayscale", "Canny Edge",
+        ]:
             act = QAction(name, self)
             act.triggered.connect(lambda checked, n=name: self._add_filter(n))
             filters_menu.addAction(act)
@@ -494,6 +576,8 @@ class MainWindow(QMainWindow):
         self._create_preprocessing_panel()
         self._create_pfm_controls_panel()
         self._create_pen_settings_panel()
+        self._create_mask_panel()
+        self._create_export_settings_panel()
 
         self.settings_layout.addStretch()
         self.settings_scroll.setWidget(settings_widget)
@@ -517,6 +601,13 @@ class MainWindow(QMainWindow):
         
         self.viewport_splitter.setSizes([500, 500])
         right_layout.addWidget(self.viewport_splitter, 1)
+
+        self.image_viewport.display_combo.setCurrentText(DisplayMode.IMAGE.value)
+        self.viewport.display_combo.setCurrentText(DisplayMode.DRAWING.value)
+        self.image_viewport.display_mode_changed.connect(
+            lambda t: self.image_viewport.canvas.set_display_mode(DisplayMode(t)))
+        self.viewport.display_mode_changed.connect(
+            lambda t: self.viewport.canvas.set_display_mode(DisplayMode(t)))
 
         # Plotting controls bar
         controls = self._create_plotting_controls()
@@ -772,6 +863,7 @@ class MainWindow(QMainWindow):
         preset_row.addWidget(QLabel("Preset:"))
         self.pfm_preset_combo = QComboBox()
         self.pfm_preset_combo.addItems(["Default", "Sketchy", "Detailed", "Glitchy"])
+        self.pfm_preset_combo.currentTextChanged.connect(self._on_pfm_preset_changed)
         preset_row.addWidget(self.pfm_preset_combo, 1)
         layout.addLayout(preset_row)
 
@@ -901,6 +993,8 @@ class MainWindow(QMainWindow):
         sep_row.addWidget(QLabel("Colour Separation:"))
         self.colour_sep_combo = QComboBox()
         self.colour_sep_combo.addItems([s.value for s in ColourSeparation])
+        self.colour_sep_combo.setCurrentText(self.drawing_set.colour_separation.value)
+        self.colour_sep_combo.currentTextChanged.connect(self._on_colour_sep_changed)
         sep_row.addWidget(self.colour_sep_combo, 1)
         layout.addLayout(sep_row)
 
@@ -909,6 +1003,8 @@ class MainWindow(QMainWindow):
         dist_row.addWidget(QLabel("Distribution:"))
         self.dist_type_combo = QComboBox()
         self.dist_type_combo.addItems([d.value for d in DistributionType])
+        self.dist_type_combo.setCurrentText(self.drawing_set.distribution_type.value)
+        self.dist_type_combo.currentTextChanged.connect(self._on_distribution_changed)
         dist_row.addWidget(self.dist_type_combo, 1)
         layout.addLayout(dist_row)
 
@@ -920,7 +1016,7 @@ class MainWindow(QMainWindow):
         # Pen action buttons
         pen_btns = QHBoxLayout()
         for text, slot in [("Add", self._add_pen), ("Remove", self._remove_pen),
-                           ("Duplicate", self._duplicate_pen)]:
+                           ("Duplicate", self._duplicate_pen), ("Edit", self._edit_pen)]:
             btn = QPushButton(text)
             btn.setFixedHeight(30)
             btn.clicked.connect(slot)
@@ -929,6 +1025,95 @@ class MainWindow(QMainWindow):
 
         group.set_content(content)
         self.settings_layout.addWidget(group)
+
+    # =====================================================================
+    # Mask Panel
+    # =====================================================================
+
+    def _create_mask_panel(self):
+        group = CollapsibleSection("Mask")
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        self.mask_lbl = QLabel("No mask loaded")
+        self.mask_lbl.setStyleSheet("color: #CAC4D0; font-size: 11px;")
+        self.mask_lbl.setWordWrap(True)
+        layout.addWidget(self.mask_lbl)
+        load_btn = QPushButton("Load Mask...")
+        load_btn.clicked.connect(self._load_mask)
+        layout.addWidget(load_btn)
+        clear_btn = QPushButton("Clear Mask")
+        clear_btn.clicked.connect(self._clear_mask)
+        layout.addWidget(clear_btn)
+        group.set_content(content)
+        self.settings_layout.addWidget(group)
+
+    # =====================================================================
+    # Export / Path Optimisation Panel
+    # =====================================================================
+
+    def _create_export_settings_panel(self):
+        group = CollapsibleSection("Export & Path Optimisation")
+        content = QWidget()
+        grid = QGridLayout(content)
+        grid.setSpacing(6)
+        row = 0
+        opt = self.project.path_opt_settings
+
+        self.opt_simplify_cb = QCheckBox("Line Simplifying")
+        self.opt_simplify_cb.setChecked(opt.get("line_simplifying", True))
+        self.opt_simplify_cb.toggled.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_simplify_cb, row, 0, 1, 2)
+        row += 1
+
+        grid.addWidget(QLabel("Simplify tolerance:"), row, 0)
+        self.opt_simplify_spin = QDoubleSpinBox()
+        self.opt_simplify_spin.setRange(0.01, 10.0)
+        self.opt_simplify_spin.setValue(opt.get("simplify_tolerance", 0.1))
+        self.opt_simplify_spin.valueChanged.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_simplify_spin, row, 1)
+        row += 1
+
+        self.opt_merge_cb = QCheckBox("Line Merging")
+        self.opt_merge_cb.setChecked(opt.get("line_merging", False))
+        self.opt_merge_cb.toggled.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_merge_cb, row, 0, 1, 2)
+        row += 1
+
+        self.opt_filter_cb = QCheckBox("Line Filtering")
+        self.opt_filter_cb.setChecked(opt.get("line_filtering", False))
+        self.opt_filter_cb.toggled.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_filter_cb, row, 0, 1, 2)
+        row += 1
+
+        self.opt_sort_cb = QCheckBox("Line Sorting")
+        self.opt_sort_cb.setChecked(opt.get("line_sorting", True))
+        self.opt_sort_cb.toggled.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_sort_cb, row, 0, 1, 2)
+        row += 1
+
+        grid.addWidget(QLabel("Multipass:"), row, 0)
+        self.opt_multipass_spin = QSpinBox()
+        self.opt_multipass_spin.setRange(1, 10)
+        self.opt_multipass_spin.setValue(int(opt.get("line_multipass", 1)))
+        self.opt_multipass_spin.valueChanged.connect(self._on_path_opt_changed)
+        grid.addWidget(self.opt_multipass_spin, row, 1)
+
+        group.set_content(content)
+        self.settings_layout.addWidget(group)
+
+    def _on_path_opt_changed(self, *args):
+        self.project.path_opt_settings = {
+            "line_simplifying": self.opt_simplify_cb.isChecked(),
+            "simplify_tolerance": self.opt_simplify_spin.value(),
+            "line_merging": self.opt_merge_cb.isChecked(),
+            "merge_tolerance": 0.5,
+            "line_filtering": self.opt_filter_cb.isChecked(),
+            "filter_min_length": 1.0,
+            "line_sorting": self.opt_sort_cb.isChecked(),
+            "line_multipass": self.opt_multipass_spin.value(),
+        }
+        if self.drawing_geometries:
+            self._update_path_stats()
 
     # =====================================================================
     # Plotting Controls
@@ -1026,8 +1211,11 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", f"Failed to load image:\n{path}")
             return
 
+        self.project.image_path = path
         self.original_image = img
         self.processed_image = img.copy()
+        self.filter_chain = []
+        self._rebuild_filter_chain_ui()
 
         # Update viewport with image
         h, w = img.shape
@@ -1037,9 +1225,14 @@ class MainWindow(QMainWindow):
 
         # Update drawing area from image dimensions
         if self.drawing_area.use_original_sizing:
-            # Use pixels as mm (1 pixel = 0.264583 mm at 96 DPI)
             self.drawing_area.width = w * 0.264583
             self.drawing_area.height = h * 0.264583
+            self.width_spin.blockSignals(True)
+            self.height_spin.blockSignals(True)
+            self.width_spin.setValue(self.drawing_area.width)
+            self.height_spin.setValue(self.drawing_area.height)
+            self.width_spin.blockSignals(False)
+            self.height_spin.blockSignals(False)
 
         self.image_viewport.canvas.set_canvas_size(
             self.drawing_area.width_mm, self.drawing_area.height_mm)
@@ -1077,14 +1270,30 @@ class MainWindow(QMainWindow):
             self._on_drawing_area_changed()
 
     def _on_drawing_area_changed(self, *args):
+        unit_map = {
+            "mm": InputUnits.MM, "cm": InputUnits.CM,
+            "inches": InputUnits.INCHES, "pixels": InputUnits.PIXELS,
+        }
+        scale_map = {
+            "Scale to fit": ScalingMode.SCALE_TO_FIT,
+            "Crop to fit": ScalingMode.CROP_TO_FIT,
+            "Stretch to fit": ScalingMode.STRETCH_TO_FIT,
+        }
         self.drawing_area.use_original_sizing = self.use_orig_cb.isChecked()
+        self.drawing_area.input_units = unit_map.get(self.units_combo.currentText(), InputUnits.MM)
         self.drawing_area.width = self.width_spin.value()
         self.drawing_area.height = self.height_spin.value()
+        self.drawing_area.scaling_mode = scale_map.get(
+            self.scaling_combo.currentText(), ScalingMode.SCALE_TO_FIT)
         self.drawing_area.rescale_to_pen_width = self.pen_width_cb.isChecked()
         self.drawing_area.pen_width_mm = self.pen_width_spin.value()
 
-        self.viewport.canvas.set_canvas_size(
-            self.drawing_area.width_mm, self.drawing_area.height_mm)
+        w_mm, h_mm = self.drawing_area.width_mm, self.drawing_area.height_mm
+        self.image_viewport.canvas.set_canvas_size(w_mm, h_mm)
+        self.viewport.canvas.set_canvas_size(w_mm, h_mm)
+        if self._pixel_geometries:
+            self._remap_geometries_to_mm()
+            self._refresh_viewport_paths()
         self._update_status()
 
     def _on_filter_changed(self, *args):
@@ -1097,6 +1306,9 @@ class MainWindow(QMainWindow):
         for filter_inst in self.filter_chain:
             img = filter_inst.process(img)
 
+        if self.mask_manager.enabled and self.mask_manager.mask is not None:
+            img = apply_mask_to_image(img, self.mask_manager.mask)
+
         self.processed_image = img
 
         # Update right viewport image with filtered version
@@ -1108,7 +1320,34 @@ class MainWindow(QMainWindow):
             qi = QImage(self.processed_image.data, w, h, w * 3,
                         QImage.Format.Format_RGB888)
         
+        self.image_viewport.canvas.set_display_image(qi.copy())
         self.viewport.canvas.set_display_image(qi.copy())
+
+    def _on_colour_sep_changed(self, text: str):
+        try:
+            self.drawing_set.colour_separation = ColourSeparation(text)
+        except ValueError:
+            pass
+
+    def _on_distribution_changed(self, text: str):
+        try:
+            self.drawing_set.distribution_type = DistributionType(text)
+        except ValueError:
+            pass
+
+    def _on_pfm_preset_changed(self, preset: str):
+        presets = {
+            "Sketchy": {"distortion": 0.6, "line_density": 40.0, "angularity": 0.3},
+            "Detailed": {"angle_tests": 12, "line_density": 80.0, "edge_power": 0.5},
+            "Glitchy": {"distortion": 1.0, "directionality": 0.1, "sobel_power": 0.8},
+        }
+        if preset == "Default":
+            self._reset_pfm()
+            return
+        for key, val in presets.get(preset, {}).items():
+            if key in self.current_pfm.settings:
+                self.current_pfm.set(key, val)
+        self._rebuild_pfm_settings_ui()
 
     def _on_pfm_changed(self, index):
         if 0 <= index < len(self.available_pfms):
@@ -1151,6 +1390,15 @@ class MainWindow(QMainWindow):
             self.drawing_set.duplicate_pen(len(self.drawing_set.pens) - 1)
             self._update_pen_display()
 
+    def _edit_pen(self):
+        if not self.drawing_set.pens:
+            return
+        pen = self.drawing_set.pens[-1]
+        dlg = PenEditorDialog(pen, self)
+        if dlg.exec():
+            dlg.apply_to_pen()
+            self._update_pen_display()
+
     def _update_pen_display(self):
         self.pen_list_label.setText(
             f"Pens: {len(self.drawing_set.pens)} "
@@ -1181,9 +1429,11 @@ class MainWindow(QMainWindow):
         self.viewport.canvas.set_drawing_paths([])
         self.drawing_geometries = []
 
-        # Start processing thread
+        plot_img = resize_for_plotting(self.processed_image, self.drawing_area)
+        self._plot_image_size = (plot_img.shape[1], plot_img.shape[0])
+
         sep_mode = self.drawing_set.colour_separation.value if self.drawing_set else "None"
-        self._proc_thread = ProcessingThread(self.current_pfm, self.processed_image, sep_mode)
+        self._proc_thread = ProcessingThread(self.current_pfm, plot_img, sep_mode)
         self._proc_thread.progress_updated.connect(self._on_processing_progress)
         self._proc_thread.finished_signal.connect(self._on_processing_finished)
         self._proc_thread.start()
@@ -1199,6 +1449,7 @@ class MainWindow(QMainWindow):
             self._proc_thread.wait(2000)
 
         self.drawing_geometries = []
+        self._pixel_geometries = []
         self.viewport.canvas.set_drawing_paths([])
         self.progress_bar.setValue(0)
         self.progress_label.setText("Reset")
@@ -1224,36 +1475,18 @@ class MainWindow(QMainWindow):
 
     def _on_processing_finished(self, geometries):
         self._elapsed_timer.stop()
-        self.drawing_geometries = geometries
+        self._pixel_geometries = geometries
+        self._remap_geometries_to_mm()
+        self._refresh_viewport_paths()
+        self._update_path_stats()
 
-        # Convert geometries to viewport drawing paths
-        drawing_paths = []
-        active_pens = self.drawing_set.active_pens()
-
-        # Group by pen
-        pen_paths = {}
-        for geom in geometries:
-            pi = geom.pen_index % max(1, len(active_pens))
-            if pi not in pen_paths:
-                pen_paths[pi] = []
-            pen_paths[pi].append([QPointF(x, y) for x, y in geom.path])
-
-        for pi, polylines in pen_paths.items():
-            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
-            color = QColor(pen.color_r, pen.color_g, pen.color_b, pen.color_a)
-            stroke = pen.stroke_width * 0.3
-            drawing_paths.append((color, stroke, polylines))
-
-        self.viewport.canvas.set_drawing_paths(drawing_paths)
-
-        # Update UI
         elapsed = time.time() - self._start_time
         self.progress_bar.setValue(100)
         self.progress_label.setText(
-            f"Done! {len(geometries)} shapes in {elapsed:.1f}s")
+            f"Done! {len(self.drawing_geometries)} shapes in {elapsed:.1f}s")
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        self.status_shapes.setText(f"Shapes: {len(geometries)}")
+        self.status_shapes.setText(f"Shapes: {len(self.drawing_geometries)}")
 
         mins, secs = divmod(int(elapsed), 60)
         hours, mins = divmod(mins, 60)
@@ -1264,6 +1497,138 @@ class MainWindow(QMainWindow):
         mins, secs = divmod(int(elapsed), 60)
         hours, mins = divmod(mins, 60)
         self.status_time.setText(f"Time: {hours:02d}:{mins:02d}:{secs:02d}")
+
+    def _remap_geometries_to_mm(self):
+        if not self._pixel_geometries or self._plot_image_size[0] <= 0:
+            self.drawing_geometries = list(self._pixel_geometries)
+            return
+        img_w, img_h = self._plot_image_size
+        self.drawing_geometries = geometries_to_mm(
+            self._pixel_geometries, img_w, img_h, self.drawing_area)
+
+    def _refresh_viewport_paths(self):
+        drawing_paths = []
+        active_pens = self.drawing_set.active_pens()
+        pen_paths = {}
+        for geom in self.drawing_geometries:
+            pi = geom.pen_index % max(1, len(active_pens))
+            pen_paths.setdefault(pi, []).append(
+                [QPointF(x, y) for x, y in geom.path])
+        for pi, polylines in pen_paths.items():
+            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
+            color = QColor(pen.color_r, pen.color_g, pen.color_b, pen.color_a)
+            stroke = max(0.1, pen.stroke_width * 0.264583 * 0.35)
+            drawing_paths.append((color, stroke, polylines))
+        self.viewport.canvas.set_drawing_paths(drawing_paths)
+
+    def _update_path_stats(self):
+        paths = geometries_to_paths(self.drawing_geometries)
+        opt = self.project.path_opt_settings
+        optimized = optimize_paths(paths, opt)
+        travel, draw, pen_actions = compute_path_stats(optimized)
+        self.status_distance.setText(
+            f"Travel: {travel:.1f} mm | Draw: {draw:.1f} mm")
+        self.status_pen_actions.setText(f"Pen Actions: {pen_actions}")
+
+    def _sync_project_from_ui(self):
+        self.project.drawing_area = self.drawing_area
+        self.project.drawing_set = self.drawing_set
+        self.project.pfm_name = self.current_pfm.name
+        self.project.pfm_settings = self.current_pfm.settings_to_dict()
+        self.project.filter_chain = [f.settings_to_dict() for f in self.filter_chain]
+        self.project.mask_settings = self.mask_manager.to_dict()
+
+    def _sync_project_to_ui(self):
+        self.drawing_area = self.project.drawing_area
+        self.drawing_set = self.project.drawing_set
+        self.use_orig_cb.setChecked(self.drawing_area.use_original_sizing)
+        self.units_combo.setCurrentText(self.drawing_area.input_units.value)
+        self.width_spin.setValue(self.drawing_area.width)
+        self.height_spin.setValue(self.drawing_area.height)
+        self.orient_combo.setCurrentText(
+            "Landscape" if self.drawing_area.orientation == Orientation.LANDSCAPE
+            else "Portrait")
+        scale_labels = {
+            ScalingMode.SCALE_TO_FIT: "Scale to fit",
+            ScalingMode.CROP_TO_FIT: "Crop to fit",
+            ScalingMode.STRETCH_TO_FIT: "Stretch to fit",
+        }
+        self.scaling_combo.setCurrentText(
+            scale_labels.get(self.drawing_area.scaling_mode, "Scale to fit"))
+        self.pen_width_cb.setChecked(self.drawing_area.rescale_to_pen_width)
+        self.pen_width_spin.setValue(self.drawing_area.pen_width_mm)
+        self.colour_sep_combo.setCurrentText(self.drawing_set.colour_separation.value)
+        self.dist_type_combo.setCurrentText(self.drawing_set.distribution_type.value)
+        self.drawing_set_combo.setCurrentText(self.drawing_set.name)
+        for i, pfm in enumerate(self.available_pfms):
+            if pfm.name == self.project.pfm_name:
+                self.pfm_list.setCurrentRow(i)
+                break
+        self.current_pfm.settings_from_dict(self.project.pfm_settings)
+        self._rebuild_pfm_settings_ui()
+        self._restore_filter_chain()
+        opt = self.project.path_opt_settings
+        self.opt_simplify_cb.setChecked(opt.get("line_simplifying", True))
+        self.opt_simplify_spin.setValue(opt.get("simplify_tolerance", 0.1))
+        self.opt_merge_cb.setChecked(opt.get("line_merging", False))
+        self.opt_filter_cb.setChecked(opt.get("line_filtering", False))
+        self.opt_sort_cb.setChecked(opt.get("line_sorting", True))
+        self.opt_multipass_spin.setValue(int(opt.get("line_multipass", 1)))
+        self.mask_manager.from_dict(self.project.mask_settings)
+        self.mask_lbl.setText(
+            f"Mask: {os.path.basename(self.mask_manager.mask_path)}"
+            if self.mask_manager.enabled else "No mask loaded")
+        if self.project.image_path and os.path.isfile(self.project.image_path):
+            img = cv2.imread(self.project.image_path, cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                self.original_image = img
+                self._on_filter_changed()
+        self._on_drawing_area_changed()
+
+    def _restore_filter_chain(self):
+        self.filter_chain = []
+        for fd in self.project.filter_chain:
+            try:
+                filt = create_filter(fd["name"])
+                filt.settings_from_dict(fd)
+                self.filter_chain.append(filt)
+            except ValueError:
+                pass
+        self._rebuild_filter_chain_ui()
+
+    def _open_project(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Open Project", "",
+            f"DrawingBot Project (*{Project.FILE_EXTENSION});;All (*)")
+        if not path:
+            return
+        try:
+            self.project.load(path)
+            self._sync_project_to_ui()
+            self.setWindowTitle(f"Drawing Bot V3 — {os.path.basename(path)}")
+            self.progress_label.setText(f"Opened: {os.path.basename(path)}")
+        except Exception as e:
+            QMessageBox.warning(self, "Open Project", str(e))
+
+    def _save_project(self):
+        if not self.project.filepath:
+            self._save_project_as()
+            return
+        self._sync_project_from_ui()
+        self.project.save()
+
+    def _save_project_as(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save Project", "",
+            f"DrawingBot Project (*{Project.FILE_EXTENSION})")
+        if not path:
+            return
+        if not path.endswith(Project.FILE_EXTENSION):
+            path += Project.FILE_EXTENSION
+        self._sync_project_from_ui()
+        self.project.save(path)
+        self.setWindowTitle(f"Drawing Bot V3 — {os.path.basename(path)}")
+        self.progress_label.setText(f"Saved: {os.path.basename(path)}")
 
     # =====================================================================
     # Export
@@ -1277,7 +1642,9 @@ class MainWindow(QMainWindow):
 
         path, _ = QFileDialog.getSaveFileName(
             self, "Export Drawing",
-            "", "SVG (*.svg);;PNG (*.png);;GCode (*.gcode);;CSV (*.csv);;All (*)")
+            "",
+            "SVG (*.svg);;PNG (*.png);;PDF (*.pdf);;GCode (*.gcode);;HPGL (*.hpgl);;"
+            "CSV (*.csv);;All (*)")
         if not path:
             return
 
@@ -1285,8 +1652,12 @@ class MainWindow(QMainWindow):
             self._export_svg(path)
         elif path.lower().endswith('.png'):
             self._export_png(path)
+        elif path.lower().endswith('.pdf'):
+            self._export_pdf(path)
         elif path.lower().endswith('.gcode'):
             self._export_gcode(path)
+        elif path.lower().endswith('.hpgl'):
+            self._export_hpgl(path)
         elif path.lower().endswith('.csv'):
             self._export_csv(path)
 
@@ -1338,52 +1709,13 @@ class MainWindow(QMainWindow):
         self.drawing_geometries = original_geoms
         self.progress_label.setText(f"Exported {len(pen_groups)} per-pen files.")
     def _export_svg(self, filepath: str):
-        """Export the drawing as an SVG file."""
-        da = self.drawing_area
-        w_mm = da.width_mm
-        h_mm = da.height_mm
-
-        lines = [
-            f'<?xml version="1.0" encoding="UTF-8"?>',
-            f'<svg xmlns="http://www.w3.org/2000/svg" '
-            f'width="{w_mm}mm" height="{h_mm}mm" '
-            f'viewBox="0 0 {w_mm} {h_mm}">',
-        ]
-
-        active_pens = self.drawing_set.active_pens()
-
-        # Group geometries by pen
-        pen_groups = {}
-        for geom in self.drawing_geometries:
-            pi = geom.pen_index % max(1, len(active_pens))
-            if pi not in pen_groups:
-                pen_groups[pi] = []
-            pen_groups[pi].append(geom)
-
-        for pi in sorted(pen_groups.keys()):
-            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
-            color_hex = pen.color_hex
-            stroke_w = pen.stroke_width * 0.264583  # Convert to mm
-            lines.append(f'  <g id="pen_{pi}" inkscape:label="{pen.name}">')
-
-            for geom in pen_groups[pi]:
-                if len(geom.path) < 2:
-                    continue
-                d_parts = [f"M{geom.path[0][0]:.3f},{geom.path[0][1]:.3f}"]
-                for x, y in geom.path[1:]:
-                    d_parts.append(f"L{x:.3f},{y:.3f}")
-                d = " ".join(d_parts)
-                lines.append(
-                    f'    <path d="{d}" fill="none" '
-                    f'stroke="{color_hex}" stroke-width="{stroke_w:.4f}" '
-                    f'stroke-linecap="round" stroke-linejoin="round"/>')
-
-            lines.append('  </g>')
-
-        lines.append('</svg>')
-
-        with open(filepath, 'w') as f:
-            f.write('\n'.join(lines))
+        export_svg(
+            filepath,
+            self.drawing_geometries,
+            self.drawing_area,
+            self.drawing_set.active_pens(),
+            self.project.path_opt_settings,
+        )
 
     def _export_png(self, filepath: str):
         """Export the drawing as a PNG image."""
@@ -1421,59 +1753,38 @@ class MainWindow(QMainWindow):
         img.save(filepath)
 
     def _export_gcode(self, filepath: str):
-        """Export the drawing as G-Code."""
-        da = self.drawing_area
-        lines = [
-            "; G-code generated by DrawingBotV3 Python Edition",
-            f"; Size: {da.width_mm}mm x {da.height_mm}mm",
-            "G21 ; mm",
-            "G90 ; Absolute",
-            "M5 ; Pen up",
-            "G0 F2000",
-        ]
+        export_gcode(
+            filepath,
+            self.drawing_geometries,
+            self.drawing_area,
+            self.drawing_set.active_pens(),
+            self.project.gcode_settings,
+            self.project.path_opt_settings,
+        )
 
-        active_pens = self.drawing_set.active_pens()
+    def _export_hpgl(self, filepath: str):
+        export_hpgl(
+            filepath,
+            self.drawing_geometries,
+            self.drawing_area,
+            self.drawing_set.active_pens(),
+            self.project.hpgl_settings,
+            self.project.path_opt_settings,
+        )
 
-        # Group geometries by pen
-        pen_groups = {}
-        for geom in self.drawing_geometries:
-            pi = geom.pen_index % max(1, len(active_pens))
-            if pi not in pen_groups:
-                pen_groups[pi] = []
-            pen_groups[pi].append(geom)
+    def _export_pdf(self, filepath: str):
+        from app.export.pdf_exporter import export_pdf
+        try:
+            export_pdf(
+                filepath,
+                self.drawing_geometries,
+                self.drawing_area,
+                self.drawing_set.active_pens(),
+                self.project.path_opt_settings,
+            )
+        except ImportError as e:
+            QMessageBox.warning(self, "PDF Export", str(e))
 
-        for pi in sorted(pen_groups.keys()):
-            pen = active_pens[pi] if pi < len(active_pens) else active_pens[0]
-            
-            lines.append("")
-            lines.append(f"; --- LAYER: {pen.name} ---")
-            lines.append("M5 ; Pen up before move")
-            lines.append("G0 Z5 ; Lift Z")
-            lines.append(f"M0 ; PAUSE - Swap to pen '{pen.name}' and press Resume")
-            lines.append("G0 F2000 ; Reset speed")
-            
-            for geom in pen_groups[pi]:
-                if len(geom.path) < 2:
-                    continue
-                # Travel to start
-                x0, y0 = geom.path[0]
-                y0_flip = da.height_mm - y0
-                lines.append(f"G0 X{x0:.3f} Y{y0_flip:.3f}")
-                lines.append("M3 S90 ; Pen down")
-                lines.append("G1 F1000")
-
-                for x, y in geom.path[1:]:
-                    y_flip = da.height_mm - y
-                    lines.append(f"G1 X{x:.3f} Y{y_flip:.3f}")
-                
-                lines.append("M5 ; Pen up")
-
-        lines.append("G0 X0 Y0 ; Return to origin")
-        lines.append("M2 ; End of program")
-
-        with open(filepath, 'w') as f:
-            f.write('\n'.join(lines))
-            
     def _export_csv(self, filepath: str):
         """Export the drawing paths to CSV."""
         lines = ["PathID,X,Y,PenIndex,PenName"]
@@ -1560,6 +1871,56 @@ class MainWindow(QMainWindow):
 
 
 
+    def _load_mask(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Load Mask", "",
+            "Images (*.png *.jpg *.jpeg *.bmp);;All (*)")
+        if path and self.mask_manager.load(path):
+            self.mask_lbl.setText(f"Mask: {os.path.basename(path)}")
+            self._on_filter_changed()
+
+    def _clear_mask(self):
+        self.mask_manager.clear()
+        self.mask_lbl.setText("No mask loaded")
+        self._on_filter_changed()
+
+    def _show_export_settings(self):
+        dlg = ExportSettingsDialog(
+            self.project.gcode_settings, self.project.hpgl_settings, self)
+        if dlg.exec():
+            self.project.gcode_settings, self.project.hpgl_settings = dlg.result_settings()
+
+    def _show_batch_dialog(self):
+        BatchDialog(self, self).exec()
+
+    def _import_video_frame(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Import Video", "",
+            "Video (*.mp4 *.mov *.avi *.mkv);;All (*)")
+        if not path:
+            return
+        cap = cv2.VideoCapture(path)
+        if not cap.isOpened():
+            QMessageBox.warning(self, "Video", "Could not open video.")
+            return
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
+        frame_idx = max(0, total // 2)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ok, frame = cap.read()
+        cap.release()
+        if not ok or frame is None:
+            QMessageBox.warning(self, "Video", "Could not read frame.")
+            return
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        self.project.image_path = path
+        self.original_image = gray
+        self.processed_image = gray.copy()
+        self.filter_chain = []
+        self._rebuild_filter_chain_ui()
+        self._on_filter_changed()
+        h, w = gray.shape
+        self.progress_label.setText(f"Video frame {frame_idx}/{total} ({w}×{h})")
+
     # =====================================================================
     # Misc Handlers
     # =====================================================================
@@ -1574,7 +1935,6 @@ class MainWindow(QMainWindow):
             self.showFullScreen()
 
     def _add_filter(self, name):
-        from app.filters import create_filter
         try:
             filt = create_filter(name)
             self.filter_chain.append(filt)

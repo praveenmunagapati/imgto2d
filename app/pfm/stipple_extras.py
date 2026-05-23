@@ -8,6 +8,10 @@ from app.core.geometry import generate_circle, generate_polygon
 class BaseStipplePFM(PathFindingModule):
     @property
     def category(self) -> str: return "Stipple"
+
+    @property
+    def is_premium(self) -> bool:
+        return True
     
     def _define_settings(self) -> List[PFMSetting]:
         return [
@@ -38,7 +42,9 @@ class BaseStipplePFM(PathFindingModule):
         for i, idx in enumerate(indices):
             if self.is_cancelled: break
             cy, cx = idx // w, idx % w
-            path = self._generate_shape(cx, cy, size)
+            local = darkness[cy, cx] / 255.0
+            r = size * (0.3 + 0.7 * local)
+            path = self._generate_shape(cx, cy, r)
             geometries.append(DrawingGeometry(path=path))
             if i % 500 == 0: progress(i / num_shapes, len(geometries), f"Stippling...")
                 

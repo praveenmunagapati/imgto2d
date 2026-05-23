@@ -10,30 +10,31 @@ class SketchFlowFieldsPFM(PathFindingModule):
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Flow Fields"
+    @property
+    def is_premium(self) -> bool: return True
     def _define_settings(self) -> List[PFMSetting]:
         return [PFMSetting("lines", "Lines", SettingType.INTEGER, 1000, 10, 10000, 10)]
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
-        h, w = image.shape[:2]
-        lines = self.get("lines")
+        from app.pfm.pfm_utils import flow_field, trace_streamline, prepare_work_image
+        work, w, h = prepare_work_image(image, 1.0)
+        fx, fy = flow_field(work, smooth=5)
         geoms = []
+        lines = int(self.get("lines"))
         for i in range(lines):
-            x, y = self._rng.randint(0, w-1), self._rng.randint(0, h-1)
-            path = [(float(x), float(y))]
-            for _ in range(50):
-                angle = math.sin(x/50.0) + math.cos(y/50.0)
-                x += math.cos(angle) * 2
-                y += math.sin(angle) * 2
-                if 0 <= x < w and 0 <= y < h:
-                    b = image[int(y), int(x)]
-                    if b < 128: path.append((float(x), float(y)))
-                    else: break
-                else: break
-            if len(path) > 1: geoms.append(DrawingGeometry(path=path))
+            if self.is_cancelled:
+                break
+            x0 = self._rng.uniform(0, w)
+            y0 = self._rng.uniform(0, h)
+            path = trace_streamline(fx, fy, x0, y0, 80, 1.5)
+            if len(path) >= 2:
+                geoms.append(DrawingGeometry(path=path))
         return geoms
 
 class BaseSketchExtraPFM(PathFindingModule):
     @property
     def category(self) -> str: return "Sketch"
+    @property
+    def is_premium(self) -> bool: return True
     def _define_settings(self) -> List[PFMSetting]:
         return [PFMSetting("lines", "Lines", SettingType.INTEGER, 1000, 10, 10000, 10)]
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
@@ -55,6 +56,8 @@ class SketchSuperformulaPFM(PathFindingModule):
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Superformula"
+    @property
+    def is_premium(self) -> bool: return True
     def _define_settings(self) -> List[PFMSetting]:
         return [
             PFMSetting("shapes", "Shapes", SettingType.INTEGER, 100, 10, 1000, 10),
@@ -109,6 +112,8 @@ class SketchRadialPFM(PathFindingModule):
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Radial"
+    @property
+    def is_premium(self) -> bool: return True
     def _define_settings(self) -> List[PFMSetting]:
         return [PFMSetting("lines", "Lines", SettingType.INTEGER, 1000, 10, 5000, 10)]
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
@@ -153,6 +158,8 @@ class SketchCubicBeziers2PFM(PathFindingModule):
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Cubic Beziers 2"
+    @property
+    def is_premium(self) -> bool: return True
     def _define_settings(self) -> List[PFMSetting]:
         return [
             PFMSetting("curves", "Curves", SettingType.INTEGER, 1000, 10, 5000, 10),
@@ -206,47 +213,44 @@ class SketchVoronoiPFM(PathFindingModule):
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Voronoi"
+    @property
+    def is_premium(self) -> bool: return True
+
     def _define_settings(self) -> List[PFMSetting]:
-        return [PFMSetting("nodes", "Nodes", SettingType.INTEGER, 500, 10, 5000, 10)]
+        return [make_random_seed_setting(),
+                PFMSetting("nodes", "Nodes", SettingType.INTEGER, 500, 10, 5000, 10)]
+
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
-        try:
-            from scipy.spatial import Voronoi
-            h, w = image.shape[:2]
-            nodes = self.get("nodes")
-            points = np.random.rand(nodes, 2) * [w, h]
-            vor = Voronoi(points)
-            geoms = []
-            for simplex in vor.ridge_vertices:
-                simplex = np.asarray(simplex)
-                if np.all(simplex >= 0):
-                    p1 = vor.vertices[simplex[0]]
-                    p2 = vor.vertices[simplex[1]]
-                    geoms.append(DrawingGeometry(path=[(p1[0], p1[1]), (p2[0], p2[1])]))
-            return geoms
-        except ImportError:
-            return []
+        from app.pfm.pfm_utils import darkness_weights, sample_centroids, voronoi_facets, prepare_work_image
+        work, w, h = prepare_work_image(image, 1.0)
+        wts = darkness_weights(work)
+        pts = sample_centroids(wts, int(self.get("nodes")), self._rng, 0)
+        geoms = []
+        for facet in voronoi_facets(pts, w, h):
+            if len(facet) >= 2:
+                for i in range(len(facet) - 1):
+                    geoms.append(DrawingGeometry(path=[facet[i], facet[i + 1]]))
+        return geoms
+
 
 class SketchDelaunayPFM(PathFindingModule):
     @property
     def category(self) -> str: return "Sketch"
     @property
     def name(self) -> str: return "Sketch Delaunay"
+    @property
+    def is_premium(self) -> bool: return True
+
     def _define_settings(self) -> List[PFMSetting]:
-        return [PFMSetting("nodes", "Nodes", SettingType.INTEGER, 500, 10, 5000, 10)]
+        return [make_random_seed_setting(),
+                PFMSetting("nodes", "Nodes", SettingType.INTEGER, 500, 10, 5000, 10)]
+
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
-        try:
-            from scipy.spatial import Delaunay
-            h, w = image.shape[:2]
-            nodes = self.get("nodes")
-            points = np.random.rand(nodes, 2) * [w, h]
-            tri = Delaunay(points)
-            geoms = []
-            for simplex in tri.simplices:
-                p1, p2, p3 = points[simplex[0]], points[simplex[1]], points[simplex[2]]
-                geoms.append(DrawingGeometry(path=[(p1[0], p1[1]), (p2[0], p2[1]), (p3[0], p3[1]), (p1[0], p1[1])]))
-            return geoms
-        except ImportError:
-            return []
+        from app.pfm.pfm_utils import darkness_weights, sample_centroids, delaunay_edges, prepare_work_image
+        work, w, h = prepare_work_image(image, 1.0)
+        wts = darkness_weights(work)
+        pts = sample_centroids(wts, int(self.get("nodes")), self._rng, 0)
+        return [DrawingGeometry(path=[a, b]) for a, b in delaunay_edges(pts, w, h)]
 
 
 SKETCH_EXTRAS = [

@@ -33,6 +33,9 @@ def generate_dfs_maze(width, height, rng):
 
 class BaseMazePFM(PathFindingModule):
     @property
+    def is_premium(self) -> bool:
+        return True
+    @property
     def category(self) -> str: return "Maze"
     def _define_settings(self) -> List[PFMSetting]:
         return [PFMSetting("complexity", "Complexity", SettingType.INTEGER, 10, 1, 50, 1)]
@@ -92,6 +95,9 @@ class MazeLabyrinthPFM(BaseMazePFM):
     @property
     def name(self) -> str: return "Labyrinth"
 class LabyrinthClassicPFM(PathFindingModule):
+    @property
+    def is_premium(self) -> bool:
+        return True
     @property
     def category(self) -> str: return "Maze"
     @property
@@ -290,6 +296,9 @@ def solve_tsp_nn(points, rng):
 class BaseTSPPFM(PathFindingModule):
     @property
     def category(self) -> str: return "Path Optimisation"
+    @property
+    def is_premium(self) -> bool:
+        return True
     def _define_settings(self) -> List[PFMSetting]:
         return [PFMSetting("nodes", "Nodes", SettingType.INTEGER, 1000, 100, 10000, 100)]
     def _process(self, image: np.ndarray, progress: Callable) -> List[DrawingGeometry]:
@@ -313,6 +322,9 @@ class TSPClassicPFM(BaseTSPPFM):
     @property
     def name(self) -> str: return "TSP Classic"
 class TSPOutlinePFM(PathFindingModule):
+    @property
+    def is_premium(self) -> bool:
+        return True
     @property
     def category(self) -> str: return "Path Optimisation"
     @property
@@ -346,6 +358,9 @@ class TSPOutlinePFM(PathFindingModule):
         
         return [DrawingGeometry(path=path)]
 class TSPShadingPFM(PathFindingModule):
+    @property
+    def is_premium(self) -> bool:
+        return True
     @property
     def category(self) -> str: return "Path Optimisation"
     @property
@@ -382,6 +397,9 @@ class TSPVoronoiPFM(BaseTSPPFM):
     @property
     def name(self) -> str: return "TSP Voronoi"
 class TSPMSTPFM(PathFindingModule):
+    @property
+    def is_premium(self) -> bool:
+        return True
     @property
     def category(self) -> str: return "Path Optimisation"
     @property

@@ -91,6 +91,7 @@ class Project:
         self.pfm_name: str = "Sketch Lines"
         self.pfm_settings: dict = {}
         self.filter_chain: list = []
+        self.mask_settings: dict = {"mask_path": "", "enabled": False}
         self.versions: List[VersionSnapshot] = []
         self.presets: List[Preset] = []
 
@@ -151,6 +152,7 @@ class Project:
             "pfm_name": self.pfm_name,
             "pfm_settings": self.pfm_settings,
             "filter_chain": self.filter_chain,
+            "mask_settings": self.mask_settings,
             "gcode_settings": self.gcode_settings,
             "hpgl_settings": self.hpgl_settings,
             "path_opt_settings": self.path_opt_settings,
@@ -173,6 +175,7 @@ class Project:
         self.pfm_name = data.get("pfm_name", "Sketch Lines")
         self.pfm_settings = data.get("pfm_settings", {})
         self.filter_chain = data.get("filter_chain", [])
+        self.mask_settings = data.get("mask_settings", self.mask_settings)
         self.gcode_settings = data.get("gcode_settings", self.gcode_settings)
         self.hpgl_settings = data.get("hpgl_settings", self.hpgl_settings)
         self.path_opt_settings = data.get("path_opt_settings", self.path_opt_settings)

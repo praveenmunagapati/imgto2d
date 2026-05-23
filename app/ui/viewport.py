@@ -71,6 +71,8 @@ class ViewportCanvas(QWidget):
         # Displayed shapes range (0.0 - 1.0)
         self._shapes_range = 1.0
 
+        self._display_mode = DisplayMode.DRAWING
+
     def set_background_color(self, r: int, g: int, b: int):
         self._background_color = QColor(r, g, b)
         self.update()
@@ -108,6 +110,10 @@ class ViewportCanvas(QWidget):
 
     def set_shapes_range(self, fraction: float):
         self._shapes_range = max(0.0, min(1.0, fraction))
+        self.update()
+
+    def set_display_mode(self, mode: DisplayMode):
+        self._display_mode = mode
         self.update()
 
     def fit_to_view(self):
@@ -158,14 +164,31 @@ class ViewportCanvas(QWidget):
         painter.setPen(border_pen)
         painter.drawRect(self._canvas_rect)
 
-        # Draw image if available
-        if self._display_image is not None:
+        mode = self._display_mode
+        show_image = mode in (
+            DisplayMode.IMAGE,
+            DisplayMode.ORIGINAL,
+            DisplayMode.REFERENCE,
+            DisplayMode.LIGHTENED,
+            DisplayMode.TONE_MAP,
+        )
+        show_paths = mode in (
+            DisplayMode.DRAWING,
+            DisplayMode.LIGHTENED,
+            DisplayMode.SELECTED_PEN,
+            DisplayMode.EXPORTED,
+            DisplayMode.IMAGE,
+        )
+
+        if show_image and self._display_image is not None:
             img_rect = QRectF(0, 0, self._canvas_rect.width(),
                               self._canvas_rect.height())
+            if mode == DisplayMode.LIGHTENED:
+                painter.setOpacity(0.45)
             painter.drawImage(img_rect, self._display_image)
+            painter.setOpacity(1.0)
 
-        # Draw paths
-        if self._cached_polygons:
+        if show_paths and self._cached_polygons:
             visible_count = int(self._total_shapes * self._shapes_range)
             drawn = 0
 
@@ -248,8 +271,7 @@ class ViewportWidget(QWidget):
                 background: #2D2B33; color: #E6E1E5; selection-background-color: #4F378B;
             }
         """)
-        self.display_combo.currentTextChanged.connect(
-            lambda t: self.display_mode_changed.emit(t))
+        self.display_combo.currentTextChanged.connect(self._on_display_mode_changed)
         toolbar.addWidget(self.display_combo)
 
         toolbar.addStretch()
@@ -299,6 +321,14 @@ class ViewportWidget(QWidget):
         self.canvas = ViewportCanvas()
         self.canvas.setStyleSheet("background: #1C1B1F; border-radius: 8px;")
         layout.addWidget(self.canvas, 1)
+
+    def _on_display_mode_changed(self, text: str):
+        try:
+            mode = DisplayMode(text)
+        except ValueError:
+            mode = DisplayMode.DRAWING
+        self.canvas.set_display_mode(mode)
+        self.display_mode_changed.emit(text)
 
     def _on_shapes_changed(self, value):
         frac = value / 100.0
