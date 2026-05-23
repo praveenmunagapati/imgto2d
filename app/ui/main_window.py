@@ -530,6 +530,12 @@ class MainWindow(QMainWindow):
         fullscreen.triggered.connect(self._toggle_fullscreen)
         view_menu.addAction(fullscreen)
 
+        compact_ui_action = QAction("Compact UI", self)
+        compact_ui_action.setCheckable(True)
+        compact_ui_action.setChecked(False)
+        compact_ui_action.triggered.connect(self._toggle_compact_ui)
+        view_menu.addAction(compact_ui_action)
+
         # -- Filters Menu --
         filters_menu = menubar.addMenu("Filters")
         for name in [
@@ -624,7 +630,7 @@ class MainWindow(QMainWindow):
     # =====================================================================
 
     def _create_drawing_area_panel(self):
-        group = CollapsibleSection("Drawing Area")
+        self.drawing_area_group = CollapsibleSection("Drawing Area")
         content = QWidget()
         grid = QGridLayout(content)
         grid.setSpacing(6)
@@ -703,15 +709,15 @@ class MainWindow(QMainWindow):
         grid.addWidget(self.pen_width_spin, row, 1)
         row += 1
 
-        group.set_content(content)
-        self.settings_layout.addWidget(group)
+        self.drawing_area_group.set_content(content)
+        self.settings_layout.addWidget(self.drawing_area_group)
 
     # =====================================================================
     # Pre-Processing Panel
     # =====================================================================
 
     def _create_preprocessing_panel(self):
-        group = CollapsibleSection("Pre-Processing")
+        self.preprocessing_group = CollapsibleSection("Pre-Processing")
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setSpacing(6)
@@ -734,8 +740,8 @@ class MainWindow(QMainWindow):
         add_btn.clicked.connect(self._on_add_filter_clicked)
         layout.addWidget(add_btn)
 
-        group.set_content(content)
-        self.settings_layout.addWidget(group)
+        self.preprocessing_group.set_content(content)
+        self.settings_layout.addWidget(self.preprocessing_group)
         self._rebuild_filter_chain_ui()
 
     def _on_add_filter_clicked(self):
@@ -972,7 +978,7 @@ class MainWindow(QMainWindow):
     # =====================================================================
 
     def _create_pen_settings_panel(self):
-        group = CollapsibleSection("Pen Settings")
+        self.pen_settings_group = CollapsibleSection("Pen Settings")
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setSpacing(6)
@@ -1022,15 +1028,15 @@ class MainWindow(QMainWindow):
             pen_btns.addWidget(btn)
         layout.addLayout(pen_btns)
 
-        group.set_content(content)
-        self.settings_layout.addWidget(group)
+        self.pen_settings_group.set_content(content)
+        self.settings_layout.addWidget(self.pen_settings_group)
 
     # =====================================================================
     # Mask Panel
     # =====================================================================
 
     def _create_mask_panel(self):
-        group = CollapsibleSection("Mask")
+        self.mask_group = CollapsibleSection("Mask")
         content = QWidget()
         layout = QVBoxLayout(content)
         self.mask_lbl = QLabel("No mask loaded")
@@ -1043,8 +1049,8 @@ class MainWindow(QMainWindow):
         clear_btn = QPushButton("Clear Mask")
         clear_btn.clicked.connect(self._clear_mask)
         layout.addWidget(clear_btn)
-        group.set_content(content)
-        self.settings_layout.addWidget(group)
+        self.mask_group.set_content(content)
+        self.settings_layout.addWidget(self.mask_group)
 
     # =====================================================================
     # Serial Plotter Panel
@@ -1212,7 +1218,7 @@ class MainWindow(QMainWindow):
             self.stop_btn.setEnabled(True)
 
     def _create_export_settings_panel(self):
-        group = CollapsibleSection("Export & Path Optimisation")
+        self.export_settings_group = CollapsibleSection("Export & Path Optimisation")
         content = QWidget()
         grid = QGridLayout(content)
         grid.setSpacing(6)
@@ -1258,8 +1264,8 @@ class MainWindow(QMainWindow):
         self.opt_multipass_spin.valueChanged.connect(self._on_path_opt_changed)
         grid.addWidget(self.opt_multipass_spin, row, 1)
 
-        group.set_content(content)
-        self.settings_layout.addWidget(group)
+        self.export_settings_group.set_content(content)
+        self.settings_layout.addWidget(self.export_settings_group)
 
     def _on_path_opt_changed(self, *args):
         self.project.path_opt_settings = {
@@ -1274,6 +1280,17 @@ class MainWindow(QMainWindow):
         }
         if self.drawing_geometries:
             self._update_path_stats()
+
+    def _toggle_compact_ui(self, enabled: bool):
+        """Collapse non-essential panels for a simplified UI."""
+        try:
+            # Panels to collapse when compact mode is enabled
+            for grp in ("preprocessing_group", "pen_settings_group", "mask_group", "export_settings_group"):
+                g = getattr(self, grp, None)
+                if g is not None:
+                    g.setChecked(not enabled)
+        except Exception:
+            pass
 
     # =====================================================================
     # Plotting Controls
