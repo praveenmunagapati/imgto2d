@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_lines.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_squares.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_curves.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_shapes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_waves.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_spirals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_lines.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_Release.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_MinSizeRel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_RelWithDebInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_sketch_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_lines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_squares.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_curves.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_beziers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_shapes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_waves.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_spirals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_lines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\sir\Desktop\imgto2d\cpp\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{B20E6421-4D21-3094-943A-FF74213E1491}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{0518BEC4-A7F5-3A67-8A5D-5F8D3CAECDC1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

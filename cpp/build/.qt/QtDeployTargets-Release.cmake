@@ -1,0 +1,3 @@
+set(__QT_DEPLOY_TARGET_imgto2d_qt_FILE C:/Users/sir/Desktop/imgto2d/cpp/build/Release/imgto2d_qt.exe)
+set(__QT_DEPLOY_TARGET_imgto2d_qt_TYPE EXECUTABLE)
+set(__QT_DEPLOY_TARGET_imgto2d_qt_RUNTIME_DLLS C:/Qt/6.7.3/msvc2019_64/bin/Qt6Widgets.dll;C:/Qt/6.7.3/msvc2019_64/bin/Qt6Concurrent.dll;C:/tools/opencv/build/x64/vc16/bin/opencv_world4130.dll;C:/tools/opencv/build/x64/vc16/bin/opencv_world4130.dll;C:/tools/opencv/build/x64/vc16/bin/opencv_world4130.dll;C:/Qt/6.7.3/msvc2019_64/bin/Qt6Gui.dll;C:/Qt/6.7.3/msvc2019_64/bin/Qt6Core.dll)
