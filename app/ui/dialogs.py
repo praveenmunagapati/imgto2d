@@ -95,6 +95,13 @@ class ExportSettingsDialog(QDialog):
         self.g_center = QCheckBox("Center Zero")
         self.g_center.setChecked(self.gcode.get("center_zero", False))
         gf.addRow(self.g_center)
+
+        self.g_use_vpype = QCheckBox("Optimize SVG exports with vpype")
+        self.g_use_vpype.setChecked(self.gcode.get("use_vpype", False))
+        gf.addRow(self.g_use_vpype)
+
+        self.g_vpype_pipeline = QLineEdit(self.gcode.get("vpype_pipeline", "linemerge linesimplify"))
+        gf.addRow("VPype Pipeline:", self.g_vpype_pipeline)
         layout.addWidget(g)
 
         h = QGroupBox("HPGL")
@@ -122,6 +129,8 @@ class ExportSettingsDialog(QDialog):
             "pen_down_cmd": self.g_pen_down.text(),
             "pen_up_cmd": self.g_pen_up.text(),
             "center_zero": self.g_center.isChecked(),
+            "use_vpype": self.g_use_vpype.isChecked(),
+            "vpype_pipeline": self.g_vpype_pipeline.text().strip(),
         })
         self.hpgl.update({
             "x_max": self.h_xmax.value(),

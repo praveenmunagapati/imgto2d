@@ -10,14 +10,13 @@ from app.core.drawing_pen import DrawingPen
 from app.export.path_export import prepare_pen_paths
 
 
-def export_gcode(
-    filepath: str,
+def generate_gcode_lines(
     geometries,
     drawing_area: DrawingArea,
     active_pens: List[DrawingPen],
     gcode_settings: Dict,
     path_opt: Dict,
-) -> None:
+) -> List[str]:
     pen_paths = prepare_pen_paths(geometries, path_opt)
     h_mm = drawing_area.height_mm
 
@@ -60,5 +59,23 @@ def export_gcode(
             lines.append(end_layer)
 
     lines.extend(end_lines)
+    return lines
+
+
+def export_gcode(
+    filepath: str,
+    geometries,
+    drawing_area: DrawingArea,
+    active_pens: List[DrawingPen],
+    gcode_settings: Dict,
+    path_opt: Dict,
+) -> None:
+    lines = generate_gcode_lines(
+        geometries,
+        drawing_area,
+        active_pens,
+        gcode_settings,
+        path_opt,
+    )
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

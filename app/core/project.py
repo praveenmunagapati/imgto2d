@@ -108,6 +108,8 @@ class Project:
             "curve_flatness": 0.1,
             "x_offset": 0.0,
             "y_offset": 0.0,
+            "use_vpype": False,
+            "vpype_pipeline": "linemerge linesimplify",
         }
 
         # HPGL export settings

@@ -4,6 +4,7 @@ from app.export.gcode_exporter import export_gcode
 from app.export.hpgl_exporter import export_hpgl
 from app.export.path_export import compute_path_stats, optimize_paths, prepare_pen_paths
 from app.export.svg_exporter import export_svg
+from app.export.vpype_exporter import export_svg_with_vpype
 
 try:
     from app.export.pdf_exporter import export_pdf
@@ -14,6 +15,7 @@ __all__ = [
     "export_gcode",
     "export_hpgl",
     "export_svg",
+    "export_svg_with_vpype",
     "export_pdf",
     "compute_path_stats",
     "optimize_paths",

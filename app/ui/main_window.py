@@ -37,8 +37,10 @@ from app.core.drawing_pen import (
 from app.core.geometry import ScalingMode, ClippingMode, InputUnits, Orientation
 from app.core.project import Project
 from app.core.coordinates import resize_for_plotting, geometries_to_mm
-from app.export import export_gcode, export_hpgl, export_svg, compute_path_stats
+from app.export import export_gcode, export_hpgl, export_svg, export_svg_with_vpype, compute_path_stats
+from app.export.gcode_exporter import generate_gcode_lines
 from app.export.path_export import geometries_to_paths, optimize_paths
+from serial_manager import SerialManager
 from app.filters import create_filter
 from app.pfm import PathFindingModule, PFMSetting, SettingType, PFMProgress
 from app.pfm.sketch_lines import SketchLinesPFM
@@ -384,6 +386,8 @@ class MainWindow(QMainWindow):
         self._pixel_geometries = []  # Raw PFM output (pixels), remapped on area change
         self._plot_image_size: tuple[int, int] = (0, 0)  # (w, h) used for last plot
         self.mask_manager = MaskManager()
+        self.serial_mgr = SerialManager()
+        self._stream_after_processing = False
 
         self.available_pfms = self._build_pfm_list()
         self.current_pfm: PathFindingModule = self.available_pfms[0]
@@ -577,6 +581,7 @@ class MainWindow(QMainWindow):
         self._create_pfm_controls_panel()
         self._create_pen_settings_panel()
         self._create_mask_panel()
+        self._create_serial_panel()
         self._create_export_settings_panel()
 
         self.settings_layout.addStretch()
@@ -1048,8 +1053,161 @@ class MainWindow(QMainWindow):
         self.settings_layout.addWidget(group)
 
     # =====================================================================
-    # Export / Path Optimisation Panel
+    # Serial Plotter Panel
     # =====================================================================
+
+    def _create_serial_panel(self):
+        group = CollapsibleSection("Plotter Control")
+        content = QWidget()
+        grid = QGridLayout(content)
+        grid.setSpacing(6)
+        row = 0
+
+        grid.addWidget(QLabel("Serial Port:"), row, 0)
+        self.serial_port_combo = QComboBox()
+        self.serial_port_combo.setEditable(False)
+        grid.addWidget(self.serial_port_combo, row, 1)
+        row += 1
+
+        grid.addWidget(QLabel("Baudrate:"), row, 0)
+        self.serial_baud_spin = QSpinBox()
+        self.serial_baud_spin.setRange(300, 115200)
+        self.serial_baud_spin.setValue(115200)
+        grid.addWidget(self.serial_baud_spin, row, 1)
+        row += 1
+
+        port_btns = QHBoxLayout()
+        self.serial_refresh_btn = QPushButton("Refresh")
+        self.serial_refresh_btn.clicked.connect(self._refresh_serial_ports)
+        port_btns.addWidget(self.serial_refresh_btn)
+
+        self.serial_connect_btn = QPushButton("Connect")
+        self.serial_connect_btn.clicked.connect(self._toggle_serial_connection)
+        port_btns.addWidget(self.serial_connect_btn)
+        grid.addLayout(port_btns, row, 0, 1, 2)
+        row += 1
+
+        control_btns = QHBoxLayout()
+        self.serial_pause_btn = QPushButton("Pause")
+        self.serial_pause_btn.setEnabled(False)
+        self.serial_pause_btn.clicked.connect(self._pause_serial)
+        control_btns.addWidget(self.serial_pause_btn)
+
+        self.serial_resume_btn = QPushButton("Resume")
+        self.serial_resume_btn.setEnabled(False)
+        self.serial_resume_btn.clicked.connect(self._resume_serial)
+        control_btns.addWidget(self.serial_resume_btn)
+        grid.addLayout(control_btns, row, 0, 1, 2)
+        row += 1
+
+        self.serial_status_lbl = QLabel("Disconnected")
+        self.serial_status_lbl.setStyleSheet("color: #CAC4D0; font-size: 11px;")
+        grid.addWidget(self.serial_status_lbl, row, 0, 1, 2)
+        row += 1
+
+        group.set_content(content)
+        self.settings_layout.addWidget(group)
+        self._refresh_serial_ports()
+
+    def _refresh_serial_ports(self):
+        ports = self.serial_mgr.get_ports()
+        self.serial_port_combo.clear()
+        if ports:
+            self.serial_port_combo.addItems(ports)
+        else:
+            self.serial_port_combo.addItem("No ports found")
+            self.serial_connect_btn.setEnabled(False)
+            return
+        self.serial_connect_btn.setEnabled(True)
+
+    def _toggle_serial_connection(self):
+        if self.serial_mgr.is_connected:
+            self.serial_mgr.disconnect()
+            return
+
+        port = self.serial_port_combo.currentText().strip()
+        if not port or port == "No ports found":
+            QMessageBox.warning(self, "Serial", "No valid serial port selected.")
+            return
+
+        baud = int(self.serial_baud_spin.value())
+        success = self.serial_mgr.connect(port, baud, self._serial_event_callback)
+        if success:
+            self.serial_status_lbl.setText(f"Connected to {port} at {baud}")
+            self.serial_connect_btn.setText("Disconnect")
+            self.serial_pause_btn.setEnabled(False)
+            self.serial_resume_btn.setEnabled(False)
+        else:
+            self.serial_status_lbl.setText("Connection failed")
+
+    def _pause_serial(self):
+        if self.serial_mgr.is_connected:
+            self.serial_mgr.pause_stream()
+
+    def _resume_serial(self):
+        if self.serial_mgr.is_connected:
+            self.serial_mgr.resume_stream()
+
+    def _serial_event_callback(self, status_type: str, message: str, progress_pct: float):
+        QTimer.singleShot(0, lambda: self._handle_serial_event(status_type, message, progress_pct))
+
+    def _handle_serial_event(self, status_type: str, message: str, progress_pct: float):
+        if status_type == "connect":
+            self.serial_status_lbl.setText(message)
+            self.serial_connect_btn.setText("Disconnect")
+            self.serial_pause_btn.setEnabled(False)
+            self.serial_resume_btn.setEnabled(False)
+        elif status_type == "disconnect":
+            self.serial_status_lbl.setText(message)
+            self.serial_connect_btn.setText("Connect")
+            self.serial_pause_btn.setEnabled(False)
+            self.serial_resume_btn.setEnabled(False)
+            self._refresh_serial_ports()
+        elif status_type == "stream_start":
+            self.serial_status_lbl.setText(message)
+            self.serial_pause_btn.setEnabled(True)
+            self.serial_resume_btn.setEnabled(False)
+            self.progress_label.setText(message)
+        elif status_type == "stream_paused":
+            self.serial_status_lbl.setText(message)
+            self.serial_pause_btn.setEnabled(False)
+            self.serial_resume_btn.setEnabled(True)
+        elif status_type == "stream_resumed":
+            self.serial_status_lbl.setText(message)
+            self.serial_pause_btn.setEnabled(True)
+            self.serial_resume_btn.setEnabled(False)
+        elif status_type == "stream_finish":
+            self.serial_status_lbl.setText(message)
+            self.serial_pause_btn.setEnabled(False)
+            self.serial_resume_btn.setEnabled(False)
+            self.progress_bar.setValue(100)
+            self.progress_label.setText(message)
+        elif status_type == "stream_line":
+            self.progress_bar.setValue(int(progress_pct))
+            self.progress_label.setText(f"Streaming: {progress_pct:.0f}%")
+        elif status_type == "error":
+            QMessageBox.warning(self, "Plotter Error", message)
+            self.serial_status_lbl.setText(message)
+        elif status_type in ("warning", "console_rx", "console_tx"):
+            self.serial_status_lbl.setText(message)
+
+    def _stream_current_gcode(self):
+        if not self.serial_mgr.is_connected or not self.drawing_geometries:
+            return
+
+        gcode_text = "\n".join(
+            generate_gcode_lines(
+                self.drawing_geometries,
+                self.drawing_area,
+                self.drawing_set.active_pens(),
+                self.project.gcode_settings,
+                self.project.path_opt_settings,
+            )
+        )
+        if self.serial_mgr.start_stream(gcode_text):
+            self.progress_label.setText("Plotting to connected device...")
+            self.start_btn.setEnabled(False)
+            self.stop_btn.setEnabled(True)
 
     def _create_export_settings_panel(self):
         group = CollapsibleSection("Export & Path Optimisation")
@@ -1433,6 +1591,7 @@ class MainWindow(QMainWindow):
         self._plot_image_size = (plot_img.shape[1], plot_img.shape[0])
 
         sep_mode = self.drawing_set.colour_separation.value if self.drawing_set else "None"
+        self._stream_after_processing = self.serial_mgr.is_connected
         self._proc_thread = ProcessingThread(self.current_pfm, plot_img, sep_mode)
         self._proc_thread.progress_updated.connect(self._on_processing_progress)
         self._proc_thread.finished_signal.connect(self._on_processing_finished)
@@ -1442,6 +1601,8 @@ class MainWindow(QMainWindow):
         if self.current_pfm:
             self.current_pfm.cancel()
         self.progress_label.setText("Stopping...")
+        if self.serial_mgr.is_connected and self.serial_mgr.is_streaming:
+            self.serial_mgr.stop_stream()
 
     def _reset_plotting(self):
         if self._proc_thread and self._proc_thread.isRunning():
@@ -1456,6 +1617,8 @@ class MainWindow(QMainWindow):
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self._elapsed_timer.stop()
+        if self.serial_mgr.is_connected and self.serial_mgr.is_streaming:
+            self.serial_mgr.stop_stream()
 
         # Re-show the filtered image
         if self.processed_image is not None:
@@ -1481,16 +1644,21 @@ class MainWindow(QMainWindow):
         self._update_path_stats()
 
         elapsed = time.time() - self._start_time
+        self.status_shapes.setText(f"Shapes: {len(self.drawing_geometries)}")
+        mins, secs = divmod(int(elapsed), 60)
+        hours, mins = divmod(mins, 60)
+        self.status_time.setText(f"Time: {hours:02d}:{mins:02d}:{secs:02d}")
+
+        if self._stream_after_processing and self.serial_mgr.is_connected:
+            self._stream_after_processing = False
+            self._stream_current_gcode()
+            return
+
         self.progress_bar.setValue(100)
         self.progress_label.setText(
             f"Done! {len(self.drawing_geometries)} shapes in {elapsed:.1f}s")
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
-        self.status_shapes.setText(f"Shapes: {len(self.drawing_geometries)}")
-
-        mins, secs = divmod(int(elapsed), 60)
-        hours, mins = divmod(mins, 60)
-        self.status_time.setText(f"Time: {hours:02d}:{mins:02d}:{secs:02d}")
 
     def _update_elapsed(self):
         elapsed = time.time() - self._start_time
@@ -1709,13 +1877,27 @@ class MainWindow(QMainWindow):
         self.drawing_geometries = original_geoms
         self.progress_label.setText(f"Exported {len(pen_groups)} per-pen files.")
     def _export_svg(self, filepath: str):
-        export_svg(
-            filepath,
-            self.drawing_geometries,
-            self.drawing_area,
-            self.drawing_set.active_pens(),
-            self.project.path_opt_settings,
-        )
+        if self.project.gcode_settings.get("use_vpype", False):
+            try:
+                export_svg_with_vpype(
+                    filepath,
+                    self.drawing_geometries,
+                    self.drawing_area,
+                    self.drawing_set.active_pens(),
+                    self.project.path_opt_settings,
+                    self.project.gcode_settings.get("vpype_pipeline", "linemerge linesimplify"),
+                )
+            except Exception as e:
+                QMessageBox.warning(self, "VPype Export", str(e))
+                return
+        else:
+            export_svg(
+                filepath,
+                self.drawing_geometries,
+                self.drawing_area,
+                self.drawing_set.active_pens(),
+                self.project.path_opt_settings,
+            )
 
     def _export_png(self, filepath: str):
         """Export the drawing as a PNG image."""
