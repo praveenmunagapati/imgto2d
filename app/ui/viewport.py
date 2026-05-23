@@ -64,6 +64,11 @@ class ViewportCanvas(QWidget):
         # Drawing paths: list of (color: QColor, paths: list of QPointF lists)
         self._drawing_paths: List[Tuple[QColor, float, List[List[QPointF]]]] = []
 
+        # Caches for high-performance rendering
+        self._cached_individual_paths: List[Tuple[QColor, float, List[QPainterPath]]] = []
+        self._cached_giant_paths: List[Tuple[QColor, float, QPainterPath]] = []
+        self._total_shapes = 0
+
         # Displayed shapes range (0.0 - 1.0)
         self._shapes_range = 1.0
 
@@ -84,8 +89,32 @@ class ViewportCanvas(QWidget):
         self.update()
 
     def set_drawing_paths(self, paths: List[Tuple[QColor, float, List[List[QPointF]]]]):
-        """Set drawing paths: list of (color, stroke_width, list_of_polylines)."""
+        """Set drawing paths and pre-calculate QPainterPaths for ultra-fast rendering."""
         self._drawing_paths = paths
+        
+        # Build caches
+        self._cached_individual_paths = []
+        self._cached_giant_paths = []
+        self._total_shapes = 0
+        
+        for color, stroke_w, polylines in paths:
+            giant_path = QPainterPath()
+            indiv_paths = []
+            
+            for poly in polylines:
+                if len(poly) >= 2:
+                    pp = QPainterPath()
+                    pp.moveTo(poly[0])
+                    for pt in poly[1:]:
+                        pp.lineTo(pt)
+                        
+                    indiv_paths.append(pp)
+                    giant_path.addPath(pp)
+                    self._total_shapes += 1
+                    
+            self._cached_individual_paths.append((color, stroke_w, indiv_paths))
+            self._cached_giant_paths.append((color, stroke_w, giant_path))
+            
         self.update()
 
     def set_shapes_range(self, fraction: float):
@@ -147,27 +176,31 @@ class ViewportCanvas(QWidget):
             painter.drawImage(img_rect, self._display_image)
 
         # Draw paths
-        if self._drawing_paths:
-            total_paths = sum(len(polylines) for _, _, polylines in self._drawing_paths)
-            visible_count = int(total_paths * self._shapes_range)
+        if self._cached_individual_paths:
+            visible_count = int(self._total_shapes * self._shapes_range)
             drawn = 0
 
-            for color, stroke_w, polylines in self._drawing_paths:
-                pen = QPen(color, stroke_w / self._zoom)
-                pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-                pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-                painter.setPen(pen)
-
-                for polyline in polylines:
-                    if drawn >= visible_count:
-                        break
-                    if len(polyline) >= 2:
-                        pp = QPainterPath()
-                        pp.moveTo(polyline[0])
-                        for pt in polyline[1:]:
-                            pp.lineTo(pt)
+            # Fast path for complete drawing (100% visible)
+            if self._shapes_range >= 0.999:
+                for color, stroke_w, giant_path in self._cached_giant_paths:
+                    pen = QPen(color, stroke_w / self._zoom)
+                    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+                    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+                    painter.setPen(pen)
+                    painter.drawPath(giant_path)
+            # Scrubbing path
+            else:
+                for color, stroke_w, indiv_paths in self._cached_individual_paths:
+                    pen = QPen(color, stroke_w / self._zoom)
+                    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+                    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+                    painter.setPen(pen)
+                    
+                    for pp in indiv_paths:
+                        if drawn >= visible_count:
+                            break
                         painter.drawPath(pp)
-                    drawn += 1
+                        drawn += 1
 
         painter.end()
 

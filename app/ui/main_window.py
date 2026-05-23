@@ -1014,7 +1014,7 @@ class MainWindow(QMainWindow):
         h, w = img.shape
         qi = QImage(img.data, w, h, w, QImage.Format.Format_Grayscale8)
         self.image_viewport.canvas.set_display_image(qi.copy())
-        self.viewport.canvas.set_display_image(None)
+        self.viewport.canvas.set_display_image(qi.copy())
 
         # Update drawing area from image dimensions
         if self.drawing_area.use_original_sizing:
@@ -1080,7 +1080,7 @@ class MainWindow(QMainWindow):
 
         self.processed_image = img
 
-        # Update viewport image
+        # Update right viewport image with filtered version
         h, w = self.processed_image.shape[:2]
         if len(self.processed_image.shape) == 2:
             qi = QImage(self.processed_image.data, w, h, w,
@@ -1088,9 +1088,8 @@ class MainWindow(QMainWindow):
         else:
             qi = QImage(self.processed_image.data, w, h, w * 3,
                         QImage.Format.Format_RGB888)
-        self.image_viewport.canvas.set_display_image(qi.copy())
-        # The plotter viewport can be empty or show it too, but user asked for side-by-side
-        self.viewport.canvas.set_display_image(None)
+        
+        self.viewport.canvas.set_display_image(qi.copy())
 
     def _on_pfm_changed(self, index):
         if 0 <= index < len(self.available_pfms):
@@ -1161,7 +1160,6 @@ class MainWindow(QMainWindow):
 
         # Clear viewport drawings
         self.viewport.canvas.set_drawing_paths([])
-        self.viewport.canvas.set_display_image(None)
         self.drawing_geometries = []
 
         # Start processing thread
@@ -1183,12 +1181,22 @@ class MainWindow(QMainWindow):
 
         self.drawing_geometries = []
         self.viewport.canvas.set_drawing_paths([])
-        self.viewport.canvas.set_display_image(None)
         self.progress_bar.setValue(0)
         self.progress_label.setText("Reset")
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self._elapsed_timer.stop()
+
+        # Re-show the filtered image
+        if self.processed_image is not None:
+            h, w = self.processed_image.shape[:2]
+            if len(self.processed_image.shape) == 2:
+                qi = QImage(self.processed_image.data, w, h, w,
+                            QImage.Format.Format_Grayscale8)
+            else:
+                qi = QImage(self.processed_image.data, w, h, w * 3,
+                            QImage.Format.Format_RGB888)
+            self.viewport.canvas.set_display_image(qi.copy())
 
     def _on_processing_progress(self, prog: PFMProgress):
         self.progress_bar.setValue(int(prog.progress * 100))
