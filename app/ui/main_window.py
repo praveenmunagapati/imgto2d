@@ -268,10 +268,9 @@ class ProcessingThread(QThread):
         self.sep_mode = sep_mode
 
     def run(self):
-        def on_progress(p: PFMProgress):
-            self.progress_updated.emit(p)
-
         from app.core.color_separation import split_cmyk, split_rgb
+        import concurrent.futures
+        import copy
 
         channels = [self.image]
         if self.sep_mode == "CMYK" or self.sep_mode == "CMYK (Extended Gamut)":
@@ -280,15 +279,35 @@ class ProcessingThread(QThread):
             channels = split_rgb(self.image)
 
         all_geometries = []
-        for i, channel in enumerate(channels):
-            # Run the PFM on this channel
-            geometries = self.pfm.process(channel, progress_callback=on_progress)
-            
-            # Assign the pen index so the Viewport groups them by colour
+        
+        # Clone PFM for each channel to avoid state collisions
+        clones = []
+        for i in range(len(channels)):
+            clone = copy.deepcopy(self.pfm)
+            # Offset the seed so layers don't mathematically overlap
+            if clone.get("random_seed") is not None:
+                clone.set("random_seed", int(clone.get("random_seed")) + (i * 1000))
+            clones.append(clone)
+
+        def on_progress(p: PFMProgress):
+            # Propagate cancellation from master PFM to clones
+            if self.pfm._cancel_flag:
+                for c in clones:
+                    c.cancel()
+            self.progress_updated.emit(p)
+
+        def process_channel(args):
+            i, channel = args
+            geometries = clones[i].process(channel, progress_callback=on_progress)
             for geom in geometries:
                 geom.pen_index = i
-                
-            all_geometries.extend(geometries)
+            return geometries
+
+        # Run in parallel!
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(channels)) as executor:
+            results = executor.map(process_channel, enumerate(channels))
+            for geoms in results:
+                all_geometries.extend(geoms)
 
         self.finished_signal.emit(all_geometries)
 
