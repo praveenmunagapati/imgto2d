@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// TSPStipplePFM — samples only from stipple (very dark) pixels
-// -------------------------------------------------------------------------
 std::vector<double> TSPStipplePFM::getProbabilities(const cv::Mat& image) {
     std::vector<double> probs(image.cols * image.rows, 0.0);
     for (int y = 0; y < image.rows; ++y) {

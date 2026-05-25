@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// SketchFlowFieldsPFM
-// -------------------------------------------------------------------------
 SketchFlowFieldsPFM::SketchFlowFieldsPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
 }

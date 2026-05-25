@@ -235,6 +235,12 @@ def extract_helper(content, name):
             elif char == '}':
                 brace_count -= 1
                 if brace_count == 0:
+                    # Include the trailing semicolon if there is one
+                    end_idx = idx + 1
+                    while end_idx < len(content) and content[end_idx].isspace() and content[end_idx] != '\n':
+                        end_idx += 1
+                    if end_idx < len(content) and content[end_idx] == ';':
+                        return content[start_pos:end_idx+1]
                     return content[start_pos:idx+1]
     elif semi_pos != -1:
         return content[start_pos:semi_pos+1]
@@ -262,6 +268,8 @@ def extract_class_methods(cpp_content, class_name):
         # Trace backwards to start of declaration
         start_pos = match_start
         while start_pos > 0:
+            if cpp_content[start_pos] == '#' or cpp_content[start_pos:start_pos+2] in ['//', '/*']:
+                break
             char = cpp_content[start_pos - 1]
             if char in ['}', ';'] and start_pos < match_start - 1:
                 break
@@ -360,6 +368,16 @@ def run_split():
                 
             # --- Write Source ---
             cpp_lines = [f'#include "pfm/{new_h_file}"']
+            
+            # Add extra class-specific includes if necessary
+            if c_name == 'SketchCatmullRomsPFM':
+                cpp_lines.append('#include "pfm/sketch_curves_pfm.h"')
+            
+            # Original includes first
+            for inc in original_cpp_includes:
+                if inc not in cpp_lines:
+                    cpp_lines.append(inc)
+                    
             # If this class has special helper mappings, extract them
             if c_name in CLASS_HELPERS:
                 helpers_code = []
@@ -369,11 +387,6 @@ def run_split():
                         helpers_code.append(h_code)
                 if helpers_code:
                     cpp_lines.append("\n\n".join(helpers_code))
-                    
-            # Original includes
-            for inc in original_cpp_includes:
-                if inc not in cpp_lines:
-                    cpp_lines.append(inc)
                     
             # Class methods
             methods_code = extract_class_methods(cpp_content, c_name)

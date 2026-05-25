@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveShapesPFM
-// ---------------------------------------------------------------------------
 
 AdaptiveShapesPFM::AdaptiveShapesPFM(QObject* p) : BaseAdaptivePFM(p) {}
 

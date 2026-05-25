@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// Phase 9: Remaining Sketch Variants
-// -------------------------------------------------------------------------
 
 QVector<DrawingGeometry> SketchQuadBeziers2PFM::_process(const cv::Mat& image) {
     return SketchCubicBeziers2PFM::_process(image);

@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// SketchVoronoiPFM
-// -------------------------------------------------------------------------
 SketchVoronoiPFM::SketchVoronoiPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
 }

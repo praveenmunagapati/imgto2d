@@ -3,9 +3,6 @@
 #include <opencv2/imgproc.hpp>
 #include <cmath>
 
-#include "pfm/stipple_extras.h"
-#include "core/geometry.h"
-#include <opencv2/imgproc.hpp>
 #include <cmath>
 
 BaseStipplePFM::BaseStipplePFM(QObject* parent) : PathFindingModule(parent) {

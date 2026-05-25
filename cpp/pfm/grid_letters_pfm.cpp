@@ -1,4 +1,7 @@
 #include "pfm/grid_letters_pfm.h"
+#include "core/geometry.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
 static std::map<char, std::vector<std::pair<float, float>>> GRID_LETTER_GLYPHS = {
     {'A', {{0.1, 1}, {0.5, 0}, {0.9, 1}, {0.7, 0.55}, {0.3, 0.55}}},
     {'B', {{0.2, 0}, {0.2, 1}, {0.6, 1}, {0.8, 0.85}, {0.6, 0.5}, {0.8, 0.15}, {0.6, 0}, {0.2, 0}}},
@@ -26,7 +29,7 @@ static std::map<char, std::vector<std::pair<float, float>>> GRID_LETTER_GLYPHS =
     {'X', {{0, 0}, {1, 1}, {0, 1}, {1, 0}}},
     {'Y', {{0, 1}, {0.5, 0.45}, {1, 1}, {0.5, 0.45}, {0.5, 0}}},
     {'Z', {{0.1, 1}, {0.9, 1}, {0.1, 0}, {0.9, 0}}}
-}
+};
 
 static Path grid_letter_glyph_path(char letter, float cx, float cy, float size) {
     if (GRID_LETTER_GLYPHS.find(letter) == GRID_LETTER_GLYPHS.end()) letter = 'O';
@@ -42,9 +45,6 @@ static char grid_letter_for_brightness(float darkness) {
     const char* letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     return letters[idx];
 }
-#include "core/geometry.h"
-#include <opencv2/imgproc.hpp>
-#include <map>
 
 QVector<DrawingGeometry> GridLettersPFM::_process(const cv::Mat& image) {
     int cols = m_settings["cols"].toInt();

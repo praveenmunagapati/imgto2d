@@ -1,4 +1,8 @@
 #include "pfm/maze_peano_pfm.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
+#include <queue>
+#include <cmath>
 static Path generate_lsystem_path(const std::string& axiom, const std::map<char, std::string>& rules, int iterations, float angle_deg, float step_size) {
     std::string s = axiom;
     for (int i = 0; i < iterations; ++i) {
@@ -25,10 +29,6 @@ static Path generate_lsystem_path(const std::string& axiom, const std::map<char,
     }
     return path;
 }
-#include <opencv2/imgproc.hpp>
-#include <map>
-#include <queue>
-#include <cmath>
 
 MazePeanoPFM::MazePeanoPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

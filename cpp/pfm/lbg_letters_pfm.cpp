@@ -5,8 +5,6 @@
 #include <iostream>
 
 // -------------------------------------------------------------------------
-// LBGLettersPFM
-// -------------------------------------------------------------------------
 LBGLettersPFM::LBGLettersPFM(QObject* parent) : _LettersBasePFM(parent) {}
 
 int LBGLettersPFM::getLloydIters() const { 

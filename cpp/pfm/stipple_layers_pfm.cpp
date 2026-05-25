@@ -6,8 +6,6 @@
 #include "pfm/stipple_dots.h"
 
 // ---------------------------------------------------------------------------
-// StippleLayersPFM
-// ---------------------------------------------------------------------------
 
 StippleLayersPFM::StippleLayersPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

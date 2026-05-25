@@ -6,8 +6,6 @@
 #include <opencv2/imgproc.hpp>
 
 // ---------------------------------------------------------------------------
-// SketchCurvesPFM
-// ---------------------------------------------------------------------------
 SketchCurvesPFM::SketchCurvesPFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
 
 QVector<PFMSetting> SketchCurvesPFM::defineSettings() const {

@@ -1,4 +1,8 @@
 #include "pfm/base_maze_pfm.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
+#include <queue>
+#include <cmath>
 static Path generate_dfs_maze(int width, int height, BaseMazePFM* pfm) {
     cv::Mat maze = cv::Mat::zeros(height, width, CV_8UC1);
     std::vector<std::pair<int, int>> stack;
@@ -28,10 +32,6 @@ static Path generate_dfs_maze(int width, int height, BaseMazePFM* pfm) {
     }
     return path;
 }
-#include <opencv2/imgproc.hpp>
-#include <map>
-#include <queue>
-#include <cmath>
 
 BaseMazePFM::BaseMazePFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

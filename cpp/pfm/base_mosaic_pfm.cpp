@@ -2,8 +2,6 @@
 #include "core/geometry.h"
 #include <opencv2/imgproc.hpp>
 
-#include "pfm/mosaic_pfms.h"
-#include "core/geometry.h"
 #include <opencv2/imgproc.hpp>
 
 BaseMosaicPFM::BaseMosaicPFM(QObject* parent) : PathFindingModule(parent) {

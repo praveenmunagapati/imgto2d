@@ -1,7 +1,6 @@
 #include "pfm/spiral_sawtooth_pfm.h"
 #include <cmath>
 
-#include "pfm/spiral_dbv3.h"
 #include <cmath>
 
 SpiralSawtoothPFM::SpiralSawtoothPFM(QObject* parent) : PathFindingModule(parent) {

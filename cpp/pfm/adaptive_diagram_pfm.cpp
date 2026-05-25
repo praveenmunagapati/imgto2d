@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveDiagramPFM (Voronoi cells)
-// ---------------------------------------------------------------------------
 
 QVector<DrawingGeometry> AdaptiveDiagramPFM::_process(const cv::Mat& image) {
     cv::Mat workImg;

@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// TSPOutlinePFM
-// -------------------------------------------------------------------------
 QVector<PFMSetting> TSPOutlinePFM::defineSettings() const {
     return {
         {"nodes", "Nodes", SettingType::Integer, 2000, QVariant(), 100, 20000, 100, 20000, 100},

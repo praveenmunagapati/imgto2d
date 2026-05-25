@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveCircularScribblesPFM
-// ---------------------------------------------------------------------------
 
 AdaptiveCircularScribblesPFM::AdaptiveCircularScribblesPFM(QObject* p)
     : BaseAdaptivePFM(p) {}

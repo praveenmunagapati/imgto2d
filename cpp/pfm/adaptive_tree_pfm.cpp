@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveTreePFM (Minimum Spanning Tree)
-// ---------------------------------------------------------------------------
 
 QVector<DrawingGeometry> AdaptiveTreePFM::_process(const cv::Mat& image) {
     cv::Mat workImg;

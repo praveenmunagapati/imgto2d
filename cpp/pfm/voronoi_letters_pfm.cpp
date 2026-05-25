@@ -5,8 +5,6 @@
 #include <iostream>
 
 // -------------------------------------------------------------------------
-// VoronoiLettersPFM
-// -------------------------------------------------------------------------
 int VoronoiLettersPFM::getLloydIters() const {
     return m_settings["lloyd_iterations"].toInt();
 }

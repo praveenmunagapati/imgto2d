@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// SketchDelaunayPFM
-// -------------------------------------------------------------------------
 SketchDelaunayPFM::SketchDelaunayPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
 }

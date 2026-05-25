@@ -2,8 +2,6 @@
 #include <opencv2/imgproc.hpp>
 #include <cmath>
 
-#include "pfm/hatch_extras.h"
-#include <opencv2/imgproc.hpp>
 #include <cmath>
 
 BaseMultiHatchPFM::BaseMultiHatchPFM(QObject* parent) : PathFindingModule(parent) {

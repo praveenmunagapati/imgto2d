@@ -6,8 +6,6 @@
 #include <opencv2/imgproc.hpp>
 
 // ---------------------------------------------------------------------------
-// SketchQuadBeziersPFM
-// ---------------------------------------------------------------------------
 SketchQuadBeziersPFM::SketchQuadBeziersPFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
 
 QVector<PFMSetting> SketchQuadBeziersPFM::defineSettings() const {

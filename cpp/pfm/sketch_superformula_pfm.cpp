@@ -4,14 +4,6 @@
 #include <opencv2/imgproc.hpp>
 #include <cmath>
 
-#include "pfm/sketch_extras.h"
-#include "pfm/sketch_curves.h"
-#include "pfm/sketch_lines.h"
-#include <opencv2/imgproc.hpp>
-#include <cmath>
-
-// -------------------------------------------------------------------------
-// SketchSuperformulaPFM
 // -------------------------------------------------------------------------
 
 SketchSuperformulaPFM::SketchSuperformulaPFM(QObject* parent) : PathFindingModule(parent) {

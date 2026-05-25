@@ -1,4 +1,9 @@
 #include "pfm/adaptive_tsppfm.h"
+#include "core/geometry.h"
+#include <opencv2/imgproc.hpp>
+#include <cmath>
+#include <map>
+#include <queue>
 static Path solve_tsp_adaptive(const std::vector<cv::Point2f>& points,
                                 std::function<bool()> isCancelledFn) {
     if (points.empty()) return {};
@@ -29,14 +34,7 @@ static Path solve_tsp_adaptive(const std::vector<cv::Point2f>& points,
     }
     return path;
 }
-#include "core/geometry.h"
-#include <opencv2/imgproc.hpp>
-#include <cmath>
-#include <map>
-#include <queue>
 
-// ---------------------------------------------------------------------------
-// AdaptiveTSPPFM
 // ---------------------------------------------------------------------------
 
 QVector<DrawingGeometry> AdaptiveTSPPFM::_process(const cv::Mat& image) {

@@ -1,4 +1,8 @@
 #include "pfm/maze_hilbert_pfm.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
+#include <queue>
+#include <cmath>
 static void hilbert_curve(float x0, float y0, float xi, float xj, float yi, float yj, int n, Path& pts) {
     if (n <= 0) { pts.push_back({x0 + (xi + yi) / 2.0f, y0 + (xj + yj) / 2.0f}); return; }
     hilbert_curve(x0, y0, yi/2, yj/2, xi/2, xj/2, n - 1, pts);
@@ -6,10 +10,6 @@ static void hilbert_curve(float x0, float y0, float xi, float xj, float yi, floa
     hilbert_curve(x0 + xi/2 + yi/2, y0 + xj/2 + yj/2, xi/2, xj/2, yi/2, yj/2, n - 1, pts);
     hilbert_curve(x0 + xi/2 + yi, y0 + xj/2 + yj, -yi/2, -yj/2, -xi/2, -xj/2, n - 1, pts);
 }
-#include <opencv2/imgproc.hpp>
-#include <map>
-#include <queue>
-#include <cmath>
 
 MazeHilbertPFM::MazeHilbertPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

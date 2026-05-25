@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// BaseAdaptivePFM
-// ---------------------------------------------------------------------------
 
 BaseAdaptivePFM::BaseAdaptivePFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

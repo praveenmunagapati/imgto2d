@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveDashesPFM
-// ---------------------------------------------------------------------------
 
 QVector<DrawingGeometry> AdaptiveDashesPFM::_process(const cv::Mat& image) {
     cv::Mat workImg;

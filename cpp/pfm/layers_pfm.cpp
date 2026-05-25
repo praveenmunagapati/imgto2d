@@ -5,18 +5,6 @@
 #include "pfm/sketch_lines.h"
 #include "pfm/stipple_dots.h"
 
-#include "pfm/composite_pfms.h"
-#include "core/geometry.h"
-#include <opencv2/imgproc.hpp>
-#include <cmath>
-
-// Forward-declare internal helpers from sketch_lines and stipple_dots
-// We run them inline here by constructing the PFMs and calling process()
-#include "pfm/sketch_lines.h"
-#include "pfm/stipple_dots.h"
-
-// ---------------------------------------------------------------------------
-// LayersPFM
 // ---------------------------------------------------------------------------
 
 LayersPFM::LayersPFM(QObject* parent) : PathFindingModule(parent) {

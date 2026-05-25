@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// SketchSweepingCurvesPFM
-// -------------------------------------------------------------------------
 SketchSweepingCurvesPFM::SketchSweepingCurvesPFM(QObject* parent) : SketchCubicBeziers2PFM(parent) {}
 
 QString SketchSweepingCurvesPFM::name() const { return "Sketch Sweeping Curves"; }

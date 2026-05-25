@@ -1,4 +1,5 @@
 #include "pfm/sketch_catmull_roms_pfm.h"
+#include "pfm/sketch_curves_pfm.h"
 #include "pfm/sketch_curves.h"
 #include "pfm/sketch_lines.h"
 #include <opencv2/imgproc.hpp>

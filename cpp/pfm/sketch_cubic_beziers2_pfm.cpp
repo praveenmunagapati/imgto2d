@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// SketchCubicBeziers2PFM
-// -------------------------------------------------------------------------
 
 SketchCubicBeziers2PFM::SketchCubicBeziers2PFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

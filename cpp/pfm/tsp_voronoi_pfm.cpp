@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// TSPVoronoiPFM — uses Canny edges with Voronoi-like density
-// -------------------------------------------------------------------------
 TSPVoronoiPFM::TSPVoronoiPFM(QObject* parent) : BaseTSPPFM(parent) {}
 
 QVector<PFMSetting> TSPVoronoiPFM::defineSettings() const {

@@ -2,12 +2,6 @@
 #include <opencv2/imgproc.hpp>
 #include <cmath>
 
-#include "pfm/special_pfms.h"
-#include <opencv2/imgproc.hpp>
-#include <cmath>
-
-// -------------------------------------------------------------------------
-// ContourPathsPFM
 // -------------------------------------------------------------------------
 ContourPathsPFM::ContourPathsPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

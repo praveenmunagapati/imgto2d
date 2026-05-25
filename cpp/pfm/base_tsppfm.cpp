@@ -1,4 +1,8 @@
 #include "pfm/base_tsppfm.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
+#include <queue>
+#include <cmath>
 static Path solve_tsp_nn(const std::vector<cv::Point2f>& points, std::function<bool()> isCancelledFunc, std::function<void(float)> progressFunc) {
     if (points.empty()) return {};
     
@@ -42,13 +46,7 @@ static Path solve_tsp_nn(const std::vector<cv::Point2f>& points, std::function<b
     }
     return path;
 }
-#include <opencv2/imgproc.hpp>
-#include <map>
-#include <queue>
-#include <cmath>
 
-// -------------------------------------------------------------------------
-// BaseTSPPFM
 // -------------------------------------------------------------------------
 BaseTSPPFM::BaseTSPPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

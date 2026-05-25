@@ -59,6 +59,8 @@ find_package(Python3 COMPONENTS Development REQUIRED)
 # ---- Source files ----
 set(SOURCES
     
+    
+    
     batch/batch_processor.cpp
     core/color_separation.cpp
     core/coordinates.cpp
@@ -196,9 +198,13 @@ set(SOURCES
     ui/main_window.cpp
     ui/pfm_worker.cpp
 
+
+
 )
 
 set(HEADERS
+    
+    
     
     batch/batch_processor.h
     core/color_separation.h
@@ -337,6 +343,8 @@ set(HEADERS
     pfm/voronoi_tsppfm.h
     ui/main_window.h
     ui/pfm_worker.h
+
+
 
 )
 

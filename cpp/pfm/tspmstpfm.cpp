@@ -5,8 +5,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// TSPMSTPFM
-// -------------------------------------------------------------------------
 TSPMSTPFM::TSPMSTPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
 }

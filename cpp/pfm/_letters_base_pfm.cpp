@@ -1,4 +1,8 @@
 #include "pfm/_letters_base_pfm.h"
+#include <opencv2/imgproc.hpp>
+#include <map>
+#include <cmath>
+#include <iostream>
 static std::map<char, std::vector<std::pair<float, float>>> LETTER_GLYPHS = {
     {'A', {{0.1, 1}, {0.5, 0}, {0.9, 1}, {0.7, 0.55}, {0.3, 0.55}}},
     {'B', {{0.2, 0}, {0.2, 1}, {0.6, 1}, {0.8, 0.85}, {0.6, 0.5}, {0.8, 0.15}, {0.6, 0}, {0.2, 0}}},
@@ -26,7 +30,7 @@ static std::map<char, std::vector<std::pair<float, float>>> LETTER_GLYPHS = {
     {'X', {{0, 0}, {1, 1}, {0, 1}, {1, 0}}},
     {'Y', {{0, 1}, {0.5, 0.45}, {1, 1}, {0.5, 0.45}, {0.5, 0}}},
     {'Z', {{0.1, 1}, {0.9, 1}, {0.1, 0}, {0.9, 0}}}
-}
+};
 
 static Path letter_glyph_path(char letter, float cx, float cy, float size) {
     if (LETTER_GLYPHS.find(letter) == LETTER_GLYPHS.end()) letter = 'O';
@@ -54,13 +58,7 @@ static float nearest_seed_radius(float cx, float cy, const std::vector<cv::Point
     }
     return best < 1e11f ? best * 0.45f : 8.0f;
 }
-#include <opencv2/imgproc.hpp>
-#include <map>
-#include <cmath>
-#include <iostream>
 
-// -------------------------------------------------------------------------
-// _LettersBasePFM
 // -------------------------------------------------------------------------
 _LettersBasePFM::_LettersBasePFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();

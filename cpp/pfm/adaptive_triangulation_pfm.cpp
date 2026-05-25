@@ -6,8 +6,6 @@
 #include <queue>
 
 // ---------------------------------------------------------------------------
-// AdaptiveTriangulationPFM
-// ---------------------------------------------------------------------------
 
 QVector<DrawingGeometry> AdaptiveTriangulationPFM::_process(const cv::Mat& image) {
     cv::Mat workImg;

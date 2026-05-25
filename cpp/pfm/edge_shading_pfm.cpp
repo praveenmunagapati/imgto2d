@@ -3,8 +3,6 @@
 #include <cmath>
 
 // -------------------------------------------------------------------------
-// EdgeShadingPFM
-// -------------------------------------------------------------------------
 EdgeShadingPFM::EdgeShadingPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
 }

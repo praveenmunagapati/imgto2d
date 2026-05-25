@@ -1,4 +1,6 @@
 #include "pfm/ambient_flow_pfm.h"
+#include <opencv2/imgproc.hpp>
+#include <cmath>
 Path trace_streamline_local(const cv::Mat& fx, const cv::Mat& fy, float x, float y, int max_len, float step_size) {
         Path path;
         int w = fx.cols;
@@ -19,8 +21,6 @@ Path trace_streamline_local(const cv::Mat& fx, const cv::Mat& fy, float x, float
         }
         return path;
     }
-#include <opencv2/imgproc.hpp>
-#include <cmath>
 
 AmbientFlowPFM::AmbientFlowPFM(QObject* parent) : PathFindingModule(parent) {
     initSettings();
