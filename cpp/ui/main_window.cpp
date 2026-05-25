@@ -256,13 +256,24 @@ void MainWindow::buildUI() {
 // Dynamic settings panel
 // ---------------------------------------------------------------------------
 void MainWindow::populateSettingsPanel(int pfmIndex) {
+    qDebug() << "populateSettingsPanel START. index=" << pfmIndex;
     // Clear old widgets
     m_settingWidgets.clear();
-    while (m_settingsForm->rowCount() > 0)
-        m_settingsForm->removeRow(0);
+    QLayoutItem* item;
+    while ((item = m_settingsForm->takeAt(0)) != nullptr) {
+        if (item->widget()) {
+            item->widget()->deleteLater();
+        }
+        delete item;
+    }
+    qDebug() << "populateSettingsPanel: cleared old widgets";
 
-    if (pfmIndex < 0 || pfmIndex >= m_pfms.size()) return;
+    if (pfmIndex < 0 || pfmIndex >= m_pfms.size()) {
+        qDebug() << "populateSettingsPanel: index out of bounds. size=" << m_pfms.size();
+        return;
+    }
     auto& pfm = m_pfms[pfmIndex];
+    qDebug() << "populateSettingsPanel: got PFM:" << pfm->name();
 
     QString lastCategory;
     for (auto& s : pfm->settingsList()) {
@@ -353,11 +364,15 @@ void MainWindow::onLoadImage() {
 }
 
 void MainWindow::onStartProcessing() {
+    qDebug() << "onStartProcessing START";
     if (m_image.empty()) {
-        m_statusLabel->setText("⚠ Load an image first");
+        qDebug() << "onStartProcessing: image is empty, returning";
+        QMessageBox::warning(this, "Error", "Please load an image first.");
         return;
     }
+
     if (m_worker && m_worker->isRunning()) {
+        qDebug() << "onStartProcessing: canceling existing worker";
         // Cancel current run
         auto pfm = m_pfms.value(m_pfmCombo->currentIndex());
         if (pfm) pfm->cancel();
@@ -370,6 +385,7 @@ void MainWindow::onStartProcessing() {
         return;
     }
 
+    qDebug() << "onStartProcessing: getting current PFM index:" << m_pfmCombo->currentIndex();
     int idx = m_pfmCombo->currentIndex();
     if (idx < 0 || idx >= m_pfms.size()) { m_statusLabel->setText("⚠ Select a PFM"); return; }
 
@@ -383,12 +399,16 @@ void MainWindow::onStartProcessing() {
     m_statusLabel->setText(QString("Processing with %1...").arg(m_pfms[idx]->name()));
     m_progressBar->setValue(0);
 
+    qDebug() << "onStartProcessing: applying UI settings to PFM:" << m_pfms[idx]->name();
     m_worker = new PFMWorker(m_pfms[idx].get(), imgForPFM, this);
     connect(m_worker, &PFMWorker::finished,       this, &MainWindow::onProcessingFinished);
     connect(m_worker, &PFMWorker::progressUpdate, this, &MainWindow::onProgressUpdate);
     connect(m_worker, &PFMWorker::errorOccurred,  this, &MainWindow::onProcessingError);
     connect(m_worker, &QThread::finished, m_worker, &QObject::deleteLater);
+
+    qDebug() << "onStartProcessing: starting worker thread";
     m_worker->start();
+    qDebug() << "onStartProcessing END";
 }
 
 void MainWindow::onReset() {

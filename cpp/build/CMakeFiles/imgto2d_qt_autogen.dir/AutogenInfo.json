@@ -274,15 +274,39 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_grid_pfms.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_extras.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.h",
 			"MU",
 			"6X7XSKHGGJ/moc_hatch_lines.cpp",
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_letters_pfms.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tsp_pfms.h",
 			"MU",
 			"6X7XSKHGGJ/moc_maze_tsp_pfms.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_mosaic_pfms.cpp",
 			null
 		],
 		[
@@ -346,9 +370,39 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/special_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_special_pfms.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_dbv3.h",
+			"MU",
+			"6X7XSKHGGJ/moc_spiral_dbv3.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_dots.h",
 			"MU",
 			"6X7XSKHGGJ/moc_stipple_dots.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_extras.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_extras.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamline_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_streamline_pfms.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_pfms.cpp",
 			null
 		],
 		[
@@ -518,8 +572,12 @@
 	[
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/main.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tsp_pfms.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/pfm_base.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_curves.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_extras.cpp", "MU", null ],
@@ -528,7 +586,16 @@
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_spirals.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_squares.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_waves.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/special_pfms.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_dbv3.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_dots.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_extras.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamline_pfms.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/main_window.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.cpp", "MU", null ]
 	],

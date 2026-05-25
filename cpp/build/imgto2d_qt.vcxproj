@@ -455,6 +455,15 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\letters_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_extras.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\voronoi_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\grid_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\mosaic_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_extras.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\streamline_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\special_pfms.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\spiral_dbv3.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.cpp" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\geometry.h" />
@@ -472,6 +481,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\letters_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_extras.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\voronoi_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\grid_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\mosaic_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.h" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_Release.cpp">

@@ -1,4 +1,6 @@
 #include "pfm/sketch_extras.h"
+#include "pfm/sketch_curves.h"
+#include "pfm/sketch_lines.h"
 #include <opencv2/imgproc.hpp>
 #include <cmath>
 
@@ -35,7 +37,7 @@ QVector<DrawingGeometry> SketchSuperformulaPFM::_process(const cv::Mat& image) {
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
-        const float* row = image.ptr<float>(y);
+        const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - row[x];
             if (d < 0) d = 0;
@@ -108,7 +110,7 @@ QVector<DrawingGeometry> SketchCubicBeziers2PFM::_process(const cv::Mat& image) 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
-        const float* row = image.ptr<float>(y);
+        const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - row[x];
             if (d < 0) d = 0;
@@ -241,7 +243,7 @@ QVector<DrawingGeometry> SketchVoronoiPFM::_process(const cv::Mat& image) {
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
-        const float* row = image.ptr<float>(y);
+        const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - row[x];
             if (d < 0) d = 0;
@@ -279,6 +281,172 @@ QVector<DrawingGeometry> SketchVoronoiPFM::_process(const cv::Mat& image) {
 }
 
 // -------------------------------------------------------------------------
+// Phase 9: Remaining Sketch Variants
+// -------------------------------------------------------------------------
+
+QVector<DrawingGeometry> SketchQuadBeziers2PFM::_process(const cv::Mat& image) {
+    return SketchCubicBeziers2PFM::_process(image);
+}
+
+SketchRadialPFM::SketchRadialPFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
+QVector<PFMSetting> SketchRadialPFM::defineSettings() const {
+    return { {"lines", "Lines", SettingType::Integer, 1000, QVariant(), 10, 5000, 10, 5000, 10} };
+}
+QVector<DrawingGeometry> SketchRadialPFM::_process(const cv::Mat& image) {
+    int lines = m_settings["lines"].toInt();
+    int w = image.cols;
+    int h = image.rows;
+    float cx = w / 2.0f;
+    float cy = h / 2.0f;
+    QVector<DrawingGeometry> geoms;
+    for (int i = 0; i < lines; ++i) {
+        if (isCancelled()) break;
+        if (i % 50 == 0) emitProgress(float(i) / lines, geoms.size(), "Sketch Radial...");
+        float theta = randUniform(0.0, 2.0 * M_PI);
+        Path path;
+        float r = 0.0f;
+        while (r < std::hypot(cx, cy)) {
+            float x = cx + r * std::cos(theta);
+            float y = cy + r * std::sin(theta);
+            if (x >= 0 && x < w && y >= 0 && y < h) {
+                if (image.at<float>(int(y), int(x)) < 200.0f) {
+                    path.push_back({x, y});
+                } else {
+                    if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
+                    path.clear();
+                }
+            }
+            r += 2.0f;
+        }
+        if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
+    }
+    return geoms;
+}
+
+SketchScribblePFM::SketchScribblePFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
+QVector<PFMSetting> SketchScribblePFM::defineSettings() const {
+    return {
+        {"lines", "Lines", SettingType::Integer, 1000, QVariant(), 10, 5000, 10, 5000, 10},
+        {"length", "Length", SettingType::Number, 50.0, QVariant(), 5.0, 200.0, 5.0, 200.0, 1.0}
+    };
+}
+QVector<DrawingGeometry> SketchScribblePFM::_process(const cv::Mat& image) {
+    int lines = m_settings["lines"].toInt();
+    float length = m_settings["length"].toDouble();
+    int w = image.cols;
+    int h = image.rows;
+    std::vector<double> probs(w * h, 0.0);
+    double sum = 0.0;
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - image.at<float>(y, x);
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+    
+    QVector<DrawingGeometry> geoms;
+    for (int i = 0; i < lines; ++i) {
+        if (isCancelled()) break;
+        if (i % 50 == 0) emitProgress(float(i) / lines, geoms.size(), "Sketch Scribble...");
+        int idx = weightedChoice(probs);
+        float cx = idx % w;
+        float cy = idx / w;
+        Path path;
+        int pts = int(randUniform(3, 8));
+        for (int j = 0; j < pts; ++j) {
+            path.push_back({cx + randUniform(-length, length), cy + randUniform(-length, length)});
+        }
+        DrawingGeometry dg; dg.path = catmull_rom_chain(path); geoms.push_back(dg);
+    }
+    return geoms;
+}
+
+SketchAbstractPFM::SketchAbstractPFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
+QVector<PFMSetting> SketchAbstractPFM::defineSettings() const {
+    return {
+        {"lines", "Lines", SettingType::Integer, 500, QVariant(), 10, 5000, 10, 5000, 10},
+        {"length", "Length", SettingType::Number, 150.0, QVariant(), 10.0, 500.0, 10.0, 500.0, 10.0}
+    };
+}
+QVector<DrawingGeometry> SketchAbstractPFM::_process(const cv::Mat& image) {
+    int lines = m_settings["lines"].toInt();
+    float length = m_settings["length"].toDouble();
+    int w = image.cols;
+    int h = image.rows;
+    std::vector<double> probs(w * h, 0.0);
+    double sum = 0.0;
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - image.at<float>(y, x);
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+    
+    QVector<DrawingGeometry> geoms;
+    for (int i = 0; i < lines; ++i) {
+        if (isCancelled()) break;
+        if (i % 50 == 0) emitProgress(float(i) / lines, geoms.size(), "Sketch Abstract...");
+        int idx = weightedChoice(probs);
+        float cx = idx % w;
+        float cy = idx / w;
+        DrawingGeometry dg;
+        dg.path = {{cx - randUniform(0, length), cy - randUniform(0, length)},
+                   {cx + randUniform(0, length), cy + randUniform(0, length)}};
+        geoms.push_back(dg);
+    }
+    return geoms;
+}
+
+SketchCatmullRomsPFM::SketchCatmullRomsPFM(QObject* parent) : PathFindingModule(parent) {
+    initSettings();
+}
+QVector<PFMSetting> SketchCatmullRomsPFM::defineSettings() const {
+    return SketchCurvesPFM().settingsList();
+}
+QVector<DrawingGeometry> SketchCatmullRomsPFM::_process(const cv::Mat& image) {
+    SketchCurvesPFM sketch;
+    for (auto it = m_settings.constBegin(); it != m_settings.constEnd(); ++it) {
+        sketch.set(it.key(), it.value().currentValue());
+    }
+    connect(&sketch, &PathFindingModule::progressUpdate, this, &PathFindingModule::progressUpdate);
+    return sketch.process(image);
+}
+
+SketchSobelEdgesPFM::SketchSobelEdgesPFM(QObject* parent) : PathFindingModule(parent) {
+    initSettings();
+}
+QVector<PFMSetting> SketchSobelEdgesPFM::defineSettings() const {
+    return SketchLinesPFM().settingsList();
+}
+QVector<DrawingGeometry> SketchSobelEdgesPFM::_process(const cv::Mat& image) {
+    cv::Mat gx, gy;
+    cv::Sobel(image, gx, CV_32F, 1, 0, 3);
+    cv::Sobel(image, gy, CV_32F, 0, 1, 3);
+    cv::Mat mag;
+    cv::magnitude(gx, gy, mag);
+    double maxVal;
+    cv::minMaxLoc(mag, nullptr, &maxVal);
+    cv::Mat edge_img;
+    mag.convertTo(edge_img, CV_32F, 255.0 / (maxVal + 1e-6));
+    edge_img = 255.0 - edge_img;
+
+    SketchLinesPFM sketch;
+    for (auto it = m_settings.constBegin(); it != m_settings.constEnd(); ++it) {
+        sketch.set(it.key(), it.value().currentValue());
+    }
+    connect(&sketch, &PathFindingModule::progressUpdate, this, &PathFindingModule::progressUpdate);
+    return sketch.process(edge_img);
+}
+
+// -------------------------------------------------------------------------
 // SketchDelaunayPFM
 // -------------------------------------------------------------------------
 SketchDelaunayPFM::SketchDelaunayPFM(QObject* parent) : PathFindingModule(parent) {
@@ -297,7 +465,7 @@ QVector<DrawingGeometry> SketchDelaunayPFM::_process(const cv::Mat& image) {
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
-        const float* row = image.ptr<float>(y);
+        const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - row[x];
             if (d < 0) d = 0;
@@ -329,3 +497,4 @@ QVector<DrawingGeometry> SketchDelaunayPFM::_process(const cv::Mat& image) {
     }
     return geoms;
 }
+

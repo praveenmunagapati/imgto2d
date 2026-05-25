@@ -26,6 +26,8 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+    QComboBox*    m_pfmCombo    = nullptr;
+
 private slots:
     void onLoadImage();
     void onStartProcessing();
@@ -49,7 +51,6 @@ private:
     // ---- UI elements ----
     QWidget*      m_leftPanel   = nullptr;
     QPushButton*  m_loadBtn     = nullptr;
-    QComboBox*    m_pfmCombo    = nullptr;
     QPushButton*  m_startBtn    = nullptr;
     QCheckBox*    m_fastPreview = nullptr;
     QComboBox*    m_resCombo    = nullptr;

@@ -432,4 +432,406 @@ int SketchDelaunayPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     _id = PathFindingModule::qt_metacall(_c, _id, _a);
     return _id;
 }
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchQuadBeziers2PFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchQuadBeziers2PFMENDCLASS = QtMocHelpers::stringData(
+    "SketchQuadBeziers2PFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchQuadBeziers2PFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchQuadBeziers2PFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<SketchCubicBeziers2PFM::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchQuadBeziers2PFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchQuadBeziers2PFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchQuadBeziers2PFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchQuadBeziers2PFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchQuadBeziers2PFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchQuadBeziers2PFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchQuadBeziers2PFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchQuadBeziers2PFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return SketchCubicBeziers2PFM::qt_metacast(_clname);
+}
+
+int SketchQuadBeziers2PFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = SketchCubicBeziers2PFM::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchRadialPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchRadialPFMENDCLASS = QtMocHelpers::stringData(
+    "SketchRadialPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchRadialPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchRadialPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<PathFindingModule::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchRadialPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchRadialPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchRadialPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchRadialPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchRadialPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchRadialPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchRadialPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchRadialPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return PathFindingModule::qt_metacast(_clname);
+}
+
+int SketchRadialPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = PathFindingModule::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchScribblePFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchScribblePFMENDCLASS = QtMocHelpers::stringData(
+    "SketchScribblePFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchScribblePFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchScribblePFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<PathFindingModule::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchScribblePFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchScribblePFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchScribblePFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchScribblePFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchScribblePFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchScribblePFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchScribblePFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchScribblePFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return PathFindingModule::qt_metacast(_clname);
+}
+
+int SketchScribblePFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = PathFindingModule::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchAbstractPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchAbstractPFMENDCLASS = QtMocHelpers::stringData(
+    "SketchAbstractPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchAbstractPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchAbstractPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<PathFindingModule::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchAbstractPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchAbstractPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchAbstractPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchAbstractPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchAbstractPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchAbstractPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchAbstractPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchAbstractPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return PathFindingModule::qt_metacast(_clname);
+}
+
+int SketchAbstractPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = PathFindingModule::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchCatmullRomsPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchCatmullRomsPFMENDCLASS = QtMocHelpers::stringData(
+    "SketchCatmullRomsPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchCatmullRomsPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchCatmullRomsPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<PathFindingModule::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchCatmullRomsPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchCatmullRomsPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchCatmullRomsPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchCatmullRomsPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchCatmullRomsPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchCatmullRomsPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchCatmullRomsPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchCatmullRomsPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return PathFindingModule::qt_metacast(_clname);
+}
+
+int SketchCatmullRomsPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = PathFindingModule::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSSketchSobelEdgesPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSSketchSobelEdgesPFMENDCLASS = QtMocHelpers::stringData(
+    "SketchSobelEdgesPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSSketchSobelEdgesPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject SketchSobelEdgesPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<PathFindingModule::staticMetaObject>(),
+    qt_meta_stringdata_CLASSSketchSobelEdgesPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSSketchSobelEdgesPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSSketchSobelEdgesPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<SketchSobelEdgesPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void SketchSobelEdgesPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *SketchSobelEdgesPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *SketchSobelEdgesPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSSketchSobelEdgesPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return PathFindingModule::qt_metacast(_clname);
+}
+
+int SketchSobelEdgesPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = PathFindingModule::qt_metacall(_c, _id, _a);
+    return _id;
+}
 QT_WARNING_POP

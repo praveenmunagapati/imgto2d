@@ -64,6 +64,15 @@ set(SOURCES
     pfm/adaptive_pfm.cpp
     pfm/sketch_extras.cpp
     pfm/maze_tsp_pfms.cpp
+    pfm/letters_pfms.cpp
+    pfm/stipple_extras.cpp
+    pfm/voronoi_pfms.cpp
+    pfm/grid_pfms.cpp
+    pfm/mosaic_pfms.cpp
+    pfm/hatch_extras.cpp
+    pfm/streamline_pfms.cpp
+    pfm/special_pfms.cpp
+    pfm/spiral_dbv3.cpp
     ui/pfm_worker.cpp
     ui/main_window.cpp
 )
@@ -84,6 +93,11 @@ set(HEADERS
     pfm/adaptive_pfm.h
     pfm/sketch_extras.h
     pfm/maze_tsp_pfms.h
+    pfm/letters_pfms.h
+    pfm/stipple_extras.h
+    pfm/voronoi_pfms.h
+    pfm/grid_pfms.h
+    pfm/mosaic_pfms.h
     ui/pfm_worker.h
     ui/main_window.h
 )
@@ -113,3 +127,6 @@ if(WIN32)
 endif()
 
 install(TARGETS imgto2d_qt RUNTIME DESTINATION bin)
+
+add_executable(test_pfms test_pfms.cpp)
+target_link_libraries(test_pfms PRIVATE Qt6::Core Qt6::Widgets )

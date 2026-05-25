@@ -177,6 +177,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Project>{26F866C4-BCE0-30AB-86AF-1B1738A2896F}</Project>
       <Name>imgto2d_qt</Name>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\sir\Desktop\imgto2d\cpp\build\test_pfms.vcxproj">
+      <Project>{3F008F2B-5C26-334A-A743-80762AFC6103}</Project>
+      <Name>test_pfms</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

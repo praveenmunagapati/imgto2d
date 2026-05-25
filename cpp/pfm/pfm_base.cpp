@@ -14,13 +14,15 @@ PathFindingModule::PathFindingModule(QObject* parent)
 }
 
 void PathFindingModule::initSettings() {
-    m_settings.clear();
-    for (auto& s : defineSettings())
+    auto list = defineSettings();
+    for (auto& s : list) {
         m_settings.insert(s.key, s);
+    }
 }
 
 QVector<PFMSetting> PathFindingModule::settingsList() const {
-    return QVector<PFMSetting>(m_settings.values().begin(), m_settings.values().end());
+    auto vals = m_settings.values();
+    return QVector<PFMSetting>(vals.begin(), vals.end());
 }
 
 QVariant PathFindingModule::get(const QString& key) const {

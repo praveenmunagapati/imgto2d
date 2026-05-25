@@ -51,3 +51,61 @@ protected:
     QVector<PFMSetting> defineSettings() const override;
     QVector<DrawingGeometry> _process(const cv::Mat& image) override;
 };
+
+// Phase 7: Mazes
+class BaseMazePFM : public PathFindingModule {
+    Q_OBJECT
+public:
+    explicit BaseMazePFM(QObject* parent = nullptr);
+    bool isPremium() const override { return true; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    QVector<DrawingGeometry> _process(const cv::Mat& image) override;
+    virtual std::pair<float, float> transformPoint(float x, float y);
+};
+
+class MazeRectPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeRectPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Rectangular";} };
+class MazeHexPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeHexPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Hexagonal";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
+class MazeTriPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeTriPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Triangular";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
+class MazeVoronoiPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeVoronoiPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Voronoi";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
+class MazeCirclePFM : public BaseMazePFM { Q_OBJECT public: explicit MazeCirclePFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Circular";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
+
+class LabyrinthClassicPFM : public PathFindingModule {
+    Q_OBJECT
+public:
+    explicit LabyrinthClassicPFM(QObject* parent = nullptr);
+    QString name() const override { return "Labyrinth Classic"; }
+    bool isPremium() const override { return true; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    QVector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+class LabyrinthRomanPFM : public LabyrinthClassicPFM {
+    Q_OBJECT
+public:
+    explicit LabyrinthRomanPFM(QObject* p = nullptr) : LabyrinthClassicPFM(p) {}
+    QString name() const override { return "Labyrinth Roman"; }
+};
+
+class MazeHilbertPFM : public PathFindingModule {
+    Q_OBJECT
+public:
+    explicit MazeHilbertPFM(QObject* parent = nullptr);
+    QString name() const override { return "Hilbert Curve"; }
+    bool isPremium() const override { return true; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    QVector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+class MazePeanoPFM : public PathFindingModule {
+    Q_OBJECT
+public:
+    explicit MazePeanoPFM(QObject* parent = nullptr);
+    QString name() const override { return "Peano Curve"; }
+    bool isPremium() const override { return true; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    QVector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
