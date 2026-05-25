@@ -17,13 +17,28 @@
 #include <QSplitter>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
-#include <QCheckBox>
-#include <QComboBox>
+#include <QScrollArea>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
-#include <QResizeEvent>
 #include <QTimer>
+#include <QDebug>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QResizeEvent>
 #include <QFont>
+
+#include "export/svg_exporter.h"
+#include "export/gcode_exporter.h"
+#include "export/hpgl_exporter.h"
+#include "export/pdf_exporter.h"
+#include "batch/batch_processor.h"
+#ifdef HAS_SERIAL_PORT
+#include "ui/serial_dialog.h"
+#endif
 #include <QStyleFactory>
 #include <QFrame>
 
@@ -282,6 +297,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
 
     buildUI();
+    createMenus();
     populateSettingsPanel(); // -1 means PFM is default
 }
 
@@ -299,6 +315,46 @@ MainWindow::~MainWindow() {
 // ---------------------------------------------------------------------------
 // Build UI
 // ---------------------------------------------------------------------------
+void MainWindow::createMenus() {
+    QMenu* fileMenu = menuBar()->addMenu("&File");
+
+    QAction* exportAction = new QAction("Export SVG...", this);
+    exportAction->setShortcut(QKeySequence("Ctrl+S"));
+    connect(exportAction, &QAction::triggered, this, &MainWindow::onExportSVG);
+    fileMenu->addAction(exportAction);
+
+    QAction* exportGCodeAction = new QAction("Export G-Code...", this);
+    connect(exportGCodeAction, &QAction::triggered, this, &MainWindow::onExportGCode);
+    fileMenu->addAction(exportGCodeAction);
+
+    QAction* exportHPGLAction = new QAction("Export HPGL...", this);
+    connect(exportHPGLAction, &QAction::triggered, this, &MainWindow::onExportHPGL);
+    fileMenu->addAction(exportHPGLAction);
+
+    QAction* exportPDFAction = new QAction("Export PDF...", this);
+    connect(exportPDFAction, &QAction::triggered, this, &MainWindow::onExportPDF);
+    fileMenu->addAction(exportPDFAction);
+
+    fileMenu->addSeparator();
+
+    QAction* runBatchAction = new QAction("Batch Process Directory...", this);
+    connect(runBatchAction, &QAction::triggered, this, &MainWindow::onRunBatch);
+    fileMenu->addAction(runBatchAction);
+
+#ifdef HAS_SERIAL_PORT
+    QAction* streamAction = new QAction("Hardware Stream G-Code...", this);
+    connect(streamAction, &QAction::triggered, this, &MainWindow::onStreamGCode);
+    fileMenu->addAction(streamAction);
+#endif
+
+    fileMenu->addSeparator();
+
+    QAction* exitAction = new QAction("E&xit", this);
+    exitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
+    fileMenu->addAction(exitAction);
+}
+
 void MainWindow::buildUI() {
     // Palette: dark theme
     QPalette p = QApplication::palette();
@@ -343,7 +399,6 @@ void MainWindow::buildUI() {
     auto* sep = new QFrame; sep->setFrameShape(QFrame::HLine);
     sep->setStyleSheet("color: #444;"); leftVBox->addWidget(sep);
 
-    // ---- Load button ----
     m_loadBtn = new QPushButton("📂  Load Image");
     m_loadBtn->setFixedHeight(36);
     m_loadBtn->setStyleSheet(
@@ -352,6 +407,15 @@ void MainWindow::buildUI() {
         "QPushButton:pressed { background: #2a3a6a; }");
     connect(m_loadBtn, &QPushButton::clicked, this, &MainWindow::onLoadImage);
     leftVBox->addWidget(m_loadBtn);
+
+    m_loadMaskBtn = new QPushButton("🎭  Load Mask...");
+    m_loadMaskBtn->setFixedHeight(28);
+    m_loadMaskBtn->setStyleSheet(
+        "QPushButton { background: #444; border-radius: 6px; color: #ccc; }"
+        "QPushButton:hover { background: #555; }"
+        "QPushButton:pressed { background: #333; }");
+    connect(m_loadMaskBtn, &QPushButton::clicked, this, &MainWindow::onLoadMask);
+    leftVBox->addWidget(m_loadMaskBtn);
 
     // ---- Filter stack ----
     auto* filterGroup = new QGroupBox("Image Filters");
@@ -640,6 +704,18 @@ void MainWindow::onLoadImage() {
     m_progressBar->setValue(0);
 }
 
+void MainWindow::onLoadMask() {
+    QString filepath = QFileDialog::getOpenFileName(this, "Open Mask Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)");
+    if (filepath.isEmpty()) return;
+    
+    if (m_maskMgr.load(filepath)) {
+        m_loadMaskBtn->setText("🎭 Mask: " + QFileInfo(filepath).fileName());
+        m_loadMaskBtn->setStyleSheet(
+            "QPushButton { background: #2a6a4a; border-radius: 6px; color: #fff; font-weight: bold; }");
+        updatePreview();
+    }
+}
+
 void MainWindow::onStartProcessing() {
     qDebug() << "onStartProcessing START";
     if (m_image.empty()) {
@@ -884,8 +960,156 @@ void MainWindow::updatePreview() {
     for (auto& f : m_activeFilters) {
         filtered = f->process(filtered);
     }
+    filtered = m_maskMgr.applyMask(filtered);
     showImage(filtered);
 }
+
+void MainWindow::onExportSVG() {
+    if (m_lastGeoms.isEmpty()) {
+        QMessageBox::warning(this, "Export SVG", "No generated paths to export! Please run processing first.");
+        return;
+    }
+    
+    QString filepath = QFileDialog::getSaveFileName(this, "Export SVG", "", "SVG Files (*.svg)");
+    if (filepath.isEmpty()) return;
+
+    DrawingAreaConfig da;
+    // For now we use the default DrawingAreaConfig properties.
+    // Future work: add a UI panel for Drawing Area settings.
+    
+    QString sepMode = m_separationCombo->currentText();
+    QVector<QColor> palette;
+    if (sepMode == "CMYK") {
+        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
+    } else if (sepMode == "Colour Match") {
+        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
+    } else {
+        palette = {QColor(0, 0, 0)}; // Export defaults to black on white
+    }
+
+    cv::Mat preview = getPreviewImage();
+    int imgW = preview.empty() ? m_image.cols : preview.cols;
+    int imgH = preview.empty() ? m_image.rows : preview.rows;
+
+    if (SVGExporter::exportSVG(filepath, m_lastGeoms, da, imgW, imgH, palette)) {
+        QMessageBox::information(this, "Export SVG", "Successfully exported SVG to:\n" + filepath);
+    } else {
+        QMessageBox::critical(this, "Export SVG", "Failed to export SVG to:\n" + filepath);
+    }
+}
+
+void MainWindow::onExportGCode() {
+    if (m_lastGeoms.isEmpty()) {
+        QMessageBox::warning(this, "Export G-Code", "No generated paths to export! Please run processing first.");
+        return;
+    }
+    
+    QString filepath = QFileDialog::getSaveFileName(this, "Export G-Code", "", "G-Code Files (*.gcode *.nc)");
+    if (filepath.isEmpty()) return;
+
+    DrawingAreaConfig da;
+    cv::Mat preview = getPreviewImage();
+    int imgW = preview.empty() ? m_image.cols : preview.cols;
+    int imgH = preview.empty() ? m_image.rows : preview.rows;
+
+    if (GCodeExporter::exportGCode(filepath, m_lastGeoms, da, imgW, imgH)) {
+        QMessageBox::information(this, "Export G-Code", "Successfully exported G-Code to:\n" + filepath);
+    } else {
+        QMessageBox::critical(this, "Export G-Code", "Failed to export G-Code to:\n" + filepath);
+    }
+}
+
+void MainWindow::onExportHPGL() {
+    if (m_lastGeoms.isEmpty()) {
+        QMessageBox::warning(this, "Export HPGL", "No generated paths to export! Please run processing first.");
+        return;
+    }
+    
+    QString filepath = QFileDialog::getSaveFileName(this, "Export HPGL", "", "HPGL Files (*.hpgl *.plt)");
+    if (filepath.isEmpty()) return;
+
+    DrawingAreaConfig da;
+    cv::Mat preview = getPreviewImage();
+    int imgW = preview.empty() ? m_image.cols : preview.cols;
+    int imgH = preview.empty() ? m_image.rows : preview.rows;
+
+    if (HPGLExporter::exportHPGL(filepath, m_lastGeoms, da, imgW, imgH)) {
+        QMessageBox::information(this, "Export HPGL", "Successfully exported HPGL to:\n" + filepath);
+    } else {
+        QMessageBox::critical(this, "Export HPGL", "Failed to export HPGL to:\n" + filepath);
+    }
+}
+
+void MainWindow::onExportPDF() {
+    if (m_lastGeoms.isEmpty()) {
+        QMessageBox::warning(this, "Export PDF", "No generated paths to export! Please run processing first.");
+        return;
+    }
+    
+    QString filepath = QFileDialog::getSaveFileName(this, "Export PDF", "", "PDF Files (*.pdf)");
+    if (filepath.isEmpty()) return;
+
+    DrawingAreaConfig da;
+    
+    QString sepMode = m_separationCombo->currentText();
+    QVector<QColor> palette;
+    if (sepMode == "CMYK") {
+        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
+    } else if (sepMode == "Colour Match") {
+        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
+    } else {
+        palette = {QColor(0, 0, 0)};
+    }
+
+    cv::Mat preview = getPreviewImage();
+    int imgW = preview.empty() ? m_image.cols : preview.cols;
+    int imgH = preview.empty() ? m_image.rows : preview.rows;
+
+    if (PDFExporter::exportPDF(filepath, m_lastGeoms, da, imgW, imgH, palette)) {
+        QMessageBox::information(this, "Export PDF", "Successfully exported PDF to:\n" + filepath);
+    } else {
+        QMessageBox::critical(this, "Export PDF", "Failed to export PDF to:\n" + filepath);
+    }
+}
+
+void MainWindow::onRunBatch() {
+    QString inputDir = QFileDialog::getExistingDirectory(this, "Select Input Image Directory");
+    if (inputDir.isEmpty()) return;
+
+    QString outputDir = QFileDialog::getExistingDirectory(this, "Select Output Directory");
+    if (outputDir.isEmpty()) return;
+
+    auto pfm = m_pfms.value(m_pfmCombo->currentIndex());
+    DrawingAreaConfig da;
+
+    BatchProcessor::runBatch(inputDir, outputDir, m_activeFilters, pfm, m_maskMgr, da, this);
+}
+
+#ifdef HAS_SERIAL_PORT
+void MainWindow::onStreamGCode() {
+    if (m_lastGeoms.isEmpty()) {
+        QMessageBox::warning(this, "Hardware Stream", "No paths to stream! Please run processing first.");
+        return;
+    }
+
+    QString tempPath = QDir::tempPath() + "/imgto2d_stream.gcode";
+    DrawingAreaConfig da;
+    cv::Mat preview = getPreviewImage();
+    int imgW = preview.empty() ? m_image.cols : preview.cols;
+    int imgH = preview.empty() ? m_image.rows : preview.rows;
+    
+    if (GCodeExporter::exportGCode(tempPath, m_lastGeoms, da, imgW, imgH)) {
+        QFile f(tempPath);
+        if (f.open(QIODevice::ReadOnly)) {
+            QString gcodeData = QString::fromUtf8(f.readAll());
+            f.close();
+            
+            SerialDialog dlg(gcodeData, this);
+            dlg.exec();
+        }
+    }
+}
+#endif
 
 void MainWindow::onSettingChanged() {
     applySettingsToActiveObject();

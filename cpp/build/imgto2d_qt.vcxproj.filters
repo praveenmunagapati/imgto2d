@@ -10,6 +10,30 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\core\coordinates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\core\mask_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\export\svg_exporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\export\path_optimizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\export\gcode_exporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\export\hpgl_exporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\export\pdf_exporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\batch\batch_processor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -124,6 +148,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\coordinates.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\mask_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\export\svg_exporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\export\path_optimizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\export\gcode_exporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\export\hpgl_exporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\export\pdf_exporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\batch\batch_processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.h">

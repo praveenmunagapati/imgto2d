@@ -4,6 +4,7 @@
  * Header-only C++ port of app/core/geometry.py
  */
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <vector>
 #include <utility>

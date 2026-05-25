@@ -28,7 +28,8 @@ if(NOT CMAKE_PREFIX_PATH)
     endforeach()
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Svg Network Concurrent)
+find_package(Qt6 COMPONENTS SerialPort)
 
 # ---- Find OpenCV ----
 # Try common choco / vcpkg paths if OpenCV_DIR not set
@@ -53,6 +54,14 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
 set(SOURCES
     main.cpp
     core/color_separation.cpp
+    core/coordinates.cpp
+    core/mask_manager.cpp
+    export/svg_exporter.cpp
+    export/path_optimizer.cpp
+    export/gcode_exporter.cpp
+    export/hpgl_exporter.cpp
+    export/pdf_exporter.cpp
+    batch/batch_processor.cpp
     pfm/pfm_base.cpp
     pfm/sketch_lines.cpp
     pfm/sketch_squares.cpp
@@ -91,6 +100,14 @@ set(SOURCES
 set(HEADERS
     core/geometry.h
     core/color_separation.h
+    core/coordinates.h
+    core/mask_manager.h
+    export/svg_exporter.h
+    export/path_optimizer.h
+    export/gcode_exporter.h
+    export/hpgl_exporter.h
+    export/pdf_exporter.h
+    batch/batch_processor.h
     pfm/pfm_base.h
     pfm/pfm_sketch_utils.h
     pfm/sketch_lines.h
@@ -140,8 +157,21 @@ target_include_directories(imgto2d_qt PRIVATE
 target_link_libraries(imgto2d_qt PRIVATE
     Qt6::Widgets
     Qt6::Concurrent
+    Qt6::Svg
+    Qt6::Network
     ${OpenCV_LIBS}
 )
+
+if (Qt6SerialPort_FOUND)
+    target_sources(imgto2d_qt PRIVATE
+        core/serial_manager.cpp
+        ui/serial_dialog.cpp
+        core/serial_manager.h
+        ui/serial_dialog.h
+    )
+    target_link_libraries(imgto2d_qt PRIVATE Qt6::SerialPort)
+    target_compile_definitions(imgto2d_qt PRIVATE HAS_SERIAL_PORT)
+endif()
 
 # ---- Windows: deploy Qt DLLs ----
 if(WIN32)

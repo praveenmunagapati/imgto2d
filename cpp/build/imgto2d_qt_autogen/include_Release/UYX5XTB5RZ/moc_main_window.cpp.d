@@ -205,13 +205,20 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qtwidgetsglobal.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qwidget.h \
   C:/Users/sir/Desktop/imgto2d/cpp/core/geometry.h \
+  C:/Users/sir/Desktop/imgto2d/cpp/core/mask_manager.h \
   C:/Users/sir/Desktop/imgto2d/cpp/filters/base_filter.h \
   C:/Users/sir/Desktop/imgto2d/cpp/pfm/pfm_base.h \
   C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.h \
+  C:/tools/opencv/build/include/opencv2/calib3d.hpp \
   C:/tools/opencv/build/include/opencv2/core.hpp \
+  C:/tools/opencv/build/include/opencv2/core/affine.hpp \
+  C:/tools/opencv/build/include/opencv2/core/async.hpp \
   C:/tools/opencv/build/include/opencv2/core/base.hpp \
   C:/tools/opencv/build/include/opencv2/core/bufferpool.hpp \
   C:/tools/opencv/build/include/opencv2/core/check.hpp \
+  C:/tools/opencv/build/include/opencv2/core/cuda.hpp \
+  C:/tools/opencv/build/include/opencv2/core/cuda.inl.hpp \
+  C:/tools/opencv/build/include/opencv2/core/cuda_types.hpp \
   C:/tools/opencv/build/include/opencv2/core/cv_cpu_dispatch.h \
   C:/tools/opencv/build/include/opencv2/core/cvdef.h \
   C:/tools/opencv/build/include/opencv2/core/cvstd.hpp \
@@ -232,6 +239,82 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/tools/opencv/build/include/opencv2/core/traits.hpp \
   C:/tools/opencv/build/include/opencv2/core/types.hpp \
   C:/tools/opencv/build/include/opencv2/core/utility.hpp \
+  C:/tools/opencv/build/include/opencv2/core/utils/logger.defines.hpp \
+  C:/tools/opencv/build/include/opencv2/core/utils/logger.hpp \
+  C:/tools/opencv/build/include/opencv2/core/utils/logtag.hpp \
   C:/tools/opencv/build/include/opencv2/core/version.hpp \
   C:/tools/opencv/build/include/opencv2/core/vsx_utils.hpp \
-  C:/tools/opencv/build/include/opencv2/opencv_modules.hpp
+  C:/tools/opencv/build/include/opencv2/dnn.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/dict.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/dnn.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/dnn.inl.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/layer.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/utils/inference_engine.hpp \
+  C:/tools/opencv/build/include/opencv2/dnn/version.hpp \
+  C:/tools/opencv/build/include/opencv2/features2d.hpp \
+  C:/tools/opencv/build/include/opencv2/flann.hpp \
+  C:/tools/opencv/build/include/opencv2/flann/all_indices.h \
+  C:/tools/opencv/build/include/opencv2/flann/allocator.h \
+  C:/tools/opencv/build/include/opencv2/flann/any.h \
+  C:/tools/opencv/build/include/opencv2/flann/autotuned_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/composite_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/config.h \
+  C:/tools/opencv/build/include/opencv2/flann/defines.h \
+  C:/tools/opencv/build/include/opencv2/flann/dist.h \
+  C:/tools/opencv/build/include/opencv2/flann/dynamic_bitset.h \
+  C:/tools/opencv/build/include/opencv2/flann/flann_base.hpp \
+  C:/tools/opencv/build/include/opencv2/flann/general.h \
+  C:/tools/opencv/build/include/opencv2/flann/ground_truth.h \
+  C:/tools/opencv/build/include/opencv2/flann/heap.h \
+  C:/tools/opencv/build/include/opencv2/flann/hierarchical_clustering_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/index_testing.h \
+  C:/tools/opencv/build/include/opencv2/flann/kdtree_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/kdtree_single_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/kmeans_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/linear_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/logger.h \
+  C:/tools/opencv/build/include/opencv2/flann/lsh_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/lsh_table.h \
+  C:/tools/opencv/build/include/opencv2/flann/matrix.h \
+  C:/tools/opencv/build/include/opencv2/flann/miniflann.hpp \
+  C:/tools/opencv/build/include/opencv2/flann/nn_index.h \
+  C:/tools/opencv/build/include/opencv2/flann/params.h \
+  C:/tools/opencv/build/include/opencv2/flann/random.h \
+  C:/tools/opencv/build/include/opencv2/flann/result_set.h \
+  C:/tools/opencv/build/include/opencv2/flann/sampling.h \
+  C:/tools/opencv/build/include/opencv2/flann/saving.h \
+  C:/tools/opencv/build/include/opencv2/flann/timer.h \
+  C:/tools/opencv/build/include/opencv2/highgui.hpp \
+  C:/tools/opencv/build/include/opencv2/imgcodecs.hpp \
+  C:/tools/opencv/build/include/opencv2/imgproc.hpp \
+  C:/tools/opencv/build/include/opencv2/imgproc/segmentation.hpp \
+  C:/tools/opencv/build/include/opencv2/ml.hpp \
+  C:/tools/opencv/build/include/opencv2/ml/ml.inl.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/aruco_board.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/aruco_detector.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/aruco_dictionary.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/barcode.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/charuco_detector.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/detection_based_tracker.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/face.hpp \
+  C:/tools/opencv/build/include/opencv2/objdetect/graphical_code_detector.hpp \
+  C:/tools/opencv/build/include/opencv2/opencv.hpp \
+  C:/tools/opencv/build/include/opencv2/opencv_modules.hpp \
+  C:/tools/opencv/build/include/opencv2/photo.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/blenders.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/camera.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/exposure_compensate.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/matchers.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/motion_estimators.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/seam_finders.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/util.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/util_inl.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/warpers.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/detail/warpers_inl.hpp \
+  C:/tools/opencv/build/include/opencv2/stitching/warpers.hpp \
+  C:/tools/opencv/build/include/opencv2/video.hpp \
+  C:/tools/opencv/build/include/opencv2/video/background_segm.hpp \
+  C:/tools/opencv/build/include/opencv2/video/tracking.hpp \
+  C:/tools/opencv/build/include/opencv2/videoio.hpp
