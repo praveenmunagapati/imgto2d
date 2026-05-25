@@ -307,7 +307,11 @@
 		"C:/Program Files/CMake/share/cmake-3.27/Modules/FindPackageMessage.cmake",
 		"C:/tools/opencv/build/x64/vc16/lib/OpenCVModules.cmake",
 		"C:/tools/opencv/build/x64/vc16/lib/OpenCVModules-debug.cmake",
-		"C:/tools/opencv/build/x64/vc16/lib/OpenCVModules-release.cmake"
+		"C:/tools/opencv/build/x64/vc16/lib/OpenCVModules-release.cmake",
+		"C:/Program Files/CMake/share/cmake-3.27/Modules/FindPython3.cmake",
+		"C:/Program Files/CMake/share/cmake-3.27/Modules/FindPython/Support.cmake",
+		"C:/Program Files/CMake/share/cmake-3.27/Modules/FindPackageHandleStandardArgs.cmake",
+		"C:/Program Files/CMake/share/cmake-3.27/Modules/FindPackageMessage.cmake"
 	],
 	"CMAKE_SOURCE_DIR" : "C:/Users/sir/Desktop/imgto2d/cpp",
 	"DEP_FILE" : "",
@@ -678,6 +682,7 @@
 	[
 		"C:/Users/sir/Desktop/imgto2d/cpp",
 		"C:/tools/opencv/build/include",
+		"C:/Python313/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtWidgets",
 		"C:/Qt/6.7.3/msvc2019_64/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtCore",
@@ -691,6 +696,7 @@
 	[
 		"C:/Users/sir/Desktop/imgto2d/cpp",
 		"C:/tools/opencv/build/include",
+		"C:/Python313/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtWidgets",
 		"C:/Qt/6.7.3/msvc2019_64/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtCore",
@@ -704,6 +710,7 @@
 	[
 		"C:/Users/sir/Desktop/imgto2d/cpp",
 		"C:/tools/opencv/build/include",
+		"C:/Python313/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtWidgets",
 		"C:/Qt/6.7.3/msvc2019_64/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtCore",
@@ -717,6 +724,7 @@
 	[
 		"C:/Users/sir/Desktop/imgto2d/cpp",
 		"C:/tools/opencv/build/include",
+		"C:/Python313/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtWidgets",
 		"C:/Qt/6.7.3/msvc2019_64/include",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtCore",

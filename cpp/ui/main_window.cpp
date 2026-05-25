@@ -44,6 +44,95 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
+#ifdef _DEBUG
+  #undef _DEBUG
+  #pragma push_macro("slots")
+  #undef slots
+  #include <Python.h>
+  #pragma pop_macro("slots")
+  #define _DEBUG
+#else
+  #pragma push_macro("slots")
+  #undef slots
+  #include <Python.h>
+  #pragma pop_macro("slots")
+#endif
+
+static bool runVpypeEmbedded(const QString& tempPath, const QString& pipeline, const QString& filepath, QString& outErrorMsg) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
+
+    bool success = false;
+    PyObject* pModule = PyImport_ImportModule("vpype_cli");
+    if (!pModule) {
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        if (pvalue) {
+            PyObject* pstr = PyObject_Str(pvalue);
+            if (pstr) {
+                outErrorMsg = QString("Could not import vpype_cli: %1").arg(PyUnicode_AsUTF8(pstr));
+                Py_DECREF(pstr);
+            } else {
+                outErrorMsg = "Could not import vpype_cli module (unknown error).";
+            }
+            Py_DECREF(pvalue);
+        } else {
+            outErrorMsg = "Could not import vpype_cli module.";
+        }
+        Py_XDECREF(ptype);
+        Py_XDECREF(ptraceback);
+        PyGILState_Release(gstate);
+        return false;
+    }
+
+    PyObject* pFunc = PyObject_GetAttrString(pModule, "execute");
+    if (!pFunc || !PyCallable_Check(pFunc)) {
+        outErrorMsg = "vpype_cli.execute is not callable.";
+        Py_XDECREF(pFunc);
+        Py_DECREF(pModule);
+        PyGILState_Release(gstate);
+        return false;
+    }
+
+    QString fullPipeline = QString("read \"%1\" %2 write \"%3\"")
+                               .arg(tempPath)
+                               .arg(pipeline)
+                               .arg(filepath);
+
+    PyObject* pArgs = PyTuple_New(1);
+    PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(fullPipeline.toUtf8().constData()));
+
+    PyObject* pResult = PyObject_CallObject(pFunc, pArgs);
+    Py_DECREF(pArgs);
+
+    if (pResult) {
+        success = true;
+        Py_DECREF(pResult);
+    } else {
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        if (pvalue) {
+            PyObject* pstr = PyObject_Str(pvalue);
+            if (pstr) {
+                outErrorMsg = QString("vpype error: %1").arg(PyUnicode_AsUTF8(pstr));
+                Py_DECREF(pstr);
+            } else {
+                outErrorMsg = "vpype execution failed (unknown error).";
+            }
+            Py_DECREF(pvalue);
+        } else {
+            outErrorMsg = "vpype execution failed.";
+        }
+        Py_XDECREF(ptype);
+        Py_XDECREF(ptraceback);
+    }
+
+    Py_DECREF(pFunc);
+    Py_DECREF(pModule);
+
+    PyGILState_Release(gstate);
+    return success;
+}
+
 #include "export/svg_exporter.h"
 #include "export/gcode_exporter.h"
 #include "export/hpgl_exporter.h"
@@ -1321,37 +1410,10 @@ void MainWindow::onExportSVG() {
         tmp.close();
         exportPath = tempPath;
     }
-
     if (SVGExporter::exportSVG(exportPath, m_lastGeoms, da, imgW, imgH, palette, m_penWidthMm)) {
         if (m_useVpype) {
-            QString vpypeProgram = "vpype";
-            QString runtimeVpype = QDir::current().absoluteFilePath("runtime/python/Scripts/vpype.exe");
-            QString appRelativeRuntimeVpype = QDir(QCoreApplication::applicationDirPath())
-                .absoluteFilePath("../../../runtime/python/Scripts/vpype.exe");
-            QString localVpype = QDir::current().absoluteFilePath(".venv/Scripts/vpype.exe");
-            QString appRelativeVpype = QDir(QCoreApplication::applicationDirPath())
-                .absoluteFilePath("../../../.venv/Scripts/vpype.exe");
-            if (QFileInfo::exists(runtimeVpype)) {
-                vpypeProgram = runtimeVpype;
-            } else if (QFileInfo::exists(appRelativeRuntimeVpype)) {
-                vpypeProgram = appRelativeRuntimeVpype;
-            } else if (QFileInfo::exists(localVpype)) {
-                vpypeProgram = localVpype;
-            } else if (QFileInfo::exists(appRelativeVpype)) {
-                vpypeProgram = appRelativeVpype;
-            }
-
-            QStringList args;
-            args << "read" << tempPath;
-            for (const QString& token : m_vpypePipeline.split(' ', Qt::SkipEmptyParts))
-                args << token;
-            args << "write" << filepath;
-
-            QProcess proc;
-            proc.start(vpypeProgram, args);
-            if (!proc.waitForStarted() || !proc.waitForFinished(-1) || proc.exitStatus() != QProcess::NormalExit || proc.exitCode() != 0) {
-                QString err = QString::fromUtf8(proc.readAllStandardError()).trimmed();
-                if (err.isEmpty()) err = "vpype executable was not found or returned an error.";
+            QString err;
+            if (!runVpypeEmbedded(tempPath, m_vpypePipeline, filepath, err)) {
                 QFile::remove(tempPath);
                 QMessageBox::critical(this, "Export SVG", "VPype optimization failed:\n" + err);
                 return;

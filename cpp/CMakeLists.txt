@@ -50,6 +50,12 @@ endif()
 
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
 
+# ---- Find Python3 ----
+if(NOT Python3_ROOT_DIR)
+    set(Python3_ROOT_DIR "C:/Python313" CACHE PATH "Python3 root directory")
+endif()
+find_package(Python3 COMPONENTS Development REQUIRED)
+
 # ---- Source files ----
 set(SOURCES
     main.cpp
@@ -154,6 +160,7 @@ add_executable(imgto2d_qt WIN32 ${SOURCES} ${HEADERS})
 target_include_directories(imgto2d_qt PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${OpenCV_INCLUDE_DIRS}
+    ${Python3_INCLUDE_DIRS}
 )
 
 target_link_libraries(imgto2d_qt PRIVATE
@@ -162,6 +169,7 @@ target_link_libraries(imgto2d_qt PRIVATE
     Qt6::Svg
     Qt6::Network
     ${OpenCV_LIBS}
+    Python3::Python
 )
 
 if (Qt6SerialPort_FOUND)
@@ -175,13 +183,22 @@ if (Qt6SerialPort_FOUND)
     target_compile_definitions(imgto2d_qt PRIVATE HAS_SERIAL_PORT)
 endif()
 
-# ---- Windows: deploy Qt DLLs ----
+# ---- Windows: deploy Qt and Python DLLs ----
 if(WIN32)
     add_custom_command(TARGET imgto2d_qt POST_BUILD
         COMMAND "${Qt6_DIR}/../../../bin/windeployqt.exe"
                 --no-translations
                 "$<TARGET_FILE:imgto2d_qt>"
-        COMMENT "Running windeployqt..."
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.dll"
+                "$<TARGET_FILE_DIR:imgto2d_qt>/python313.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313._pth"
+                "$<TARGET_FILE_DIR:imgto2d_qt>/python313._pth"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.zip"
+                "$<TARGET_FILE_DIR:imgto2d_qt>/python313.zip"
+        COMMENT "Running windeployqt and copying Python embeddable DLL, _pth and zip files..."
     )
 endif()
 
@@ -199,3 +216,25 @@ target_include_directories(test_pfms PRIVATE
     ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(test_pfms PRIVATE Qt6::Core Qt6::Widgets ${OpenCV_LIBS})
+
+add_executable(test_vpype_embed test_vpype_embed.cpp)
+target_include_directories(test_vpype_embed PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${Python3_INCLUDE_DIRS}
+)
+target_link_libraries(test_vpype_embed PRIVATE Qt6::Core Python3::Python)
+
+if(WIN32)
+    add_custom_command(TARGET test_vpype_embed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.dll"
+                "$<TARGET_FILE_DIR:test_vpype_embed>/python313.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313._pth"
+                "$<TARGET_FILE_DIR:test_vpype_embed>/python313._pth"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.zip"
+                "$<TARGET_FILE_DIR:test_vpype_embed>/python313.zip"
+        COMMENT "Copying Python embeddable DLL, _pth and zip files to test_vpype_embed directory..."
+    )
+endif()

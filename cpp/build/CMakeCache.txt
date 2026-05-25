@@ -139,7 +139,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 CMAKE_MT:FILEPATH=CMAKE_MT-NOTFOUND
 
 //No help, variable specified on the command line.
-CMAKE_PREFIX_PATH:UNINITIALIZED=C:\Qt\6.4.2\msvc2019_64
+CMAKE_PREFIX_PATH:UNINITIALIZED=C:\Qt\6.9.0\msvc2022_64
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -238,6 +238,9 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //No help, variable specified on the command line.
 OpenCV_DIR:UNINITIALIZED=C:\tools\opencv\build
+
+//Python3 root directory
+Python3_ROOT_DIR:PATH=C:/Python313
 
 //Additional directories where find(Qt6 ...) host Qt components
 // are searched
@@ -468,6 +471,8 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding OpenCV
 FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[C:/tools/opencv/build][cfound components: core imgcodecs imgproc ][v4.13.0()]
+//Details about finding Python3
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[C:/Python313/libs/python313.lib][C:/Python313/include][cfound components: Development Development.Module Development.Embed ][v3.13.3()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Details about finding WrapAtomic
@@ -1270,4 +1275,24 @@ Vulkan_INCLUDE_DIR-ADVANCED:INTERNAL=1
 Vulkan_LIBRARY-ADVANCED:INTERNAL=1
 //CMAKE_INSTALL_PREFIX during last run
 _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=C:/Program Files (x86)/imgto2d_qt
+//Path to a program.
+_Python3_CONFIG:INTERNAL=_Python3_CONFIG-NOTFOUND
+//Compiler reason failure
+_Python3_Compiler_REASON_FAILURE:INTERNAL=
+_Python3_DEVELOPMENT_EMBED_SIGNATURE:INTERNAL=a37cd500f0d89c27db49b7743223321d
+_Python3_DEVELOPMENT_MODULE_SIGNATURE:INTERNAL=a37cd500f0d89c27db49b7743223321d
+//Development reason failure
+_Python3_Development_REASON_FAILURE:INTERNAL=
+//Path to a file.
+_Python3_INCLUDE_DIR:INTERNAL=C:/Python313/include
+//Interpreter reason failure
+_Python3_Interpreter_REASON_FAILURE:INTERNAL=
+//Path to a library.
+_Python3_LIBRARY_DEBUG:INTERNAL=_Python3_LIBRARY_DEBUG-NOTFOUND
+//Path to a library.
+_Python3_LIBRARY_RELEASE:INTERNAL=C:/Python313/libs/python313.lib
+//NumPy reason failure
+_Python3_NumPy_REASON_FAILURE:INTERNAL=
+//Path to a library.
+_Python3_RUNTIME_LIBRARY_RELEASE:INTERNAL=C:/Python313/python313.dll
 
