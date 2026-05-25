@@ -15,7 +15,8 @@ class PFMWorker : public QThread {
     Q_OBJECT
 public:
     explicit PFMWorker(PathFindingModule* pfm,
-                       const cv::Mat& grayImage,
+                       const cv::Mat& bgrImage,
+                       const QString& sepMode,
                        QObject* parent = nullptr);
 
     void run() override;
@@ -28,4 +29,5 @@ signals:
 private:
     PathFindingModule* m_pfm;
     cv::Mat            m_image;
+    QString            m_sepMode;
 };

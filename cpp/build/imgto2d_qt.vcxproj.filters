@@ -7,6 +7,9 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,6 +94,15 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\morph_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\artistic_distort_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\threshold_extra_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -109,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.h">
@@ -199,6 +214,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\morph_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\artistic_distort_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\threshold_extra_filters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h">

@@ -26,6 +26,7 @@ public:
     ~MainWindow() override;
 
     QComboBox*    m_pfmCombo    = nullptr;
+    QComboBox*    m_separationCombo = nullptr;
 
 private slots:
     void onLoadImage();

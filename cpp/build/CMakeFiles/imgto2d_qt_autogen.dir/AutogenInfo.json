@@ -262,9 +262,21 @@
 	"HEADERS" : 
 	[
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/core/color_separation.h",
+			"MU",
+			"TAC5DWH4SE/moc_color_separation.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/core/geometry.h",
 			"MU",
 			"TAC5DWH4SE/moc_geometry.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/artistic_distort_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_artistic_distort_filters.cpp",
 			null
 		],
 		[
@@ -292,9 +304,21 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/morph_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_morph_filters.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/filters/noise_filters.h",
 			"MU",
 			"U7MNOHEFNH/moc_noise_filters.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/threshold_extra_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_threshold_extra_filters.cpp",
 			null
 		],
 		[
@@ -613,6 +637,16 @@
 	"SOURCES" : 
 	[
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/core/color_separation.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/artistic_distort_filters.cpp",
+			"MU",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/filters/base_filter.cpp",
 			"MU",
 			null
@@ -633,7 +667,17 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/morph_filters.cpp",
+			"MU",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/filters/noise_filters.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/threshold_extra_filters.cpp",
 			"MU",
 			null
 		],

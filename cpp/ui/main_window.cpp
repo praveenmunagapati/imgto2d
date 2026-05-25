@@ -60,6 +60,9 @@
 #include "filters/color_filters.h"
 #include "filters/edge_blur_filters.h"
 #include "filters/noise_filters.h"
+#include "filters/morph_filters.h"
+#include "filters/artistic_distort_filters.h"
+#include "filters/threshold_extra_filters.h"
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -241,6 +244,41 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_availableFilters.append(std::make_shared<GaussianNoise2Filter>());
     m_availableFilters.append(std::make_shared<SpeckleNoiseFilter>());
 
+    // Morph filters
+    m_availableFilters.append(std::make_shared<DilationFilter>());
+    m_availableFilters.append(std::make_shared<ErosionFilter>());
+    m_availableFilters.append(std::make_shared<OpeningFilter>());
+    m_availableFilters.append(std::make_shared<ClosingFilter>());
+    m_availableFilters.append(std::make_shared<MorphGradientFilter>());
+    m_availableFilters.append(std::make_shared<TopHatFilter>());
+    m_availableFilters.append(std::make_shared<BlackHatFilter>());
+    m_availableFilters.append(std::make_shared<DilateCrossFilter>());
+    m_availableFilters.append(std::make_shared<ErodeCrossFilter>());
+    m_availableFilters.append(std::make_shared<DilateEllipseFilter>());
+    m_availableFilters.append(std::make_shared<ErodeEllipseFilter>());
+
+    // Artistic / Distort filters
+    m_availableFilters.append(std::make_shared<PosterizeFilter>());
+    m_availableFilters.append(std::make_shared<EdgePreserveFilter>());
+    m_availableFilters.append(std::make_shared<StylizationFilter>());
+    m_availableFilters.append(std::make_shared<EmbossFilter>());
+    m_availableFilters.append(std::make_shared<QuantizeFilter>());
+    m_availableFilters.append(std::make_shared<VignetteFilter>());
+    m_availableFilters.append(std::make_shared<PixelateFilter>());
+    m_availableFilters.append(std::make_shared<WaveFilter>());
+
+    // Threshold / Extra filters
+    m_availableFilters.append(std::make_shared<OtsuThresholdFilter>());
+    m_availableFilters.append(std::make_shared<AdaptiveThresholdFilter>());
+    m_availableFilters.append(std::make_shared<TruncateThresholdFilter>());
+    m_availableFilters.append(std::make_shared<ToZeroThresholdFilter>());
+    m_availableFilters.append(std::make_shared<EqualizeHistFilter>());
+    m_availableFilters.append(std::make_shared<AutoContrastFilter>());
+    m_availableFilters.append(std::make_shared<AutoColorFilter>());
+    m_availableFilters.append(std::make_shared<ColorizeFilter>());
+    m_availableFilters.append(std::make_shared<InvertHueFilter>());
+
+
 
 
     buildUI();
@@ -363,9 +401,18 @@ void MainWindow::buildUI() {
     for (auto& pfm : m_pfms)
         m_pfmCombo->addItem(pfm->name());
     m_pfmCombo->setStyleSheet("QComboBox { background: #2a2a36; border:1px solid #555; border-radius:4px; padding:3px; }");
+    
+    pfmVBox->addWidget(new QLabel("Path Finding Module:"));
+    pfmVBox->addWidget(m_pfmCombo);
+
+    pfmVBox->addWidget(new QLabel("Colour Separation:"));
+    m_separationCombo = new QComboBox;
+    m_separationCombo->addItems({"None", "CMYK", "Colour Match"});
+    m_separationCombo->setStyleSheet("QComboBox { background: #2a2a36; border:1px solid #555; border-radius:4px; padding:3px; }");
+    pfmVBox->addWidget(m_separationCombo);
+
     connect(m_pfmCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::onPFMSelectionChanged);
-    pfmVBox->addWidget(m_pfmCombo);
     leftVBox->addWidget(pfmGroup);
 
     // ---- Start / Cancel ----
@@ -632,32 +679,25 @@ void MainWindow::onStartProcessing() {
     m_lastGeoms.clear();
     m_progressBar->setValue(0);
     
-    // Convert to grayscale for PFM processing!
-    cv::Mat grayForPFM;
-    if (filteredImage.channels() == 3) {
-        cv::cvtColor(filteredImage, grayForPFM, cv::COLOR_BGR2GRAY);
-    } else if (filteredImage.channels() == 4) {
-        cv::cvtColor(filteredImage, grayForPFM, cv::COLOR_BGRA2GRAY);
-    } else {
-        grayForPFM = filteredImage.clone();
-    }
-
     // Downsample if fast preview is requested
-    cv::Mat processImg = grayForPFM;
-    if (m_fastPreview->isChecked() && (grayForPFM.cols > 800 || grayForPFM.rows > 800)) {
-        float scale = 800.0f / std::max(grayForPFM.cols, grayForPFM.rows);
-        cv::resize(grayForPFM, processImg, cv::Size(), 0, 0, cv::INTER_AREA);
+    cv::Mat processImg = filteredImage;
+    if (m_fastPreview->isChecked() && (filteredImage.cols > 800 || filteredImage.rows > 800)) {
+        float scale = 800.0f / std::max(filteredImage.cols, filteredImage.rows);
+        cv::resize(filteredImage, processImg, cv::Size(), 0, 0, cv::INTER_AREA);
     }
 
     m_startBtn->setText("⏹  Cancel");
     m_startBtn->setStyleSheet(
         "QPushButton { background: #6a2a2a; border-radius:6px; color:#fcc; font-weight:bold; font-size:10pt;}"
         "QPushButton:hover{background:#8a3a3a;} QPushButton:pressed{background:#5a1a1a;}");
+
     m_statusLabel->setText(QString("Processing with %1...").arg(pfm->name()));
 
-    qDebug() << "onStartProcessing: starting worker thread with PFM:" << pfm->name();
-    m_worker = new PFMWorker(pfm.get(), processImg, this);
+    QString sepMode = m_separationCombo->currentText();
+    qDebug() << "onStartProcessing: starting worker thread with PFM:" << pfm->name() << " Mode:" << sepMode;
+    m_worker = new PFMWorker(pfm.get(), processImg, sepMode, this);
     connect(m_worker, &PFMWorker::finished,       this, &MainWindow::onProcessingFinished);
+
     connect(m_worker, &PFMWorker::progressUpdate, this, &MainWindow::onProgressUpdate);
     connect(m_worker, &PFMWorker::errorOccurred,  this, &MainWindow::onProcessingError);
     connect(m_worker, &QThread::finished, m_worker, &QObject::deleteLater);
@@ -778,15 +818,42 @@ void MainWindow::renderAndShowGeometries(const QVector<DrawingGeometry>& geoms) 
 
     // Create white QImage
     QImage img(dispW, dispH, QImage::Format_RGB32);
-    img.fill(QColor(30, 30, 35));
-
     QPainter painter(&img);
     painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setPen(QPen(QColor(200, 220, 255), 0.8));
+
+    QString sepMode = m_separationCombo->currentText();
+    QVector<QColor> palette;
+    if (sepMode == "CMYK") {
+        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
+        img.fill(Qt::white); // CMYK is usually on white paper
+    } else if (sepMode == "Colour Match") {
+        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
+        img.fill(Qt::white); // RGB drawn on white paper as density
+    } else {
+        palette = {QColor(200, 220, 255)};
+        img.fill(QColor(30, 30, 35)); // Default dark theme for single color
+    }
+
+    // Since we fill here based on sepMode, do we need to override the img.fill above?
+    // Yes, but img is already filled above. We'll just let the if block above set the correct background.
 
     for (auto& geom : geoms) {
         const auto& path = geom.path;
         if (path.size() < 2) continue;
+
+        int pIdx = geom.penIndex;
+        if (pIdx < 0 || pIdx >= palette.size()) pIdx = 0;
+        
+        QColor penColor = palette[pIdx];
+        if (sepMode != "None") {
+            penColor.setAlpha(180); // Slight transparency for CMYK blending
+            painter.setCompositionMode(QPainter::CompositionMode_Multiply);
+        } else {
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        }
+
+        painter.setPen(QPen(penColor, 0.8));
+
         for (std::size_t i = 1; i < path.size(); ++i) {
             painter.drawLine(
                 QPointF(path[i-1].first * scale, path[i-1].second * scale),
@@ -871,6 +938,35 @@ void MainWindow::onAddFilter() {
     else if (name == "Denoise (NL Means)") newFilter = std::make_shared<DenoiseFilter>();
     else if (name == "Gaussian Noise 2") newFilter = std::make_shared<GaussianNoise2Filter>();
     else if (name == "Speckle Noise") newFilter = std::make_shared<SpeckleNoiseFilter>();
+    else if (name == "Dilation") newFilter = std::make_shared<DilationFilter>();
+    else if (name == "Erosion") newFilter = std::make_shared<ErosionFilter>();
+    else if (name == "Opening") newFilter = std::make_shared<OpeningFilter>();
+    else if (name == "Closing") newFilter = std::make_shared<ClosingFilter>();
+    else if (name == "Morphological Gradient") newFilter = std::make_shared<MorphGradientFilter>();
+    else if (name == "Top Hat") newFilter = std::make_shared<TopHatFilter>();
+    else if (name == "Black Hat") newFilter = std::make_shared<BlackHatFilter>();
+    else if (name == "Dilate Cross") newFilter = std::make_shared<DilateCrossFilter>();
+    else if (name == "Erode Cross") newFilter = std::make_shared<ErodeCrossFilter>();
+    else if (name == "Dilate Ellipse") newFilter = std::make_shared<DilateEllipseFilter>();
+    else if (name == "Erode Ellipse") newFilter = std::make_shared<ErodeEllipseFilter>();
+    else if (name == "Posterize") newFilter = std::make_shared<PosterizeFilter>();
+    else if (name == "Edge Preserve Smooth") newFilter = std::make_shared<EdgePreserveFilter>();
+    else if (name == "Stylization") newFilter = std::make_shared<StylizationFilter>();
+    else if (name == "Emboss") newFilter = std::make_shared<EmbossFilter>();
+    else if (name == "Quantize (8 Colors)") newFilter = std::make_shared<QuantizeFilter>();
+    else if (name == "Vignette") newFilter = std::make_shared<VignetteFilter>();
+    else if (name == "Pixelate") newFilter = std::make_shared<PixelateFilter>();
+    else if (name == "Wave Distortion") newFilter = std::make_shared<WaveFilter>();
+    else if (name == "Otsu Threshold") newFilter = std::make_shared<OtsuThresholdFilter>();
+    else if (name == "Adaptive Threshold") newFilter = std::make_shared<AdaptiveThresholdFilter>();
+    else if (name == "Truncate Threshold") newFilter = std::make_shared<TruncateThresholdFilter>();
+    else if (name == "To Zero Threshold") newFilter = std::make_shared<ToZeroThresholdFilter>();
+    else if (name == "Equalize Histogram") newFilter = std::make_shared<EqualizeHistFilter>();
+    else if (name == "Auto Contrast") newFilter = std::make_shared<AutoContrastFilter>();
+    else if (name == "Auto Color") newFilter = std::make_shared<AutoColorFilter>();
+    else if (name == "Colorize (Tint)") newFilter = std::make_shared<ColorizeFilter>();
+    else if (name == "Invert Hue") newFilter = std::make_shared<InvertHueFilter>();
+
 
 
     

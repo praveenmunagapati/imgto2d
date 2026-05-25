@@ -52,6 +52,7 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
 # ---- Source files ----
 set(SOURCES
     main.cpp
+    core/color_separation.cpp
     pfm/pfm_base.cpp
     pfm/sketch_lines.cpp
     pfm/sketch_squares.cpp
@@ -80,12 +81,16 @@ set(SOURCES
     filters/color_filters.cpp
     filters/edge_blur_filters.cpp
     filters/noise_filters.cpp
+    filters/morph_filters.cpp
+    filters/artistic_distort_filters.cpp
+    filters/threshold_extra_filters.cpp
     ui/pfm_worker.cpp
     ui/main_window.cpp
 )
 
 set(HEADERS
     core/geometry.h
+    core/color_separation.h
     pfm/pfm_base.h
     pfm/pfm_sketch_utils.h
     pfm/sketch_lines.h
@@ -116,6 +121,9 @@ set(HEADERS
     filters/color_filters.h
     filters/edge_blur_filters.h
     filters/noise_filters.h
+    filters/morph_filters.h
+    filters/artistic_distort_filters.h
+    filters/threshold_extra_filters.h
     ui/pfm_worker.h
     ui/main_window.h
 )

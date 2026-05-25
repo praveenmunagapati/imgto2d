@@ -443,6 +443,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\main.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_lines.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_squares.cpp" />
@@ -471,9 +472,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\morph_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\artistic_distort_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\threshold_extra_filters.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.cpp" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\geometry.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\color_separation.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_base.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\pfm_sketch_utils.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_lines.h" />
@@ -504,6 +509,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\morph_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\artistic_distort_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\threshold_extra_filters.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.h" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_Release.cpp">
