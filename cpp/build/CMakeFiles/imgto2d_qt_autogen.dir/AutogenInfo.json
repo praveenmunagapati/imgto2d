@@ -268,9 +268,51 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/base_filter.h",
+			"MU",
+			"U7MNOHEFNH/moc_base_filter.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/basic_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_basic_filters.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/color_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_color_filters.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/edge_blur_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_edge_blur_filters.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/noise_filters.h",
+			"MU",
+			"U7MNOHEFNH/moc_noise_filters.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_extras.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_extras.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_pfm.h",
 			"MU",
 			"6X7XSKHGGJ/moc_adaptive_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/composite_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_composite_pfms.cpp",
 			null
 		],
 		[
@@ -570,8 +612,39 @@
 	"SETTINGS_FILE_Release" : "C:/Users/sir/Desktop/imgto2d/cpp/build/CMakeFiles/imgto2d_qt_autogen.dir/AutogenUsed_Release.txt",
 	"SOURCES" : 
 	[
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/base_filter.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/basic_filters.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/color_filters.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/edge_blur_filters.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/filters/noise_filters.cpp",
+			"MU",
+			null
+		],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/main.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_extras.cpp",
+			"MU",
+			null
+		],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/composite_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.cpp", "MU", null ],

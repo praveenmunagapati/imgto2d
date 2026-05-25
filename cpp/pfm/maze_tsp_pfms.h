@@ -52,6 +52,25 @@ protected:
     QVector<DrawingGeometry> _process(const cv::Mat& image) override;
 };
 
+class TSPStipplePFM : public BaseTSPPFM {
+    Q_OBJECT
+public:
+    explicit TSPStipplePFM(QObject* parent = nullptr) : BaseTSPPFM(parent) {}
+    QString name() const override { return "TSP Stipple"; }
+protected:
+    std::vector<double> getProbabilities(const cv::Mat& image) override;
+};
+
+class TSPVoronoiPFM : public BaseTSPPFM {
+    Q_OBJECT
+public:
+    explicit TSPVoronoiPFM(QObject* parent = nullptr);
+    QString name() const override { return "TSP Voronoi"; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    std::vector<double> getProbabilities(const cv::Mat& image) override;
+};
+
 // Phase 7: Mazes
 class BaseMazePFM : public PathFindingModule {
     Q_OBJECT
@@ -69,6 +88,7 @@ class MazeHexPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeHexPFM(QOb
 class MazeTriPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeTriPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Triangular";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
 class MazeVoronoiPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeVoronoiPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Voronoi";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
 class MazeCirclePFM : public BaseMazePFM { Q_OBJECT public: explicit MazeCirclePFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Maze Circular";} protected: std::pair<float, float> transformPoint(float x, float y) override; };
+class MazeLabyrinthPFM : public BaseMazePFM { Q_OBJECT public: explicit MazeLabyrinthPFM(QObject* p=nullptr):BaseMazePFM(p){} QString name() const override{return "Labyrinth";} };
 
 class LabyrinthClassicPFM : public PathFindingModule {
     Q_OBJECT

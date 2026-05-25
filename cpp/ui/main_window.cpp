@@ -30,18 +30,36 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
-// PFM includes — all 10
+// PFM includes — all families
 #include "pfm/sketch_lines.h"
 #include "pfm/sketch_squares.h"
 #include "pfm/sketch_curves.h"
 #include "pfm/sketch_shapes.h"
 #include "pfm/sketch_waves.h"
 #include "pfm/sketch_spirals.h"
-#include "pfm/hatch_lines.h"
-#include "pfm/stipple_dots.h"
-#include "pfm/adaptive_pfm.h"
 #include "pfm/sketch_extras.h"
+#include "pfm/sketch_beziers.h"
+#include "pfm/hatch_lines.h"
+#include "pfm/hatch_extras.h"
+#include "pfm/stipple_dots.h"
+#include "pfm/stipple_extras.h"
+#include "pfm/adaptive_pfm.h"
+#include "pfm/adaptive_extras.h"
+#include "pfm/voronoi_pfms.h"
+#include "pfm/grid_pfms.h"
+#include "pfm/mosaic_pfms.h"
+#include "pfm/letters_pfms.h"
+#include "pfm/spiral_dbv3.h"
+#include "pfm/streamline_pfms.h"
+#include "pfm/special_pfms.h"
 #include "pfm/maze_tsp_pfms.h"
+#include "pfm/composite_pfms.h"
+
+// Filter includes
+#include "filters/basic_filters.h"
+#include "filters/color_filters.h"
+#include "filters/edge_blur_filters.h"
+#include "filters/noise_filters.h"
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -50,37 +68,186 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     setWindowTitle("imgto2d — Qt Fast Preview");
     resize(1200, 800);
 
-    // Register all PFMs
+    // -----------------------------------------------------------------------
+    // Register all PFMs — 1:1 with DrawingBot V3
+    // -----------------------------------------------------------------------
+
+    // --- Sketch family ---
     m_pfms.append(std::make_shared<SketchLinesPFM>());
     m_pfms.append(std::make_shared<SketchSquaresPFM>());
     m_pfms.append(std::make_shared<SketchCurvesPFM>());
     m_pfms.append(std::make_shared<SketchShapesPFM>());
     m_pfms.append(std::make_shared<SketchQuadBeziersPFM>());
+    m_pfms.append(std::make_shared<SketchCubicBeziersPFM>());
     m_pfms.append(std::make_shared<SketchWavesPFM>());
     m_pfms.append(std::make_shared<SketchSpiralsPFM>());
-    m_pfms.append(std::make_shared<HatchLinesPFM>());
-    m_pfms.append(std::make_shared<StippleDotsPFM>());
-    m_pfms.append(std::make_shared<AdaptiveStipplingPFM>());
-    
-    // Extras
     m_pfms.append(std::make_shared<SketchSuperformulaPFM>());
     m_pfms.append(std::make_shared<SketchCubicBeziers2PFM>());
+    m_pfms.append(std::make_shared<SketchQuadBeziers2PFM>());
     m_pfms.append(std::make_shared<SketchSweepingCurvesPFM>());
     m_pfms.append(std::make_shared<SketchFlowFieldsPFM>());
-    
-    // Phase 2: Triangulation and Voronoi
     m_pfms.append(std::make_shared<SketchVoronoiPFM>());
     m_pfms.append(std::make_shared<SketchDelaunayPFM>());
-    
-    // Phase 3: Graph and TSP
+    m_pfms.append(std::make_shared<SketchRadialPFM>());
+    m_pfms.append(std::make_shared<SketchScribblePFM>());
+    m_pfms.append(std::make_shared<SketchAbstractPFM>());
+    m_pfms.append(std::make_shared<SketchCatmullRomsPFM>());
+    m_pfms.append(std::make_shared<SketchSobelEdgesPFM>());
+
+    // --- Hatch family ---
+    m_pfms.append(std::make_shared<HatchLinesPFM>());
+    m_pfms.append(std::make_shared<HatchHorizontalPFM>());
+    m_pfms.append(std::make_shared<HatchVerticalPFM>());
+    m_pfms.append(std::make_shared<HatchDiagonal1PFM>());
+    m_pfms.append(std::make_shared<HatchDiagonal2PFM>());
+    m_pfms.append(std::make_shared<HatchGridPFM>());
+    m_pfms.append(std::make_shared<HatchCrossPFM>());
+    m_pfms.append(std::make_shared<Hatch3WayPFM>());
+    m_pfms.append(std::make_shared<Hatch4WayPFM>());
+    m_pfms.append(std::make_shared<Hatch5WayPFM>());
+    m_pfms.append(std::make_shared<Hatch6WayPFM>());
+    m_pfms.append(std::make_shared<HatchSawtoothPFM>());
+    m_pfms.append(std::make_shared<HatchCircularScribblesPFM>());
+
+    // --- Stipple family ---
+    m_pfms.append(std::make_shared<StippleDotsPFM>());
+    m_pfms.append(std::make_shared<StippleCirclesPFM>());
+    m_pfms.append(std::make_shared<StippleSquaresPFM>());
+    m_pfms.append(std::make_shared<StippleTrianglesPFM>());
+    m_pfms.append(std::make_shared<StippleHexagonsPFM>());
+    m_pfms.append(std::make_shared<StippleStarsPFM>());
+    m_pfms.append(std::make_shared<StippleCrossesPFM>());
+    m_pfms.append(std::make_shared<StippleLinesPFM>());
+    m_pfms.append(std::make_shared<StippleVariableCirclesPFM>());
+    m_pfms.append(std::make_shared<StippleVariableSquaresPFM>());
+    m_pfms.append(std::make_shared<StippleChaosPFM>());
+
+    // --- Adaptive family ---
+    m_pfms.append(std::make_shared<AdaptiveStipplingPFM>());
+    m_pfms.append(std::make_shared<AdaptiveCircularScribblesPFM>());
+    m_pfms.append(std::make_shared<AdaptiveShapesPFM>());
+    m_pfms.append(std::make_shared<AdaptiveDashesPFM>());
+    m_pfms.append(std::make_shared<AdaptiveTSPPFM>());
+    m_pfms.append(std::make_shared<AdaptiveTriangulationPFM>());
+    m_pfms.append(std::make_shared<AdaptiveTreePFM>());
+    m_pfms.append(std::make_shared<AdaptiveDiagramPFM>());
+    m_pfms.append(std::make_shared<AdaptiveLettersPFM>());
+
+    // --- Voronoi family ---
+    m_pfms.append(std::make_shared<VoronoiStipplingPFM>());
+    m_pfms.append(std::make_shared<VoronoiCirclesPFM>());
+    m_pfms.append(std::make_shared<VoronoiTriangulationPFM>());
+    m_pfms.append(std::make_shared<VoronoiTreePFM>());
+    m_pfms.append(std::make_shared<VoronoiDashesPFM>());
+    m_pfms.append(std::make_shared<VoronoiDiagramPFM>());
+    m_pfms.append(std::make_shared<VoronoiShapesPFM>());
+    m_pfms.append(std::make_shared<VoronoiTSPPFM>());
+    m_pfms.append(std::make_shared<VoronoiLettersPFM>());
+
+    // --- TSP family ---
     m_pfms.append(std::make_shared<TSPClassicPFM>());
     m_pfms.append(std::make_shared<TSPOutlinePFM>());
     m_pfms.append(std::make_shared<TSPShadingPFM>());
+    m_pfms.append(std::make_shared<TSPStipplePFM>());
+    m_pfms.append(std::make_shared<TSPVoronoiPFM>());
     m_pfms.append(std::make_shared<TSPMSTPFM>());
 
+    // --- Maze / Labyrinth family ---
+    m_pfms.append(std::make_shared<MazeRectPFM>());
+    m_pfms.append(std::make_shared<MazeHexPFM>());
+    m_pfms.append(std::make_shared<MazeTriPFM>());
+    m_pfms.append(std::make_shared<MazeVoronoiPFM>());
+    m_pfms.append(std::make_shared<MazeCirclePFM>());
+    m_pfms.append(std::make_shared<MazeLabyrinthPFM>());
+    m_pfms.append(std::make_shared<MazeHilbertPFM>());
+    m_pfms.append(std::make_shared<MazePeanoPFM>());
+    m_pfms.append(std::make_shared<LabyrinthClassicPFM>());
+    m_pfms.append(std::make_shared<LabyrinthRomanPFM>());
+
+    // --- Grid family ---
+    m_pfms.append(std::make_shared<GridShapesPFM>());
+    m_pfms.append(std::make_shared<GridDashesPFM>());
+    m_pfms.append(std::make_shared<GridLettersPFM>());
+
+    // --- Mosaic family ---
+    m_pfms.append(std::make_shared<MosaicRectanglesPFM>());
+    m_pfms.append(std::make_shared<MosaicVoronoiPFM>());
+    m_pfms.append(std::make_shared<MosaicCustomPFM>());
+
+    // --- Letters ---
+    m_pfms.append(std::make_shared<LBGLettersPFM>());
+
+    // --- Spiral family ---
+    m_pfms.append(std::make_shared<SpiralCircularScribblesPFM>());
+    m_pfms.append(std::make_shared<SpiralSawtoothPFM>());
+
+    // --- Streamlines family ---
+    m_pfms.append(std::make_shared<StreamlinesFlowFieldPFM>());
+    m_pfms.append(std::make_shared<StreamlinesEdgeFieldPFM>());
+    m_pfms.append(std::make_shared<StreamlinesSuperformulaPFM>());
+
+    // --- Special family ---
+    m_pfms.append(std::make_shared<ContourPathsPFM>());
+    m_pfms.append(std::make_shared<AmbientFlowPFM>());
+    m_pfms.append(std::make_shared<EdgeShadingPFM>());
+
+    // --- Composite family ---
+    m_pfms.append(std::make_shared<LayersPFM>());
+    m_pfms.append(std::make_shared<StippleLayersPFM>());
+
+    // -----------------------------------------------------------------------
+    // Register Filters
+    // -----------------------------------------------------------------------
+    m_availableFilters.append(std::make_shared<BrightnessFilter>());
+    m_availableFilters.append(std::make_shared<ContrastFilter>());
+    m_availableFilters.append(std::make_shared<InvertFilter>());
+    m_availableFilters.append(std::make_shared<ThresholdFilter>());
+    m_availableFilters.append(std::make_shared<UnsharpMaskFilter>());
+    
+    // Color filters
+    m_availableFilters.append(std::make_shared<GrayscaleFilter>());
+    m_availableFilters.append(std::make_shared<SaturationFilter>());
+    m_availableFilters.append(std::make_shared<HueFilter>());
+    m_availableFilters.append(std::make_shared<GammaFilter>());
+    m_availableFilters.append(std::make_shared<ExposureFilter>());
+    m_availableFilters.append(std::make_shared<SepiaFilter>());
+    m_availableFilters.append(std::make_shared<CLAHEFilter>());
+    m_availableFilters.append(std::make_shared<TemperatureFilter>());
+
+    // Edge filters
+    m_availableFilters.append(std::make_shared<CannyFilter>());
+    m_availableFilters.append(std::make_shared<SobelFilter>());
+    m_availableFilters.append(std::make_shared<LaplacianFilter>());
+    m_availableFilters.append(std::make_shared<PrewittFilter>());
+    m_availableFilters.append(std::make_shared<ScharrFilter>());
+    m_availableFilters.append(std::make_shared<DoGFilter>());
+    m_availableFilters.append(std::make_shared<RidgeDetectionFilter>());
+    m_availableFilters.append(std::make_shared<HighPassFilter>());
+
+    // Blur filters
+    m_availableFilters.append(std::make_shared<GaussianBlurFilter>());
+    m_availableFilters.append(std::make_shared<MedianBlurFilter>());
+    m_availableFilters.append(std::make_shared<BoxBlurFilter>());
+    m_availableFilters.append(std::make_shared<MotionBlurFilter>());
+    m_availableFilters.append(std::make_shared<BilateralFilter>());
+    m_availableFilters.append(std::make_shared<LowPassFilter>());
+    m_availableFilters.append(std::make_shared<SharpenMoreFilter>());
+
+
+    // Noise filters
+    m_availableFilters.append(std::make_shared<GaussianNoiseFilter>());
+    m_availableFilters.append(std::make_shared<SaltAndPepperFilter>());
+    m_availableFilters.append(std::make_shared<DenoiseFilter>());
+    m_availableFilters.append(std::make_shared<GaussianNoise2Filter>());
+    m_availableFilters.append(std::make_shared<SpeckleNoiseFilter>());
+
+
+
     buildUI();
-    populateSettingsPanel(0);
+    populateSettingsPanel(); // -1 means PFM is default
 }
+
+
 
 MainWindow::~MainWindow() {
     if (m_worker && m_worker->isRunning()) {
@@ -147,6 +314,45 @@ void MainWindow::buildUI() {
         "QPushButton:pressed { background: #2a3a6a; }");
     connect(m_loadBtn, &QPushButton::clicked, this, &MainWindow::onLoadImage);
     leftVBox->addWidget(m_loadBtn);
+
+    // ---- Filter stack ----
+    auto* filterGroup = new QGroupBox("Image Filters");
+    filterGroup->setStyleSheet("QGroupBox { font-weight: bold; color: #aac; border: 1px solid #444; border-radius:4px; margin-top:6px; }"
+                               "QGroupBox::title { subcontrol-origin: margin; left: 8px; }");
+    auto* filterVBox = new QVBoxLayout(filterGroup);
+    
+    auto* filterAddHBox = new QHBoxLayout;
+    m_filterCombo = new QComboBox;
+    for (auto& f : m_availableFilters) m_filterCombo->addItem(f->name());
+    m_filterCombo->setStyleSheet("QComboBox { background: #2a2a36; border:1px solid #555; border-radius:4px; padding:3px; }");
+    
+    m_addFilterBtn = new QPushButton("➕");
+    m_addFilterBtn->setFixedWidth(30);
+    connect(m_addFilterBtn, &QPushButton::clicked, this, &MainWindow::onAddFilter);
+    
+    filterAddHBox->addWidget(m_filterCombo);
+    filterAddHBox->addWidget(m_addFilterBtn);
+    filterVBox->addLayout(filterAddHBox);
+
+    m_filterList = new QListWidget;
+    m_filterList->setFixedHeight(100);
+    m_filterList->setStyleSheet("QListWidget { background: #1a1a20; border:1px solid #333; }");
+    connect(m_filterList, &QListWidget::itemSelectionChanged, this, &MainWindow::onFilterListSelectionChanged);
+    filterVBox->addWidget(m_filterList);
+
+    auto* filterCtrlHBox = new QHBoxLayout;
+    m_filterUpBtn = new QPushButton("⬆");
+    m_filterDownBtn = new QPushButton("⬇");
+    m_filterDelBtn = new QPushButton("🗑");
+    connect(m_filterUpBtn, &QPushButton::clicked, this, &MainWindow::onMoveFilterUp);
+    connect(m_filterDownBtn, &QPushButton::clicked, this, &MainWindow::onMoveFilterDown);
+    connect(m_filterDelBtn, &QPushButton::clicked, this, &MainWindow::onRemoveFilter);
+    filterCtrlHBox->addWidget(m_filterUpBtn);
+    filterCtrlHBox->addWidget(m_filterDownBtn);
+    filterCtrlHBox->addWidget(m_filterDelBtn);
+    filterVBox->addLayout(filterCtrlHBox);
+    
+    leftVBox->addWidget(filterGroup);
 
     // ---- PFM selector ----
     auto* pfmGroup = new QGroupBox("Path Finding Module");
@@ -255,8 +461,8 @@ void MainWindow::buildUI() {
 // ---------------------------------------------------------------------------
 // Dynamic settings panel
 // ---------------------------------------------------------------------------
-void MainWindow::populateSettingsPanel(int pfmIndex) {
-    qDebug() << "populateSettingsPanel START. index=" << pfmIndex;
+void MainWindow::populateSettingsPanel() {
+    qDebug() << "populateSettingsPanel START. filterIdx=" << m_currentEditingFilterIdx;
     // Clear old widgets
     m_settingWidgets.clear();
     QLayoutItem* item;
@@ -266,17 +472,19 @@ void MainWindow::populateSettingsPanel(int pfmIndex) {
         }
         delete item;
     }
-    qDebug() << "populateSettingsPanel: cleared old widgets";
 
-    if (pfmIndex < 0 || pfmIndex >= m_pfms.size()) {
-        qDebug() << "populateSettingsPanel: index out of bounds. size=" << m_pfms.size();
-        return;
+    QVector<PFMSetting> settingsList;
+    if (m_currentEditingFilterIdx >= 0 && m_currentEditingFilterIdx < m_activeFilters.size()) {
+        settingsList = m_activeFilters[m_currentEditingFilterIdx]->settingsList();
+    } else {
+        int pfmIndex = m_pfmCombo->currentIndex();
+        if (pfmIndex >= 0 && pfmIndex < m_pfms.size()) {
+            settingsList = m_pfms[pfmIndex]->settingsList();
+        }
     }
-    auto& pfm = m_pfms[pfmIndex];
-    qDebug() << "populateSettingsPanel: got PFM:" << pfm->name();
 
     QString lastCategory;
-    for (auto& s : pfm->settingsList()) {
+    for (auto& s : settingsList) {
         if (s.category != lastCategory) {
             auto* catLabel = new QLabel(s.category.toUpper());
             catLabel->setStyleSheet("color: #8ab4ff; font-size: 8pt; font-weight: bold; padding-top:4px;");
@@ -289,6 +497,7 @@ void MainWindow::populateSettingsPanel(int pfmIndex) {
         case SettingType::Boolean: {
             auto* cb = new QCheckBox;
             cb->setChecked(s.toBool());
+            connect(cb, &QCheckBox::stateChanged, this, &MainWindow::onSettingChanged);
             widget = cb;
             break;
         }
@@ -297,6 +506,7 @@ void MainWindow::populateSettingsPanel(int pfmIndex) {
             spin->setRange((int)s.minVal, (int)s.maxVal);
             spin->setValue(s.toInt());
             spin->setStyleSheet("QSpinBox { background: #2a2a36; border:1px solid #555; border-radius:3px; color:#ddd; padding:1px; }");
+            connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::onSettingChanged);
             widget = spin;
             break;
         }
@@ -307,6 +517,7 @@ void MainWindow::populateSettingsPanel(int pfmIndex) {
             dspin->setDecimals(s.step < 0.1 ? 2 : (s.step < 1.0 ? 1 : 0));
             dspin->setValue(s.toDouble());
             dspin->setStyleSheet("QDoubleSpinBox { background: #2a2a36; border:1px solid #555; border-radius:3px; color:#ddd; padding:1px; }");
+            connect(dspin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &MainWindow::onSettingChanged);
             widget = dspin;
             break;
         }
@@ -322,19 +533,35 @@ void MainWindow::populateSettingsPanel(int pfmIndex) {
     }
 }
 
-void MainWindow::applySettingsToPFM(int pfmIndex) {
-    if (pfmIndex < 0 || pfmIndex >= m_pfms.size()) return;
-    auto& pfm = m_pfms[pfmIndex];
+void MainWindow::applySettingsToActiveObject() {
+    QVector<PFMSetting> settingsList;
+    if (m_currentEditingFilterIdx >= 0 && m_currentEditingFilterIdx < m_activeFilters.size()) {
+        auto filter = m_activeFilters[m_currentEditingFilterIdx];
+        for (auto& s : filter->settingsList()) {
+            QWidget* w = m_settingWidgets.value(s.key, nullptr);
+            if (!w) continue;
+            if (auto* cb   = qobject_cast<QCheckBox*>(w))
+                filter->set(s.key, cb->isChecked());
+            else if (auto* sp = qobject_cast<QSpinBox*>(w))
+                filter->set(s.key, sp->value());
+            else if (auto* dp = qobject_cast<QDoubleSpinBox*>(w))
+                filter->set(s.key, dp->value());
+        }
+    } else {
+        int pfmIndex = m_pfmCombo->currentIndex();
+        if (pfmIndex < 0 || pfmIndex >= m_pfms.size()) return;
+        auto& pfm = m_pfms[pfmIndex];
 
-    for (auto& s : pfm->settingsList()) {
-        QWidget* w = m_settingWidgets.value(s.key, nullptr);
-        if (!w) continue;
-        if (auto* cb   = qobject_cast<QCheckBox*>(w))
-            pfm->set(s.key, cb->isChecked());
-        else if (auto* sp = qobject_cast<QSpinBox*>(w))
-            pfm->set(s.key, sp->value());
-        else if (auto* dp = qobject_cast<QDoubleSpinBox*>(w))
-            pfm->set(s.key, dp->value());
+        for (auto& s : pfm->settingsList()) {
+            QWidget* w = m_settingWidgets.value(s.key, nullptr);
+            if (!w) continue;
+            if (auto* cb   = qobject_cast<QCheckBox*>(w))
+                pfm->set(s.key, cb->isChecked());
+            else if (auto* sp = qobject_cast<QSpinBox*>(w))
+                pfm->set(s.key, sp->value());
+            else if (auto* dp = qobject_cast<QDoubleSpinBox*>(w))
+                pfm->set(s.key, dp->value());
+        }
     }
 }
 
@@ -342,7 +569,10 @@ void MainWindow::applySettingsToPFM(int pfmIndex) {
 // Slots
 // ---------------------------------------------------------------------------
 void MainWindow::onPFMSelectionChanged(int idx) {
-    populateSettingsPanel(idx);
+    // If we select a PFM, we show its settings
+    m_currentEditingFilterIdx = -1;
+    m_filterList->clearSelection();
+    populateSettingsPanel();
 }
 
 void MainWindow::onLoadImage() {
@@ -350,13 +580,13 @@ void MainWindow::onLoadImage() {
         "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff *.webp)");
     if (path.isEmpty()) return;
 
-    cv::Mat img = cv::imread(path.toStdString(), cv::IMREAD_GRAYSCALE);
+    cv::Mat img = cv::imread(path.toStdString(), cv::IMREAD_COLOR);
     if (img.empty()) {
         m_statusLabel->setText("❌ Failed to load image");
         return;
     }
     m_image = img;
-    showImage(img);
+    updatePreview();
     QFileInfo fi(path);
     m_statusLabel->setText(QString("Loaded: %1 (%2×%3)")
                            .arg(fi.fileName()).arg(img.cols).arg(img.rows));
@@ -385,28 +615,53 @@ void MainWindow::onStartProcessing() {
         return;
     }
 
-    qDebug() << "onStartProcessing: getting current PFM index:" << m_pfmCombo->currentIndex();
+    // Apply settings to whichever object is currently being edited
+    applySettingsToActiveObject();
+
     int idx = m_pfmCombo->currentIndex();
-    if (idx < 0 || idx >= m_pfms.size()) { m_statusLabel->setText("⚠ Select a PFM"); return; }
+    if (idx < 0 || idx >= m_pfms.size()) return;
+    auto& pfm = m_pfms[idx];
 
-    applySettingsToPFM(idx);
+    // Process image through filter stack
+    cv::Mat filteredImage = m_image.clone();
+    for (auto& filter : m_activeFilters) {
+        filteredImage = filter->process(filteredImage);
+    }
 
-    cv::Mat imgForPFM = getPreviewImage();
+    // Reset processing state
+    m_lastGeoms.clear();
+    m_progressBar->setValue(0);
+    
+    // Convert to grayscale for PFM processing!
+    cv::Mat grayForPFM;
+    if (filteredImage.channels() == 3) {
+        cv::cvtColor(filteredImage, grayForPFM, cv::COLOR_BGR2GRAY);
+    } else if (filteredImage.channels() == 4) {
+        cv::cvtColor(filteredImage, grayForPFM, cv::COLOR_BGRA2GRAY);
+    } else {
+        grayForPFM = filteredImage.clone();
+    }
+
+    // Downsample if fast preview is requested
+    cv::Mat processImg = grayForPFM;
+    if (m_fastPreview->isChecked() && (grayForPFM.cols > 800 || grayForPFM.rows > 800)) {
+        float scale = 800.0f / std::max(grayForPFM.cols, grayForPFM.rows);
+        cv::resize(grayForPFM, processImg, cv::Size(), 0, 0, cv::INTER_AREA);
+    }
+
     m_startBtn->setText("⏹  Cancel");
     m_startBtn->setStyleSheet(
         "QPushButton { background: #6a2a2a; border-radius:6px; color:#fcc; font-weight:bold; font-size:10pt;}"
         "QPushButton:hover{background:#8a3a3a;} QPushButton:pressed{background:#5a1a1a;}");
-    m_statusLabel->setText(QString("Processing with %1...").arg(m_pfms[idx]->name()));
-    m_progressBar->setValue(0);
+    m_statusLabel->setText(QString("Processing with %1...").arg(pfm->name()));
 
-    qDebug() << "onStartProcessing: applying UI settings to PFM:" << m_pfms[idx]->name();
-    m_worker = new PFMWorker(m_pfms[idx].get(), imgForPFM, this);
+    qDebug() << "onStartProcessing: starting worker thread with PFM:" << pfm->name();
+    m_worker = new PFMWorker(pfm.get(), processImg, this);
     connect(m_worker, &PFMWorker::finished,       this, &MainWindow::onProcessingFinished);
     connect(m_worker, &PFMWorker::progressUpdate, this, &MainWindow::onProgressUpdate);
     connect(m_worker, &PFMWorker::errorOccurred,  this, &MainWindow::onProcessingError);
     connect(m_worker, &QThread::finished, m_worker, &QObject::deleteLater);
 
-    qDebug() << "onStartProcessing: starting worker thread";
     m_worker->start();
     qDebug() << "onStartProcessing END";
 }
@@ -417,6 +672,8 @@ void MainWindow::onReset() {
         if (pfm) pfm->cancel();
     }
     m_image = cv::Mat();
+    m_activeFilters.clear();
+    m_filterList->clear();
     m_lastGeoms.clear();
     m_canvas->clear();
     m_canvas->setText("<span style='color:#444; font-size:24pt;'>🖼</span><br/>"
@@ -462,9 +719,19 @@ void MainWindow::onProcessingError(QString message) {
 // ---------------------------------------------------------------------------
 // Image display helpers
 // ---------------------------------------------------------------------------
-void MainWindow::showImage(const cv::Mat& gray) {
+void MainWindow::showImage(const cv::Mat& image) {
+    if (image.empty()) return;
     cv::Mat rgb;
-    cv::cvtColor(gray, rgb, cv::COLOR_GRAY2RGB);
+    if (image.channels() == 1) {
+        cv::cvtColor(image, rgb, cv::COLOR_GRAY2RGB);
+    } else if (image.channels() == 3) {
+        cv::cvtColor(image, rgb, cv::COLOR_BGR2RGB);
+    } else if (image.channels() == 4) {
+        cv::cvtColor(image, rgb, cv::COLOR_BGRA2RGB);
+    } else {
+        rgb = image.clone();
+    }
+    
     QImage qi(rgb.data, rgb.cols, rgb.rows, (int)rgb.step, QImage::Format_RGB888);
     QPixmap pix = QPixmap::fromImage(qi.copy());
     m_canvas->setPixmap(pix.scaled(m_canvas->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
@@ -538,5 +805,124 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
     if (!m_lastGeoms.isEmpty())
         QTimer::singleShot(50, this, [this]{ renderAndShowGeometries(m_lastGeoms); });
     else if (!m_image.empty())
-        QTimer::singleShot(50, this, [this]{ showImage(m_image); });
+        QTimer::singleShot(50, this, [this]{ updatePreview(); });
 }
+
+// ---------------------------------------------------------------------------
+// Image Preview helpers
+// ---------------------------------------------------------------------------
+void MainWindow::updatePreview() {
+    if (m_image.empty()) return;
+    cv::Mat filtered = m_image.clone();
+    for (auto& f : m_activeFilters) {
+        filtered = f->process(filtered);
+    }
+    showImage(filtered);
+}
+
+void MainWindow::onSettingChanged() {
+    applySettingsToActiveObject();
+    
+    // Only update preview if we are editing a filter, because PFM changes don't affect the input image.
+    if (m_currentEditingFilterIdx >= 0) {
+        updatePreview();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Filter Slots
+// ---------------------------------------------------------------------------
+void MainWindow::onAddFilter() {
+    int idx = m_filterCombo->currentIndex();
+    if (idx < 0 || idx >= m_availableFilters.size()) return;
+    
+    QString name = m_availableFilters[idx]->name();
+    std::shared_ptr<ImageFilter> newFilter;
+    if (name == "Brightness") newFilter = std::make_shared<BrightnessFilter>();
+    else if (name == "Contrast") newFilter = std::make_shared<ContrastFilter>();
+    else if (name == "Invert") newFilter = std::make_shared<InvertFilter>();
+    else if (name == "Threshold") newFilter = std::make_shared<ThresholdFilter>();
+    else if (name == "Unsharp Mask") newFilter = std::make_shared<UnsharpMaskFilter>();
+    else if (name == "Grayscale") newFilter = std::make_shared<GrayscaleFilter>();
+    else if (name == "Saturation") newFilter = std::make_shared<SaturationFilter>();
+    else if (name == "Hue Shift") newFilter = std::make_shared<HueFilter>();
+    else if (name == "Gamma Correction") newFilter = std::make_shared<GammaFilter>();
+    else if (name == "Exposure") newFilter = std::make_shared<ExposureFilter>();
+    else if (name == "Sepia") newFilter = std::make_shared<SepiaFilter>();
+    else if (name == "CLAHE") newFilter = std::make_shared<CLAHEFilter>();
+    else if (name == "Temperature") newFilter = std::make_shared<TemperatureFilter>();
+    else if (name == "Canny Edge Detection") newFilter = std::make_shared<CannyFilter>();
+    else if (name == "Sobel Edge Detection") newFilter = std::make_shared<SobelFilter>();
+    else if (name == "Laplacian Edge Detection") newFilter = std::make_shared<LaplacianFilter>();
+    else if (name == "Prewitt Edge") newFilter = std::make_shared<PrewittFilter>();
+    else if (name == "Scharr Edge") newFilter = std::make_shared<ScharrFilter>();
+    else if (name == "Difference of Gaussians (DoG)") newFilter = std::make_shared<DoGFilter>();
+    else if (name == "Ridge Detection (Hessian)") newFilter = std::make_shared<RidgeDetectionFilter>();
+    else if (name == "High Pass") newFilter = std::make_shared<HighPassFilter>();
+    else if (name == "Gaussian Blur") newFilter = std::make_shared<GaussianBlurFilter>();
+    else if (name == "Median Blur") newFilter = std::make_shared<MedianBlurFilter>();
+    else if (name == "Box Blur") newFilter = std::make_shared<BoxBlurFilter>();
+    else if (name == "Motion Blur") newFilter = std::make_shared<MotionBlurFilter>();
+    else if (name == "Bilateral Filter") newFilter = std::make_shared<BilateralFilter>();
+    else if (name == "Low Pass") newFilter = std::make_shared<LowPassFilter>();
+    else if (name == "Sharpen More") newFilter = std::make_shared<SharpenMoreFilter>();
+    else if (name == "Add Gaussian Noise") newFilter = std::make_shared<GaussianNoiseFilter>();
+    else if (name == "Salt & Pepper Noise") newFilter = std::make_shared<SaltAndPepperFilter>();
+    else if (name == "Denoise (NL Means)") newFilter = std::make_shared<DenoiseFilter>();
+    else if (name == "Gaussian Noise 2") newFilter = std::make_shared<GaussianNoise2Filter>();
+    else if (name == "Speckle Noise") newFilter = std::make_shared<SpeckleNoiseFilter>();
+
+
+    
+    if (newFilter) {
+        m_activeFilters.append(newFilter);
+        m_filterList->addItem(name);
+        m_filterList->setCurrentRow(m_activeFilters.size() - 1);
+        updatePreview();
+    }
+}
+
+void MainWindow::onRemoveFilter() {
+    int row = m_filterList->currentRow();
+    if (row < 0 || row >= m_activeFilters.size()) return;
+    m_activeFilters.removeAt(row);
+    delete m_filterList->takeItem(row);
+    
+    if (m_activeFilters.isEmpty()) {
+        m_pfmCombo->setCurrentIndex(m_pfmCombo->currentIndex()); // trigger update
+        onPFMSelectionChanged(m_pfmCombo->currentIndex());
+    }
+    updatePreview();
+}
+
+void MainWindow::onMoveFilterUp() {
+    int row = m_filterList->currentRow();
+    if (row <= 0 || row >= m_activeFilters.size()) return;
+    
+    m_activeFilters.swapItemsAt(row, row - 1);
+    auto item = m_filterList->takeItem(row);
+    m_filterList->insertItem(row - 1, item);
+    m_filterList->setCurrentRow(row - 1);
+    updatePreview();
+}
+
+void MainWindow::onMoveFilterDown() {
+    int row = m_filterList->currentRow();
+    if (row < 0 || row >= m_activeFilters.size() - 1) return;
+    
+    m_activeFilters.swapItemsAt(row, row + 1);
+    auto item = m_filterList->takeItem(row);
+    m_filterList->insertItem(row + 1, item);
+    m_filterList->setCurrentRow(row + 1);
+    updatePreview();
+}
+
+void MainWindow::onFilterListSelectionChanged() {
+    int row = m_filterList->currentRow();
+    if (row >= 0 && row < m_activeFilters.size()) {
+        applySettingsToActiveObject(); // save current
+        m_currentEditingFilterIdx = row;
+        populateSettingsPanel();
+    }
+}
+

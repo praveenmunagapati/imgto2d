@@ -12,12 +12,11 @@
 #include <QFormLayout>
 #include <QProgressBar>
 #include <QVector>
-#include <QPixmap>
-#include <memory>
-
+#include <QListWidget>
 #include <opencv2/core.hpp>
 
 #include "pfm/pfm_base.h"
+#include "filters/base_filter.h"
 #include "ui/pfm_worker.h"
 
 class MainWindow : public QMainWindow {
@@ -36,6 +35,14 @@ private slots:
     void onProcessingFinished(QVector<DrawingGeometry> geometries);
     void onProgressUpdate(float pct, int shapes, QString text);
     void onProcessingError(QString message);
+    
+    // Filters
+    void onAddFilter();
+    void onRemoveFilter();
+    void onMoveFilterUp();
+    void onMoveFilterDown();
+    void onFilterListSelectionChanged();
+    void onSettingChanged();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -44,8 +51,9 @@ private:
     void buildUI();
     void showImage(const cv::Mat& gray);
     void renderAndShowGeometries(const QVector<DrawingGeometry>& geoms);
-    void populateSettingsPanel(int pfmIndex);
-    void applySettingsToPFM(int pfmIndex);
+    void populateSettingsPanel();
+    void applySettingsToActiveObject();
+    void updatePreview();
     cv::Mat getPreviewImage() const;
 
     // ---- UI elements ----
@@ -57,6 +65,15 @@ private:
     QPushButton*  m_resetBtn    = nullptr;
     QLabel*       m_statusLabel = nullptr;
     QProgressBar* m_progressBar = nullptr;
+    
+    // ---- Filter UI ----
+    QComboBox*    m_filterCombo = nullptr;
+    QPushButton*  m_addFilterBtn = nullptr;
+    QListWidget*  m_filterList   = nullptr;
+    QPushButton*  m_filterUpBtn  = nullptr;
+    QPushButton*  m_filterDownBtn= nullptr;
+    QPushButton*  m_filterDelBtn = nullptr;
+
     QScrollArea*  m_settingsScroll = nullptr;
     QWidget*      m_settingsWidget = nullptr;
     QFormLayout*  m_settingsForm   = nullptr;
@@ -66,9 +83,15 @@ private:
     // ---- State ----
     cv::Mat                          m_image;      // loaded grayscale
     QVector<std::shared_ptr<PathFindingModule>> m_pfms;
+    
+    // Filter definitions and active stack
+    QVector<std::shared_ptr<ImageFilter>> m_availableFilters;
+    QVector<std::shared_ptr<ImageFilter>> m_activeFilters;
+    
     PFMWorker*                       m_worker     = nullptr;
     QVector<DrawingGeometry>         m_lastGeoms;
 
-    // Setting widgets keyed by setting index in current PFM
+    // Setting widgets keyed by setting index in current PFM or Filter
     QMap<QString, QWidget*> m_settingWidgets;
+    int m_currentEditingFilterIdx = -1; // -1 means editing PFM
 };

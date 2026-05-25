@@ -368,6 +368,140 @@ int TSPMSTPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 namespace {
 
 #ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSTSPStipplePFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSTSPStipplePFMENDCLASS = QtMocHelpers::stringData(
+    "TSPStipplePFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSTSPStipplePFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject TSPStipplePFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<BaseTSPPFM::staticMetaObject>(),
+    qt_meta_stringdata_CLASSTSPStipplePFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSTSPStipplePFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSTSPStipplePFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<TSPStipplePFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void TSPStipplePFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *TSPStipplePFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *TSPStipplePFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSTSPStipplePFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return BaseTSPPFM::qt_metacast(_clname);
+}
+
+int TSPStipplePFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = BaseTSPPFM::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSTSPVoronoiPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSTSPVoronoiPFMENDCLASS = QtMocHelpers::stringData(
+    "TSPVoronoiPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSTSPVoronoiPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject TSPVoronoiPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<BaseTSPPFM::staticMetaObject>(),
+    qt_meta_stringdata_CLASSTSPVoronoiPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSTSPVoronoiPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSTSPVoronoiPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<TSPVoronoiPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void TSPVoronoiPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *TSPVoronoiPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *TSPVoronoiPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSTSPVoronoiPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return BaseTSPPFM::qt_metacast(_clname);
+}
+
+int TSPVoronoiPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = BaseTSPPFM::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
 struct qt_meta_stringdata_CLASSBaseMazePFMENDCLASS_t {};
 constexpr auto qt_meta_stringdata_CLASSBaseMazePFMENDCLASS = QtMocHelpers::stringData(
     "BaseMazePFM"
@@ -763,6 +897,73 @@ void *MazeCirclePFM::qt_metacast(const char *_clname)
 }
 
 int MazeCirclePFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = BaseMazePFM::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSMazeLabyrinthPFMENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSMazeLabyrinthPFMENDCLASS = QtMocHelpers::stringData(
+    "MazeLabyrinthPFM"
+);
+#else  // !QT_MOC_HAS_STRINGDATA
+#error "qtmochelpers.h not found or too old."
+#endif // !QT_MOC_HAS_STRINGDATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSMazeLabyrinthPFMENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject MazeLabyrinthPFM::staticMetaObject = { {
+    QMetaObject::SuperData::link<BaseMazePFM::staticMetaObject>(),
+    qt_meta_stringdata_CLASSMazeLabyrinthPFMENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSMazeLabyrinthPFMENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSMazeLabyrinthPFMENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<MazeLabyrinthPFM, std::true_type>
+    >,
+    nullptr
+} };
+
+void MazeLabyrinthPFM::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    (void)_o;
+    (void)_id;
+    (void)_c;
+    (void)_a;
+}
+
+const QMetaObject *MazeLabyrinthPFM::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *MazeLabyrinthPFM::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSMazeLabyrinthPFMENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return BaseMazePFM::qt_metacast(_clname);
+}
+
+int MazeLabyrinthPFM::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = BaseMazePFM::qt_metacall(_c, _id, _a);
     return _id;

@@ -37,6 +37,12 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,6 +74,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\spiral_dbv3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\base_filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\basic_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp">
@@ -126,6 +147,12 @@
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -145,6 +172,33 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\mosaic_pfms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_extras.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\streamline_pfms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\special_pfms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\spiral_dbv3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\base_filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\basic_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h">

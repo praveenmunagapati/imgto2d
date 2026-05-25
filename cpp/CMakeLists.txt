@@ -62,6 +62,8 @@ set(SOURCES
     pfm/hatch_lines.cpp
     pfm/stipple_dots.cpp
     pfm/adaptive_pfm.cpp
+    pfm/adaptive_extras.cpp
+    pfm/composite_pfms.cpp
     pfm/sketch_extras.cpp
     pfm/maze_tsp_pfms.cpp
     pfm/letters_pfms.cpp
@@ -73,6 +75,11 @@ set(SOURCES
     pfm/streamline_pfms.cpp
     pfm/special_pfms.cpp
     pfm/spiral_dbv3.cpp
+    filters/base_filter.cpp
+    filters/basic_filters.cpp
+    filters/color_filters.cpp
+    filters/edge_blur_filters.cpp
+    filters/noise_filters.cpp
     ui/pfm_worker.cpp
     ui/main_window.cpp
 )
@@ -91,6 +98,8 @@ set(HEADERS
     pfm/hatch_lines.h
     pfm/stipple_dots.h
     pfm/adaptive_pfm.h
+    pfm/adaptive_extras.h
+    pfm/composite_pfms.h
     pfm/sketch_extras.h
     pfm/maze_tsp_pfms.h
     pfm/letters_pfms.h
@@ -98,9 +107,19 @@ set(HEADERS
     pfm/voronoi_pfms.h
     pfm/grid_pfms.h
     pfm/mosaic_pfms.h
+    pfm/hatch_extras.h
+    pfm/streamline_pfms.h
+    pfm/special_pfms.h
+    pfm/spiral_dbv3.h
+    filters/base_filter.h
+    filters/basic_filters.h
+    filters/color_filters.h
+    filters/edge_blur_filters.h
+    filters/noise_filters.h
     ui/pfm_worker.h
     ui/main_window.h
 )
+
 
 # ---- Executable ----
 add_executable(imgto2d_qt WIN32 ${SOURCES} ${HEADERS})

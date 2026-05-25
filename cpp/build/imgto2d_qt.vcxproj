@@ -453,6 +453,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_lines.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\letters_pfms.cpp" />
@@ -464,6 +466,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\streamline_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\special_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\spiral_dbv3.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\base_filter.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\basic_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.cpp" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\core\geometry.h" />
@@ -479,6 +486,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_lines.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\letters_pfms.h" />
@@ -486,6 +495,15 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\voronoi_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\grid_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\mosaic_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\hatch_extras.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\streamline_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\special_pfms.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\spiral_dbv3.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\base_filter.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\basic_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\color_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\edge_blur_filters.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\noise_filters.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\pfm_worker.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.h" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt_autogen\mocs_compilation_Release.cpp">

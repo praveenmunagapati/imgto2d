@@ -46,7 +46,7 @@ static QVector<PFMSetting> makeSketchCommonSettings() {
 // ---------------------------------------------------------------------------
 // Shared squiggle-finding loop — returns raw control points
 // ---------------------------------------------------------------------------
-enum class CurveOutputMode { CatmullRom, QuadBezier };
+enum class CurveOutputMode { CatmullRom, QuadBezier, CubicBezier };
 
 static QVector<DrawingGeometry> runSketchLoop(
     PathFindingModule* pfm,
@@ -191,7 +191,24 @@ static QVector<DrawingGeometry> runSketchLoop(
                     Point p1 = squiggle[squiggle.size() / 2];
                     Point p2 = squiggle.back();
                     curvePts = quad_bezier_path(p0, p1, p2, curveSmooth);
+                } else if (mode == CurveOutputMode::CubicBezier) {
+                // Cubic Bezier: use start, 1/3, 2/3, end as control points
+                if (squiggle.size() >= 4) {
+                    Point p0 = squiggle.front();
+                    Point p1 = squiggle[squiggle.size() / 3];
+                    Point p2 = squiggle[2 * squiggle.size() / 3];
+                    Point p3 = squiggle.back();
+                    curvePts = cubic_bezier_path(p0, p1, p2, p3, curveSmooth);
+                } else if (squiggle.size() >= 3) {
+                    // Fall back to quad bezier if too few points
+                    Point p0 = squiggle.front();
+                    Point p1 = squiggle[squiggle.size() / 2];
+                    Point p2 = squiggle.back();
+                    curvePts = quad_bezier_path(p0, p1, p2, curveSmooth);
                 } else {
+                    curvePts = squiggle;
+                }
+            } else {
                     curvePts = squiggle;
                 }
             }
@@ -241,5 +258,21 @@ QVector<PFMSetting> SketchQuadBeziersPFM::defineSettings() const {
 
 QVector<DrawingGeometry> SketchQuadBeziersPFM::_process(const cv::Mat& image) {
     return runSketchLoop(this, image, CurveOutputMode::QuadBezier,
+                         std::max(1, get("curve_smoothness").toInt()));
+}
+
+// ---------------------------------------------------------------------------
+// SketchCubicBeziersPFM
+// ---------------------------------------------------------------------------
+SketchCubicBeziersPFM::SketchCubicBeziersPFM(QObject* parent) : PathFindingModule(parent) { initSettings(); }
+
+QVector<PFMSetting> SketchCubicBeziersPFM::defineSettings() const {
+    auto s = makeSketchCommonSettings();
+    s.append({ "curve_smoothness", "Curve Smoothness", SettingType::Integer, 20, {}, 1,100,1,60,1,{},"Curves" });
+    return s;
+}
+
+QVector<DrawingGeometry> SketchCubicBeziersPFM::_process(const cv::Mat& image) {
+    return runSketchLoop(this, image, CurveOutputMode::CubicBezier,
                          std::max(1, get("curve_smoothness").toInt()));
 }

@@ -56,6 +56,7 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qhashfunctions.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qiodevice.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qiodevicebase.h \
+  C:/Qt/6.7.3/msvc2019_64/include/QtCore/qitemselectionmodel.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qiterable.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qiterator.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qlatin1stringview.h \
@@ -133,7 +134,6 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qyieldcpu.h \
-  C:/Qt/6.7.3/msvc2019_64/include/QtGui/QPixmap \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qaction.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qbitmap.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qbrush.h \
@@ -167,12 +167,14 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QFormLayout \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QLabel \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QLayout \
+  C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QListWidget \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QProgressBar \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QPushButton \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/QScrollArea \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractbutton.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractitemdelegate.h \
+  C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractitemview.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractscrollarea.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractslider.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qabstractspinbox.h \
@@ -185,6 +187,8 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qlabel.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qlayout.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qlayoutitem.h \
+  C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qlistview.h \
+  C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qlistwidget.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qmainwindow.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qprogressbar.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qpushbutton.h \
@@ -201,6 +205,7 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qtwidgetsglobal.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtWidgets/qwidget.h \
   C:/Users/sir/Desktop/imgto2d/cpp/core/geometry.h \
+  C:/Users/sir/Desktop/imgto2d/cpp/filters/base_filter.h \
   C:/Users/sir/Desktop/imgto2d/cpp/pfm/pfm_base.h \
   C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.h \
   C:/tools/opencv/build/include/opencv2/core.hpp \
