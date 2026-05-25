@@ -193,6 +193,10 @@ int main(int argc, char* argv[]) {
 
     QString inputSvg = "test_shape.svg";
     QStringList svgCandidates = {
+        "../python/test_shape.svg",
+        "../../python/test_shape.svg",
+        "../../../python/test_shape.svg",
+        "python/test_shape.svg",
         "../test_shape.svg",
         "../../test_shape.svg",
         "../../../test_shape.svg",
