@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QColor>
 #include <QScrollArea>
 #include <QFormLayout>
 #include <QProgressBar>
@@ -35,6 +36,12 @@ private slots:
     void onExportGCode();
     void onExportHPGL();
     void onExportPDF();
+    void onOpenProject();
+    void onSaveProject();
+    void onSaveProjectAs();
+    void onImportVideoFrame();
+    void onExportSettings();
+    void onEditPens();
     void onLoadImage();
     void onLoadMask();
     void onRunBatch();
@@ -65,6 +72,10 @@ private:
     void applySettingsToActiveObject();
     void updatePreview();
     cv::Mat getPreviewImage() const;
+    bool saveProjectFile(const QString& path);
+    bool loadProjectFile(const QString& path);
+    std::shared_ptr<ImageFilter> createFilterByName(const QString& name) const;
+    QVector<QColor> paletteForCurrentMode(bool exportPalette = false) const;
 
     // ---- UI elements ----
     QWidget*      m_leftPanel   = nullptr;
@@ -93,6 +104,12 @@ private:
 
     // ---- State ----
     cv::Mat                          m_image;      // loaded grayscale
+    QString                          m_imagePath;
+    QString                          m_projectPath;
+    bool                             m_useVpype = false;
+    QString                          m_vpypePipeline = "linemerge linesimplify";
+    QVector<QColor>                  m_penColors = { QColor(0, 0, 0) };
+    double                           m_penWidthMm = 0.5;
     QVector<std::shared_ptr<PathFindingModule>> m_pfms;
     
     // Filter definitions and active stack

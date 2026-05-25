@@ -463,6 +463,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.cpp" />
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\lbg_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.cpp" />
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.cpp" />
@@ -508,6 +509,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\stipple_dots.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_pfm.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.h" />
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\lbg_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\sketch_extras.h" />
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\maze_tsp_pfms.h" />

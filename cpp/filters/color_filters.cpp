@@ -18,6 +18,23 @@ cv::Mat GrayscaleFilter::process(const cv::Mat& image) {
     return image.clone();
 }
 
+cv::Mat DesaturateFilter::process(const cv::Mat& image) {
+    if (image.channels() == 3) {
+        cv::Mat gray;
+        cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+        cv::Mat out;
+        cv::cvtColor(gray, out, cv::COLOR_GRAY2BGR);
+        return out;
+    } else if (image.channels() == 4) {
+        cv::Mat gray;
+        cv::cvtColor(image, gray, cv::COLOR_BGRA2GRAY);
+        cv::Mat out;
+        cv::cvtColor(gray, out, cv::COLOR_GRAY2BGRA);
+        return out;
+    }
+    return image.clone();
+}
+
 // ---------------------------------------------------------------------------
 // SaturationFilter
 // ---------------------------------------------------------------------------

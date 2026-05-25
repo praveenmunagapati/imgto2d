@@ -1,6 +1,7 @@
 #include "filters/artistic_distort_filters.h"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/photo.hpp>
+#include <algorithm>
 #include <cmath>
 
 // ---------------------------------------------------------------------------
@@ -62,6 +63,109 @@ cv::Mat StylizationFilter::process(const cv::Mat& image) {
         cv::cvtColor(res, out, cv::COLOR_BGR2GRAY);
     }
     return out;
+}
+
+QVector<PFMSetting> OilPaintingFilter::defineSettings() const {
+    return {
+        { "size", "Size", SettingType::Integer, 5, QVariant(), 1, 20, 1, 20, 1 },
+        { "dynRatio", "Dynamic Ratio", SettingType::Integer, 1, QVariant(), 1, 10, 1, 10, 1 }
+    };
+}
+
+cv::Mat OilPaintingFilter::process(const cv::Mat& image) {
+    if (image.empty()) return {};
+
+    bool wasGray = image.channels() == 1;
+    cv::Mat bgr;
+    if (wasGray) cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
+    else if (image.channels() == 4) cv::cvtColor(image, bgr, cv::COLOR_BGRA2BGR);
+    else bgr = image.clone();
+
+    int size = std::max(1, get("size").toInt());
+    if (size % 2 == 0) ++size;
+    int radius = size / 2;
+    int dynRatio = std::max(1, get("dynRatio").toInt());
+
+    cv::Mat gray;
+    cv::cvtColor(bgr, gray, cv::COLOR_BGR2GRAY);
+    cv::Mat out(bgr.size(), bgr.type());
+
+    for (int y = 0; y < bgr.rows; ++y) {
+        for (int x = 0; x < bgr.cols; ++x) {
+            std::vector<int> counts(dynRatio, 0);
+            std::vector<cv::Vec3i> sums(dynRatio, cv::Vec3i(0, 0, 0));
+
+            for (int dy = -radius; dy <= radius; ++dy) {
+                int yy = std::clamp(y + dy, 0, bgr.rows - 1);
+                for (int dx = -radius; dx <= radius; ++dx) {
+                    int xx = std::clamp(x + dx, 0, bgr.cols - 1);
+                    int bin = std::clamp((int)(gray.at<uchar>(yy, xx) * dynRatio / 256.0), 0, dynRatio - 1);
+                    cv::Vec3b pix = bgr.at<cv::Vec3b>(yy, xx);
+                    counts[bin]++;
+                    sums[bin] += cv::Vec3i(pix[0], pix[1], pix[2]);
+                }
+            }
+
+            int best = 0;
+            for (int i = 1; i < dynRatio; ++i)
+                if (counts[i] > counts[best]) best = i;
+            int n = std::max(1, counts[best]);
+            out.at<cv::Vec3b>(y, x) = cv::Vec3b(
+                cv::saturate_cast<uchar>(sums[best][0] / n),
+                cv::saturate_cast<uchar>(sums[best][1] / n),
+                cv::saturate_cast<uchar>(sums[best][2] / n));
+        }
+    }
+
+    if (wasGray) {
+        cv::Mat grayOut;
+        cv::cvtColor(out, grayOut, cv::COLOR_BGR2GRAY);
+        return grayOut;
+    }
+    return out;
+}
+
+QVector<PFMSetting> DetailEnhanceFilter::defineSettings() const {
+    return {
+        { "sigma_s", "Sigma S", SettingType::Number, 10.0, QVariant(), 1.0, 200.0, 1.0, 200.0, 1.0 },
+        { "sigma_r", "Sigma R", SettingType::Number, 0.15, QVariant(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+    };
+}
+
+cv::Mat DetailEnhanceFilter::process(const cv::Mat& image) {
+    cv::Mat out;
+    float sigmaS = (float)get("sigma_s").toDouble();
+    float sigmaR = (float)get("sigma_r").toDouble();
+    if (image.channels() == 3) {
+        cv::detailEnhance(image, out, sigmaS, sigmaR);
+    } else {
+        cv::Mat bgr, res;
+        cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
+        cv::detailEnhance(bgr, res, sigmaS, sigmaR);
+        cv::cvtColor(res, out, cv::COLOR_BGR2GRAY);
+    }
+    return out;
+}
+
+QVector<PFMSetting> PencilSketchFilter::defineSettings() const {
+    return {
+        { "sigma_s", "Sigma S", SettingType::Number, 60.0, QVariant(), 1.0, 200.0, 1.0, 200.0, 1.0 },
+        { "sigma_r", "Sigma R", SettingType::Number, 0.07, QVariant(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+    };
+}
+
+cv::Mat PencilSketchFilter::process(const cv::Mat& image) {
+    cv::Mat gray, color;
+    float sigmaS = (float)get("sigma_s").toDouble();
+    float sigmaR = (float)get("sigma_r").toDouble();
+    if (image.channels() == 3) {
+        cv::pencilSketch(image, gray, color, sigmaS, sigmaR, 0.05f);
+    } else {
+        cv::Mat bgr;
+        cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
+        cv::pencilSketch(bgr, gray, color, sigmaS, sigmaR, 0.05f);
+    }
+    return gray;
 }
 
 cv::Mat EmbossFilter::process(const cv::Mat& image) {

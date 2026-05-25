@@ -16,6 +16,7 @@
 #include <QGroupBox>
 #include <QSplitter>
 #include <QDoubleSpinBox>
+#include <QDir>
 #include <QSpinBox>
 #include <QScrollArea>
 #include <QMenu>
@@ -27,9 +28,21 @@
 #include <QTimer>
 #include <QDebug>
 #include <QCheckBox>
+#include <QColorDialog>
 #include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QResizeEvent>
 #include <QFont>
+#include <QFile>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLineEdit>
+#include <QProcess>
+#include <QTemporaryFile>
 
 #include "export/svg_exporter.h"
 #include "export/gcode_exporter.h"
@@ -44,6 +57,9 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+
+#include <algorithm>
 
 // PFM includes — all families
 #include "pfm/sketch_lines.h"
@@ -60,6 +76,7 @@
 #include "pfm/stipple_extras.h"
 #include "pfm/adaptive_pfm.h"
 #include "pfm/adaptive_extras.h"
+#include "pfm/lbg_pfms.h"
 #include "pfm/voronoi_pfms.h"
 #include "pfm/grid_pfms.h"
 #include "pfm/mosaic_pfms.h"
@@ -151,6 +168,17 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_pfms.append(std::make_shared<AdaptiveDiagramPFM>());
     m_pfms.append(std::make_shared<AdaptiveLettersPFM>());
 
+    // --- LBG family ---
+    m_pfms.append(std::make_shared<LBGCircularScribblesPFM>());
+    m_pfms.append(std::make_shared<LBGShapesPFM>());
+    m_pfms.append(std::make_shared<LBGTriangulationPFM>());
+    m_pfms.append(std::make_shared<LBGTreePFM>());
+    m_pfms.append(std::make_shared<LBGStipplingPFM>());
+    m_pfms.append(std::make_shared<LBGDashesPFM>());
+    m_pfms.append(std::make_shared<LBGDiagramPFM>());
+    m_pfms.append(std::make_shared<LBGTSPPFM>());
+    m_pfms.append(std::make_shared<LBGLettersPFM>());
+
     // --- Voronoi family ---
     m_pfms.append(std::make_shared<VoronoiStipplingPFM>());
     m_pfms.append(std::make_shared<VoronoiCirclesPFM>());
@@ -192,9 +220,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_pfms.append(std::make_shared<MosaicVoronoiPFM>());
     m_pfms.append(std::make_shared<MosaicCustomPFM>());
 
-    // --- Letters ---
-    m_pfms.append(std::make_shared<LBGLettersPFM>());
-
     // --- Spiral family ---
     m_pfms.append(std::make_shared<SpiralCircularScribblesPFM>());
     m_pfms.append(std::make_shared<SpiralSawtoothPFM>());
@@ -224,6 +249,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     
     // Color filters
     m_availableFilters.append(std::make_shared<GrayscaleFilter>());
+    m_availableFilters.append(std::make_shared<DesaturateFilter>());
     m_availableFilters.append(std::make_shared<SaturationFilter>());
     m_availableFilters.append(std::make_shared<HueFilter>());
     m_availableFilters.append(std::make_shared<GammaFilter>());
@@ -276,6 +302,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     m_availableFilters.append(std::make_shared<PosterizeFilter>());
     m_availableFilters.append(std::make_shared<EdgePreserveFilter>());
     m_availableFilters.append(std::make_shared<StylizationFilter>());
+    m_availableFilters.append(std::make_shared<OilPaintingFilter>());
+    m_availableFilters.append(std::make_shared<DetailEnhanceFilter>());
+    m_availableFilters.append(std::make_shared<PencilSketchFilter>());
     m_availableFilters.append(std::make_shared<EmbossFilter>());
     m_availableFilters.append(std::make_shared<QuantizeFilter>());
     m_availableFilters.append(std::make_shared<VignetteFilter>());
@@ -317,6 +346,36 @@ MainWindow::~MainWindow() {
 // ---------------------------------------------------------------------------
 void MainWindow::createMenus() {
     QMenu* fileMenu = menuBar()->addMenu("&File");
+
+    QAction* openProjectAction = new QAction("Open Project...", this);
+    openProjectAction->setShortcut(QKeySequence("Ctrl+O"));
+    connect(openProjectAction, &QAction::triggered, this, &MainWindow::onOpenProject);
+    fileMenu->addAction(openProjectAction);
+
+    QAction* saveProjectAction = new QAction("Save Project", this);
+    saveProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
+    connect(saveProjectAction, &QAction::triggered, this, &MainWindow::onSaveProject);
+    fileMenu->addAction(saveProjectAction);
+
+    QAction* saveProjectAsAction = new QAction("Save Project As...", this);
+    connect(saveProjectAsAction, &QAction::triggered, this, &MainWindow::onSaveProjectAs);
+    fileMenu->addAction(saveProjectAsAction);
+
+    fileMenu->addSeparator();
+
+    QAction* importVideoAction = new QAction("Import Video Frame...", this);
+    connect(importVideoAction, &QAction::triggered, this, &MainWindow::onImportVideoFrame);
+    fileMenu->addAction(importVideoAction);
+
+    QAction* exportSettingsAction = new QAction("Export Settings...", this);
+    connect(exportSettingsAction, &QAction::triggered, this, &MainWindow::onExportSettings);
+    fileMenu->addAction(exportSettingsAction);
+
+    QAction* penEditorAction = new QAction("Pen Editor...", this);
+    connect(penEditorAction, &QAction::triggered, this, &MainWindow::onEditPens);
+    fileMenu->addAction(penEditorAction);
+
+    fileMenu->addSeparator();
 
     QAction* exportAction = new QAction("Export SVG...", this);
     exportAction->setShortcut(QKeySequence("Ctrl+S"));
@@ -697,6 +756,7 @@ void MainWindow::onLoadImage() {
         return;
     }
     m_image = img;
+    m_imagePath = path;
     updatePreview();
     QFileInfo fi(path);
     m_statusLabel->setText(QString("Loaded: %1 (%2×%3)")
@@ -714,6 +774,277 @@ void MainWindow::onLoadMask() {
             "QPushButton { background: #2a6a4a; border-radius: 6px; color: #fff; font-weight: bold; }");
         updatePreview();
     }
+}
+
+void MainWindow::onImportVideoFrame() {
+    QString path = QFileDialog::getOpenFileName(this, "Import Video Frame", {},
+        "Video Files (*.mp4 *.mov *.avi *.mkv *.webm);;All Files (*)");
+    if (path.isEmpty()) return;
+
+    cv::VideoCapture cap(path.toStdString());
+    if (!cap.isOpened()) {
+        QMessageBox::warning(this, "Video", "Could not open video.");
+        return;
+    }
+
+    int total = (int)cap.get(cv::CAP_PROP_FRAME_COUNT);
+    int frameIdx = std::max(0, total / 2);
+    if (total > 0) cap.set(cv::CAP_PROP_POS_FRAMES, frameIdx);
+
+    cv::Mat frame;
+    if (!cap.read(frame) || frame.empty()) {
+        QMessageBox::warning(this, "Video", "Could not read frame.");
+        return;
+    }
+
+    m_image = frame;
+    m_imagePath = path;
+    updatePreview();
+    m_lastGeoms.clear();
+    m_statusLabel->setText(QString("Video frame %1/%2 (%3x%4)")
+                           .arg(frameIdx).arg(total).arg(frame.cols).arg(frame.rows));
+    m_progressBar->setValue(0);
+}
+
+void MainWindow::onExportSettings() {
+    bool ok = false;
+    QString pipeline = QInputDialog::getText(
+        this, "Export Settings", "vpype pipeline (blank disables vpype):",
+        QLineEdit::Normal, m_useVpype ? m_vpypePipeline : QString(), &ok);
+    if (!ok) return;
+
+    m_useVpype = !pipeline.trimmed().isEmpty();
+    if (m_useVpype) m_vpypePipeline = pipeline.trimmed();
+    else m_vpypePipeline = "linemerge linesimplify";
+
+    QMessageBox::information(this, "Export Settings",
+        m_useVpype ? "vpype SVG optimization enabled." : "vpype SVG optimization disabled.");
+}
+
+QVector<QColor> MainWindow::paletteForCurrentMode(bool exportPalette) const {
+    QString sepMode = m_separationCombo->currentText();
+    QVector<QColor> fallback;
+    if (sepMode == "CMYK") {
+        fallback = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
+    } else if (sepMode == "Colour Match") {
+        fallback = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
+    } else {
+        fallback = {exportPalette ? QColor(0, 0, 0) : QColor(200, 220, 255)};
+    }
+
+    QVector<QColor> palette = m_penColors.isEmpty() ? fallback : m_penColors;
+    while (palette.size() < fallback.size())
+        palette.append(fallback[palette.size()]);
+    return palette;
+}
+
+void MainWindow::onEditPens() {
+    QDialog dlg(this);
+    dlg.setWindowTitle("Pen Editor");
+    auto* form = new QFormLayout(&dlg);
+
+    QVector<QColor> colors = paletteForCurrentMode(true);
+    QVector<QPushButton*> colorButtons;
+    int editableCount = std::max(1, static_cast<int>(colors.size()));
+    for (int i = 0; i < editableCount; ++i) {
+        auto* btn = new QPushButton(colors[i].name().toUpper());
+        btn->setStyleSheet(QString("background:%1; color:%2;")
+                               .arg(colors[i].name())
+                               .arg(colors[i].lightness() < 128 ? "#fff" : "#000"));
+        connect(btn, &QPushButton::clicked, &dlg, [btn, &colors, i, this]() {
+            QColor picked = QColorDialog::getColor(colors[i], this, "Choose Pen Color");
+            if (!picked.isValid()) return;
+            colors[i] = picked;
+            btn->setText(picked.name().toUpper());
+            btn->setStyleSheet(QString("background:%1; color:%2;")
+                                   .arg(picked.name())
+                                   .arg(picked.lightness() < 128 ? "#fff" : "#000"));
+        });
+        colorButtons.append(btn);
+        form->addRow(QString("Pen %1 Color:").arg(i + 1), btn);
+    }
+
+    auto* widthSpin = new QDoubleSpinBox;
+    widthSpin->setRange(0.05, 20.0);
+    widthSpin->setSingleStep(0.05);
+    widthSpin->setDecimals(2);
+    widthSpin->setValue(m_penWidthMm);
+    form->addRow("Stroke Width (mm):", widthSpin);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    form->addRow(buttons);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+
+    if (dlg.exec() == QDialog::Accepted) {
+        m_penColors = colors;
+        m_penWidthMm = widthSpin->value();
+        if (!m_lastGeoms.isEmpty()) renderAndShowGeometries(m_lastGeoms);
+        m_statusLabel->setText(QString("Updated %1 pen(s), stroke %2 mm").arg(m_penColors.size()).arg(m_penWidthMm));
+    }
+}
+
+void MainWindow::onOpenProject() {
+    QString path = QFileDialog::getOpenFileName(this, "Open Project", {}, "DrawingBot Project (*.dbv3);;All Files (*)");
+    if (path.isEmpty()) return;
+    if (loadProjectFile(path)) {
+        m_projectPath = path;
+        setWindowTitle("imgto2d - " + QFileInfo(path).fileName());
+    }
+}
+
+void MainWindow::onSaveProject() {
+    if (m_projectPath.isEmpty()) {
+        onSaveProjectAs();
+        return;
+    }
+    saveProjectFile(m_projectPath);
+}
+
+void MainWindow::onSaveProjectAs() {
+    QString path = QFileDialog::getSaveFileName(this, "Save Project", {}, "DrawingBot Project (*.dbv3)");
+    if (path.isEmpty()) return;
+    if (!path.endsWith(".dbv3", Qt::CaseInsensitive)) path += ".dbv3";
+    if (saveProjectFile(path)) {
+        m_projectPath = path;
+        setWindowTitle("imgto2d - " + QFileInfo(path).fileName());
+    }
+}
+
+bool MainWindow::saveProjectFile(const QString& path) {
+    applySettingsToActiveObject();
+
+    auto settingsToJson = [](const QMap<QString, PFMSetting>& settings) {
+        QJsonObject obj;
+        for (auto it = settings.constBegin(); it != settings.constEnd(); ++it)
+            obj.insert(it.key(), QJsonValue::fromVariant(it.value().currentValue()));
+        return obj;
+    };
+
+    int pfmIdx = m_pfmCombo->currentIndex();
+    QJsonObject root;
+    root["version"] = "1.6.5-cpp";
+    root["image_path"] = m_imagePath;
+    root["pfm_name"] = m_pfmCombo->currentText();
+    if (pfmIdx >= 0 && pfmIdx < m_pfms.size())
+        root["pfm_settings"] = settingsToJson(m_pfms[pfmIdx]->settingsMap());
+    root["colour_separation"] = m_separationCombo->currentText();
+    root["fast_preview"] = m_fastPreview->isChecked();
+    root["preview_resolution"] = m_resCombo->currentText();
+    root["use_vpype"] = m_useVpype;
+    root["vpype_pipeline"] = m_vpypePipeline;
+    root["pen_width_mm"] = m_penWidthMm;
+
+    QJsonArray penColors;
+    for (const QColor& color : m_penColors)
+        penColors.append(color.name(QColor::HexRgb));
+    root["pen_colors"] = penColors;
+
+    QJsonObject mask;
+    mask["enabled"] = m_maskMgr.isEnabled();
+    mask["mask_path"] = m_maskMgr.maskPath();
+    root["mask_settings"] = mask;
+
+    QJsonArray filters;
+    for (auto& filter : m_activeFilters) {
+        QJsonObject f;
+        f["name"] = filter->name();
+        f["settings"] = settingsToJson(filter->settingsMap());
+        filters.append(f);
+    }
+    root["filter_chain"] = filters;
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, "Save Project", "Could not write project:\n" + file.errorString());
+        return false;
+    }
+    file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+    m_statusLabel->setText("Saved project: " + QFileInfo(path).fileName());
+    return true;
+}
+
+bool MainWindow::loadProjectFile(const QString& path) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, "Open Project", "Could not read project:\n" + file.errorString());
+        return false;
+    }
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::critical(this, "Open Project", "Invalid project JSON:\n" + err.errorString());
+        return false;
+    }
+
+    QJsonObject root = doc.object();
+    m_imagePath = root.value("image_path").toString();
+    m_image = cv::Mat();
+    if (!m_imagePath.isEmpty() && QFileInfo::exists(m_imagePath)) {
+        cv::Mat img = cv::imread(m_imagePath.toStdString(), cv::IMREAD_COLOR);
+        if (!img.empty()) m_image = img;
+    } else if (!m_imagePath.isEmpty()) {
+        QMessageBox::warning(this, "Open Project", "Project image path was not found:\n" + m_imagePath);
+    }
+
+    QString pfmName = root.value("pfm_name").toString("Sketch Lines");
+    for (int i = 0; i < m_pfms.size(); ++i) {
+        if (m_pfms[i]->name() == pfmName) {
+            m_pfmCombo->setCurrentIndex(i);
+            break;
+        }
+    }
+    QJsonObject pfmSettings = root.value("pfm_settings").toObject();
+    int pfmIdx = m_pfmCombo->currentIndex();
+    if (pfmIdx >= 0 && pfmIdx < m_pfms.size()) {
+        for (auto it = pfmSettings.constBegin(); it != pfmSettings.constEnd(); ++it)
+            m_pfms[pfmIdx]->set(it.key(), it.value().toVariant());
+    }
+
+    m_activeFilters.clear();
+    m_filterList->clear();
+    for (const auto& v : root.value("filter_chain").toArray()) {
+        QJsonObject fObj = v.toObject();
+        auto filter = createFilterByName(fObj.value("name").toString());
+        if (!filter) continue;
+        QJsonObject settings = fObj.value("settings").toObject();
+        for (auto it = settings.constBegin(); it != settings.constEnd(); ++it)
+            filter->set(it.key(), it.value().toVariant());
+        m_activeFilters.append(filter);
+        m_filterList->addItem(filter->name());
+    }
+
+    QJsonObject mask = root.value("mask_settings").toObject();
+    QString maskPath = mask.value("mask_path").toString();
+    m_maskMgr.clear();
+    m_loadMaskBtn->setText("Load Mask...");
+    if (mask.value("enabled").toBool(false) && !maskPath.isEmpty()) {
+        if (QFileInfo::exists(maskPath) && m_maskMgr.load(maskPath)) {
+            m_loadMaskBtn->setText("Mask: " + QFileInfo(maskPath).fileName());
+        } else {
+            QMessageBox::warning(this, "Open Project", "Project mask path was not found:\n" + maskPath);
+        }
+    }
+
+    m_separationCombo->setCurrentText(root.value("colour_separation").toString("None"));
+    m_fastPreview->setChecked(root.value("fast_preview").toBool(true));
+    m_resCombo->setCurrentText(root.value("preview_resolution").toString("1080p"));
+    m_useVpype = root.value("use_vpype").toBool(false);
+    m_vpypePipeline = root.value("vpype_pipeline").toString("linemerge linesimplify");
+    m_penWidthMm = root.value("pen_width_mm").toDouble(0.5);
+    QVector<QColor> loadedPenColors;
+    for (const auto& v : root.value("pen_colors").toArray()) {
+        QColor color(v.toString());
+        if (color.isValid()) loadedPenColors.append(color);
+    }
+    if (!loadedPenColors.isEmpty()) m_penColors = loadedPenColors;
+    m_currentEditingFilterIdx = -1;
+    m_filterList->clearSelection();
+    populateSettingsPanel();
+    updatePreview();
+    m_lastGeoms.clear();
+    m_statusLabel->setText("Opened project: " + QFileInfo(path).fileName());
+    return true;
 }
 
 void MainWindow::onStartProcessing() {
@@ -898,20 +1229,14 @@ void MainWindow::renderAndShowGeometries(const QVector<DrawingGeometry>& geoms) 
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     QString sepMode = m_separationCombo->currentText();
-    QVector<QColor> palette;
+    QVector<QColor> palette = paletteForCurrentMode(false);
     if (sepMode == "CMYK") {
-        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
         img.fill(Qt::white); // CMYK is usually on white paper
     } else if (sepMode == "Colour Match") {
-        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
         img.fill(Qt::white); // RGB drawn on white paper as density
     } else {
-        palette = {QColor(200, 220, 255)};
         img.fill(QColor(30, 30, 35)); // Default dark theme for single color
     }
-
-    // Since we fill here based on sepMode, do we need to override the img.fill above?
-    // Yes, but img is already filled above. We'll just let the if block above set the correct background.
 
     for (auto& geom : geoms) {
         const auto& path = geom.path;
@@ -928,7 +1253,7 @@ void MainWindow::renderAndShowGeometries(const QVector<DrawingGeometry>& geoms) 
             painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         }
 
-        painter.setPen(QPen(penColor, 0.8));
+        painter.setPen(QPen(penColor, std::max(0.25, m_penWidthMm * 2.0)));
 
         for (std::size_t i = 1; i < path.size(); ++i) {
             painter.drawLine(
@@ -977,23 +1302,65 @@ void MainWindow::onExportSVG() {
     // For now we use the default DrawingAreaConfig properties.
     // Future work: add a UI panel for Drawing Area settings.
     
-    QString sepMode = m_separationCombo->currentText();
-    QVector<QColor> palette;
-    if (sepMode == "CMYK") {
-        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
-    } else if (sepMode == "Colour Match") {
-        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
-    } else {
-        palette = {QColor(0, 0, 0)}; // Export defaults to black on white
-    }
+    QVector<QColor> palette = paletteForCurrentMode(true);
 
     cv::Mat preview = getPreviewImage();
     int imgW = preview.empty() ? m_image.cols : preview.cols;
     int imgH = preview.empty() ? m_image.rows : preview.rows;
 
-    if (SVGExporter::exportSVG(filepath, m_lastGeoms, da, imgW, imgH, palette)) {
+    QString exportPath = filepath;
+    QString tempPath;
+    if (m_useVpype) {
+        QTemporaryFile tmp(QDir::tempPath() + "/imgto2d_vpype_XXXXXX.svg");
+        tmp.setAutoRemove(false);
+        if (!tmp.open()) {
+            QMessageBox::critical(this, "Export SVG", "Could not create temporary SVG for vpype.");
+            return;
+        }
+        tempPath = tmp.fileName();
+        tmp.close();
+        exportPath = tempPath;
+    }
+
+    if (SVGExporter::exportSVG(exportPath, m_lastGeoms, da, imgW, imgH, palette, m_penWidthMm)) {
+        if (m_useVpype) {
+            QString vpypeProgram = "vpype";
+            QString runtimeVpype = QDir::current().absoluteFilePath("runtime/python/Scripts/vpype.exe");
+            QString appRelativeRuntimeVpype = QDir(QCoreApplication::applicationDirPath())
+                .absoluteFilePath("../../../runtime/python/Scripts/vpype.exe");
+            QString localVpype = QDir::current().absoluteFilePath(".venv/Scripts/vpype.exe");
+            QString appRelativeVpype = QDir(QCoreApplication::applicationDirPath())
+                .absoluteFilePath("../../../.venv/Scripts/vpype.exe");
+            if (QFileInfo::exists(runtimeVpype)) {
+                vpypeProgram = runtimeVpype;
+            } else if (QFileInfo::exists(appRelativeRuntimeVpype)) {
+                vpypeProgram = appRelativeRuntimeVpype;
+            } else if (QFileInfo::exists(localVpype)) {
+                vpypeProgram = localVpype;
+            } else if (QFileInfo::exists(appRelativeVpype)) {
+                vpypeProgram = appRelativeVpype;
+            }
+
+            QStringList args;
+            args << "read" << tempPath;
+            for (const QString& token : m_vpypePipeline.split(' ', Qt::SkipEmptyParts))
+                args << token;
+            args << "write" << filepath;
+
+            QProcess proc;
+            proc.start(vpypeProgram, args);
+            if (!proc.waitForStarted() || !proc.waitForFinished(-1) || proc.exitStatus() != QProcess::NormalExit || proc.exitCode() != 0) {
+                QString err = QString::fromUtf8(proc.readAllStandardError()).trimmed();
+                if (err.isEmpty()) err = "vpype executable was not found or returned an error.";
+                QFile::remove(tempPath);
+                QMessageBox::critical(this, "Export SVG", "VPype optimization failed:\n" + err);
+                return;
+            }
+            QFile::remove(tempPath);
+        }
         QMessageBox::information(this, "Export SVG", "Successfully exported SVG to:\n" + filepath);
     } else {
+        if (!tempPath.isEmpty()) QFile::remove(tempPath);
         QMessageBox::critical(this, "Export SVG", "Failed to export SVG to:\n" + filepath);
     }
 }
@@ -1051,21 +1418,13 @@ void MainWindow::onExportPDF() {
 
     DrawingAreaConfig da;
     
-    QString sepMode = m_separationCombo->currentText();
-    QVector<QColor> palette;
-    if (sepMode == "CMYK") {
-        palette = {QColor(0, 255, 255), QColor(255, 0, 255), QColor(255, 255, 0), QColor(30, 30, 30)};
-    } else if (sepMode == "Colour Match") {
-        palette = {QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255)};
-    } else {
-        palette = {QColor(0, 0, 0)};
-    }
+    QVector<QColor> palette = paletteForCurrentMode(true);
 
     cv::Mat preview = getPreviewImage();
     int imgW = preview.empty() ? m_image.cols : preview.cols;
     int imgH = preview.empty() ? m_image.rows : preview.rows;
 
-    if (PDFExporter::exportPDF(filepath, m_lastGeoms, da, imgW, imgH, palette)) {
+    if (PDFExporter::exportPDF(filepath, m_lastGeoms, da, imgW, imgH, palette, m_penWidthMm)) {
         QMessageBox::information(this, "Export PDF", "Successfully exported PDF to:\n" + filepath);
     } else {
         QMessageBox::critical(this, "Export PDF", "Failed to export PDF to:\n" + filepath);
@@ -1120,6 +1479,75 @@ void MainWindow::onSettingChanged() {
     }
 }
 
+std::shared_ptr<ImageFilter> MainWindow::createFilterByName(const QString& name) const {
+    if (name == "Brightness") return std::make_shared<BrightnessFilter>();
+    if (name == "Contrast") return std::make_shared<ContrastFilter>();
+    if (name == "Invert") return std::make_shared<InvertFilter>();
+    if (name == "Threshold") return std::make_shared<ThresholdFilter>();
+    if (name == "Unsharp Mask") return std::make_shared<UnsharpMaskFilter>();
+    if (name == "Grayscale") return std::make_shared<GrayscaleFilter>();
+    if (name == "Desaturate") return std::make_shared<DesaturateFilter>();
+    if (name == "Saturation") return std::make_shared<SaturationFilter>();
+    if (name == "Hue Shift") return std::make_shared<HueFilter>();
+    if (name == "Gamma Correction") return std::make_shared<GammaFilter>();
+    if (name == "Exposure") return std::make_shared<ExposureFilter>();
+    if (name == "Sepia") return std::make_shared<SepiaFilter>();
+    if (name == "CLAHE") return std::make_shared<CLAHEFilter>();
+    if (name == "Temperature") return std::make_shared<TemperatureFilter>();
+    if (name == "Canny Edge Detection") return std::make_shared<CannyFilter>();
+    if (name == "Sobel Edge Detection") return std::make_shared<SobelFilter>();
+    if (name == "Laplacian Edge Detection") return std::make_shared<LaplacianFilter>();
+    if (name == "Prewitt Edge") return std::make_shared<PrewittFilter>();
+    if (name == "Scharr Edge") return std::make_shared<ScharrFilter>();
+    if (name == "Difference of Gaussians (DoG)") return std::make_shared<DoGFilter>();
+    if (name == "Ridge Detection (Hessian)") return std::make_shared<RidgeDetectionFilter>();
+    if (name == "High Pass") return std::make_shared<HighPassFilter>();
+    if (name == "Gaussian Blur") return std::make_shared<GaussianBlurFilter>();
+    if (name == "Median Blur") return std::make_shared<MedianBlurFilter>();
+    if (name == "Box Blur") return std::make_shared<BoxBlurFilter>();
+    if (name == "Motion Blur") return std::make_shared<MotionBlurFilter>();
+    if (name == "Bilateral Filter") return std::make_shared<BilateralFilter>();
+    if (name == "Low Pass") return std::make_shared<LowPassFilter>();
+    if (name == "Sharpen More") return std::make_shared<SharpenMoreFilter>();
+    if (name == "Add Gaussian Noise") return std::make_shared<GaussianNoiseFilter>();
+    if (name == "Salt & Pepper Noise") return std::make_shared<SaltAndPepperFilter>();
+    if (name == "Denoise (NL Means)" || name == "Denoise (Non-Local Means)") return std::make_shared<DenoiseFilter>();
+    if (name == "Gaussian Noise 2") return std::make_shared<GaussianNoise2Filter>();
+    if (name == "Speckle Noise") return std::make_shared<SpeckleNoiseFilter>();
+    if (name == "Dilation") return std::make_shared<DilationFilter>();
+    if (name == "Erosion") return std::make_shared<ErosionFilter>();
+    if (name == "Opening") return std::make_shared<OpeningFilter>();
+    if (name == "Closing") return std::make_shared<ClosingFilter>();
+    if (name == "Morphological Gradient") return std::make_shared<MorphGradientFilter>();
+    if (name == "Top Hat") return std::make_shared<TopHatFilter>();
+    if (name == "Black Hat") return std::make_shared<BlackHatFilter>();
+    if (name == "Dilate Cross") return std::make_shared<DilateCrossFilter>();
+    if (name == "Erode Cross") return std::make_shared<ErodeCrossFilter>();
+    if (name == "Dilate Ellipse") return std::make_shared<DilateEllipseFilter>();
+    if (name == "Erode Ellipse") return std::make_shared<ErodeEllipseFilter>();
+    if (name == "Posterize") return std::make_shared<PosterizeFilter>();
+    if (name == "Edge Preserve Smooth") return std::make_shared<EdgePreserveFilter>();
+    if (name == "Stylization") return std::make_shared<StylizationFilter>();
+    if (name == "Oil Painting") return std::make_shared<OilPaintingFilter>();
+    if (name == "Detail Enhance") return std::make_shared<DetailEnhanceFilter>();
+    if (name == "Pencil Sketch") return std::make_shared<PencilSketchFilter>();
+    if (name == "Emboss") return std::make_shared<EmbossFilter>();
+    if (name == "Quantize (8 Colors)") return std::make_shared<QuantizeFilter>();
+    if (name == "Vignette") return std::make_shared<VignetteFilter>();
+    if (name == "Pixelate") return std::make_shared<PixelateFilter>();
+    if (name == "Wave Distortion") return std::make_shared<WaveFilter>();
+    if (name == "Otsu Threshold") return std::make_shared<OtsuThresholdFilter>();
+    if (name == "Adaptive Threshold") return std::make_shared<AdaptiveThresholdFilter>();
+    if (name == "Truncate Threshold") return std::make_shared<TruncateThresholdFilter>();
+    if (name == "To Zero Threshold") return std::make_shared<ToZeroThresholdFilter>();
+    if (name == "Equalize Histogram") return std::make_shared<EqualizeHistFilter>();
+    if (name == "Auto Contrast") return std::make_shared<AutoContrastFilter>();
+    if (name == "Auto Color") return std::make_shared<AutoColorFilter>();
+    if (name == "Colorize (Tint)") return std::make_shared<ColorizeFilter>();
+    if (name == "Invert Hue") return std::make_shared<InvertHueFilter>();
+    return {};
+}
+
 // ---------------------------------------------------------------------------
 // Filter Slots
 // ---------------------------------------------------------------------------
@@ -1128,71 +1556,7 @@ void MainWindow::onAddFilter() {
     if (idx < 0 || idx >= m_availableFilters.size()) return;
     
     QString name = m_availableFilters[idx]->name();
-    std::shared_ptr<ImageFilter> newFilter;
-    if (name == "Brightness") newFilter = std::make_shared<BrightnessFilter>();
-    else if (name == "Contrast") newFilter = std::make_shared<ContrastFilter>();
-    else if (name == "Invert") newFilter = std::make_shared<InvertFilter>();
-    else if (name == "Threshold") newFilter = std::make_shared<ThresholdFilter>();
-    else if (name == "Unsharp Mask") newFilter = std::make_shared<UnsharpMaskFilter>();
-    else if (name == "Grayscale") newFilter = std::make_shared<GrayscaleFilter>();
-    else if (name == "Saturation") newFilter = std::make_shared<SaturationFilter>();
-    else if (name == "Hue Shift") newFilter = std::make_shared<HueFilter>();
-    else if (name == "Gamma Correction") newFilter = std::make_shared<GammaFilter>();
-    else if (name == "Exposure") newFilter = std::make_shared<ExposureFilter>();
-    else if (name == "Sepia") newFilter = std::make_shared<SepiaFilter>();
-    else if (name == "CLAHE") newFilter = std::make_shared<CLAHEFilter>();
-    else if (name == "Temperature") newFilter = std::make_shared<TemperatureFilter>();
-    else if (name == "Canny Edge Detection") newFilter = std::make_shared<CannyFilter>();
-    else if (name == "Sobel Edge Detection") newFilter = std::make_shared<SobelFilter>();
-    else if (name == "Laplacian Edge Detection") newFilter = std::make_shared<LaplacianFilter>();
-    else if (name == "Prewitt Edge") newFilter = std::make_shared<PrewittFilter>();
-    else if (name == "Scharr Edge") newFilter = std::make_shared<ScharrFilter>();
-    else if (name == "Difference of Gaussians (DoG)") newFilter = std::make_shared<DoGFilter>();
-    else if (name == "Ridge Detection (Hessian)") newFilter = std::make_shared<RidgeDetectionFilter>();
-    else if (name == "High Pass") newFilter = std::make_shared<HighPassFilter>();
-    else if (name == "Gaussian Blur") newFilter = std::make_shared<GaussianBlurFilter>();
-    else if (name == "Median Blur") newFilter = std::make_shared<MedianBlurFilter>();
-    else if (name == "Box Blur") newFilter = std::make_shared<BoxBlurFilter>();
-    else if (name == "Motion Blur") newFilter = std::make_shared<MotionBlurFilter>();
-    else if (name == "Bilateral Filter") newFilter = std::make_shared<BilateralFilter>();
-    else if (name == "Low Pass") newFilter = std::make_shared<LowPassFilter>();
-    else if (name == "Sharpen More") newFilter = std::make_shared<SharpenMoreFilter>();
-    else if (name == "Add Gaussian Noise") newFilter = std::make_shared<GaussianNoiseFilter>();
-    else if (name == "Salt & Pepper Noise") newFilter = std::make_shared<SaltAndPepperFilter>();
-    else if (name == "Denoise (NL Means)") newFilter = std::make_shared<DenoiseFilter>();
-    else if (name == "Gaussian Noise 2") newFilter = std::make_shared<GaussianNoise2Filter>();
-    else if (name == "Speckle Noise") newFilter = std::make_shared<SpeckleNoiseFilter>();
-    else if (name == "Dilation") newFilter = std::make_shared<DilationFilter>();
-    else if (name == "Erosion") newFilter = std::make_shared<ErosionFilter>();
-    else if (name == "Opening") newFilter = std::make_shared<OpeningFilter>();
-    else if (name == "Closing") newFilter = std::make_shared<ClosingFilter>();
-    else if (name == "Morphological Gradient") newFilter = std::make_shared<MorphGradientFilter>();
-    else if (name == "Top Hat") newFilter = std::make_shared<TopHatFilter>();
-    else if (name == "Black Hat") newFilter = std::make_shared<BlackHatFilter>();
-    else if (name == "Dilate Cross") newFilter = std::make_shared<DilateCrossFilter>();
-    else if (name == "Erode Cross") newFilter = std::make_shared<ErodeCrossFilter>();
-    else if (name == "Dilate Ellipse") newFilter = std::make_shared<DilateEllipseFilter>();
-    else if (name == "Erode Ellipse") newFilter = std::make_shared<ErodeEllipseFilter>();
-    else if (name == "Posterize") newFilter = std::make_shared<PosterizeFilter>();
-    else if (name == "Edge Preserve Smooth") newFilter = std::make_shared<EdgePreserveFilter>();
-    else if (name == "Stylization") newFilter = std::make_shared<StylizationFilter>();
-    else if (name == "Emboss") newFilter = std::make_shared<EmbossFilter>();
-    else if (name == "Quantize (8 Colors)") newFilter = std::make_shared<QuantizeFilter>();
-    else if (name == "Vignette") newFilter = std::make_shared<VignetteFilter>();
-    else if (name == "Pixelate") newFilter = std::make_shared<PixelateFilter>();
-    else if (name == "Wave Distortion") newFilter = std::make_shared<WaveFilter>();
-    else if (name == "Otsu Threshold") newFilter = std::make_shared<OtsuThresholdFilter>();
-    else if (name == "Adaptive Threshold") newFilter = std::make_shared<AdaptiveThresholdFilter>();
-    else if (name == "Truncate Threshold") newFilter = std::make_shared<TruncateThresholdFilter>();
-    else if (name == "To Zero Threshold") newFilter = std::make_shared<ToZeroThresholdFilter>();
-    else if (name == "Equalize Histogram") newFilter = std::make_shared<EqualizeHistFilter>();
-    else if (name == "Auto Contrast") newFilter = std::make_shared<AutoContrastFilter>();
-    else if (name == "Auto Color") newFilter = std::make_shared<AutoColorFilter>();
-    else if (name == "Colorize (Tint)") newFilter = std::make_shared<ColorizeFilter>();
-    else if (name == "Invert Hue") newFilter = std::make_shared<InvertHueFilter>();
-
-
-
+    std::shared_ptr<ImageFilter> newFilter = createFilterByName(name);
     
     if (newFilter) {
         m_activeFilters.append(newFilter);

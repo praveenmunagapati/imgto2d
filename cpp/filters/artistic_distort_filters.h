@@ -35,6 +35,39 @@ protected:
     cv::Mat process(const cv::Mat& image) override;
 };
 
+class OilPaintingFilter : public ImageFilter {
+    Q_OBJECT
+public:
+    explicit OilPaintingFilter(QObject* parent = nullptr) : ImageFilter(parent) { initSettings(); }
+    QString name() const override { return "Oil Painting"; }
+    QString category() const override { return "Artistic"; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class DetailEnhanceFilter : public ImageFilter {
+    Q_OBJECT
+public:
+    explicit DetailEnhanceFilter(QObject* parent = nullptr) : ImageFilter(parent) { initSettings(); }
+    QString name() const override { return "Detail Enhance"; }
+    QString category() const override { return "Artistic"; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class PencilSketchFilter : public ImageFilter {
+    Q_OBJECT
+public:
+    explicit PencilSketchFilter(QObject* parent = nullptr) : ImageFilter(parent) { initSettings(); }
+    QString name() const override { return "Pencil Sketch"; }
+    QString category() const override { return "Artistic"; }
+protected:
+    QVector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
 class EmbossFilter : public ImageFilter {
     Q_OBJECT
 public:

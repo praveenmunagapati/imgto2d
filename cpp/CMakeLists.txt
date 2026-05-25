@@ -73,6 +73,7 @@ set(SOURCES
     pfm/stipple_dots.cpp
     pfm/adaptive_pfm.cpp
     pfm/adaptive_extras.cpp
+    pfm/lbg_pfms.cpp
     pfm/composite_pfms.cpp
     pfm/sketch_extras.cpp
     pfm/maze_tsp_pfms.cpp
@@ -121,6 +122,7 @@ set(HEADERS
     pfm/stipple_dots.h
     pfm/adaptive_pfm.h
     pfm/adaptive_extras.h
+    pfm/lbg_pfms.h
     pfm/composite_pfms.h
     pfm/sketch_extras.h
     pfm/maze_tsp_pfms.h
@@ -186,4 +188,14 @@ endif()
 install(TARGETS imgto2d_qt RUNTIME DESTINATION bin)
 
 add_executable(test_pfms test_pfms.cpp)
-target_link_libraries(test_pfms PRIVATE Qt6::Core Qt6::Widgets )
+target_sources(test_pfms PRIVATE
+    filters/base_filter.cpp
+    filters/color_filters.cpp
+    filters/artistic_distort_filters.cpp
+    pfm/pfm_base.cpp
+)
+target_include_directories(test_pfms PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+)
+target_link_libraries(test_pfms PRIVATE Qt6::Core Qt6::Widgets ${OpenCV_LIBS})

@@ -3,8 +3,9 @@ Summary
 This document maps the repository's Path Finding Modules (PFMs) and related export features against the official DrawingBot V3 docs (source: docs.drawingbotv3.com/_sources/pfms.rst.txt).
 
 High-level findings
-- The repo contains comprehensive PFM implementations spanning Sketch, Streamline, Spiral, Hatch, Adaptive, LBG, Voronoi, Grid, Composite, Mosaic and Special PFMs.
-- VPype export support and a Qt serial plotter UI + streaming were implemented during this session.
+- The repo contains comprehensive Python and C++ PFM implementations spanning Sketch, Streamline, Spiral, Hatch, Adaptive, LBG, Voronoi, Grid, Composite, Mosaic and Special PFMs.
+- The C++/Qt app now registers the documented LBG family, 65 image filters, project save/load, pen editing, video frame import, vpype SVG optimization, masks, batch processing, and SVG/PDF/HPGL/G-code export.
+- Qt serial plotter source is implemented behind optional `Qt6SerialPort`; it is enabled when that Qt component is installed.
 - Bit-identical output vs. official DrawingBot V3 is not claimed or required.
 
 Repository PFM modules -> Official PFM coverage (summary)
@@ -37,14 +38,12 @@ Notable gaps & caveats
 - Runtime validation (processing outputs) has not been performed: behaviour/perceptual parity should be validated by running the PFMs on sample images and comparing outputs.
 
 Export & UI parity
-- VPype exporter: implemented (app/export/vpype_exporter.py). Exposed in Export dialog via `use_vpype` and `vpype_pipeline` settings.
-- Qt serial plotter: implemented (app/ui/main_window.py + serial_manager.py). Streaming supports GRBL character-counting protocol and provides pause/resume/stop.
-- G-code generator: `generate_gcode_lines()` added and used for both export and streaming.
+- VPype exporter: implemented in Python and C++/Qt. C++ uses a temporary SVG and external `vpype` command.
+- Qt serial plotter: implemented in source behind optional `Qt6SerialPort`.
+- G-code export is implemented in both Python and C++.
+- C++ project save/load, pen editor, video frame import, masks, batch processing, PDF/HPGL/SVG/G-code export, and filter stack are implemented.
 
 Recommended next steps
-1) Run automated comparison: parse official PFM names from docs and compare to repo module list to produce exact missing/extra items.
-2) Perform runtime tests: launch the Qt app, run several PFMs on sample images, confirm plot geometry qualitatively, and test streaming to a GRBL device (or simulator).
-3) Test VPype export: run an SVG export with `use_vpype=True` and a simple pipeline to validate subprocess invocation and error handling.
-4) Add small integration tests for `SerialManager` streaming logic (simulate GRBL responses) and VPype error paths.
-
-If you want, I can run step (1) now and produce a precise missing/extra PFM list programmatically.
+1) Perform qualitative runtime checks for several PFMs on sample images.
+2) Test serial streaming on a machine with `Qt6SerialPort` installed and a GRBL device or simulator.
+3) Test vpype export on a machine with `vpype` installed on `PATH`.

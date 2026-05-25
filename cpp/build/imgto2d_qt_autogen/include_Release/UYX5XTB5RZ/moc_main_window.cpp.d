@@ -134,6 +134,7 @@ C:/Users/sir/Desktop/imgto2d/cpp/build/imgto2d_qt_autogen/include_Release/UYX5XT
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtCore/qyieldcpu.h \
+  C:/Qt/6.7.3/msvc2019_64/include/QtGui/QColor \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qaction.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qbitmap.h \
   C:/Qt/6.7.3/msvc2019_64/include/QtGui/qbrush.h \

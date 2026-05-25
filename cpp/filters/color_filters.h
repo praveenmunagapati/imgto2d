@@ -14,6 +14,16 @@ protected:
     cv::Mat process(const cv::Mat& image) override;
 };
 
+class DesaturateFilter : public ImageFilter {
+    Q_OBJECT
+public:
+    explicit DesaturateFilter(QObject* parent = nullptr) : ImageFilter(parent) { initSettings(); }
+    QString name() const override { return "Desaturate"; }
+    QString category() const override { return "Color"; }
+protected:
+    cv::Mat process(const cv::Mat& image) override;
+};
+
 class SaturationFilter : public ImageFilter {
     Q_OBJECT
 public:

@@ -7,6 +7,7 @@ __pycache__/
 env/
 venv/
 .venv/
+runtime/python/
 env.bak/
 venv.bak/
 

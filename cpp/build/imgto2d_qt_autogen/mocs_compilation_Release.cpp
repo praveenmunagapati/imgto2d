@@ -13,6 +13,7 @@
 #include <6X7XSKHGGJ/moc_grid_pfms.cpp>
 #include <6X7XSKHGGJ/moc_hatch_extras.cpp>
 #include <6X7XSKHGGJ/moc_hatch_lines.cpp>
+#include <6X7XSKHGGJ/moc_lbg_pfms.cpp>
 #include <6X7XSKHGGJ/moc_letters_pfms.cpp>
 #include <6X7XSKHGGJ/moc_maze_tsp_pfms.cpp>
 #include <6X7XSKHGGJ/moc_mosaic_pfms.cpp>

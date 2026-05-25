@@ -2,49 +2,48 @@
 
 Target: **DrawingBot V3 1.6.x** ([documentation](https://docs.drawingbotv3.com/en/latest/))
 
-## Implemented (premium styles)
+## C++ / Qt parity status
+
+| Area | Status |
+|------|--------|
+| PFMs | Done: 103 C++ PFMs registered in the Qt app |
+| Image filters | Done: 65 C++ filters registered |
+| Masks | Done |
+| Batch processing | Done |
+| SVG/PDF/HPGL/G-code export | Done |
+| Project save/load | Done: `.dbv3` state for image, PFM, PFM settings, filters, mask, preview/export/pen settings |
+| Pen editor | Done: pen colors and stroke width affect preview, SVG, and PDF export |
+| Video frame import | Done |
+| vpype SVG optimization | Done: optional external `vpype` command |
+| Serial plotter | Source implemented behind optional `Qt6SerialPort`; enabled when that Qt component is installed |
+
+## Implemented PFM families
 
 | Family | Modules | Notes |
-|--------|---------|--------|
-| **Sketch** | Lines, Squares, Curves, Catmull-Roms, Shapes, Sobel Edges, Beziers, Waves, Spirals, Flow Fields, Superformula, Radial, Scribble, Abstract, Voronoi, Delaunay, … | Core + extras marked premium |
-| **Hatch** | Lines + 10 multi-angle + **Sawtooth**, **Circular Scribbles** | Premium hatch uses zigzag / ring scribbles |
-| **Stipple** | Dots + 10 shape variants (variable size from brightness) | All stipple extras premium |
-| **Adaptive** | 8 styles + **Letters** | Delaunay/MST tree via OpenCV; letters A–Z per cell |
-| **Voronoi** | 8 styles + **Letters** | Distinct renderers (not clones); facet dashes, variable stipple |
-| **LBG** | 8 Lloyd variants + **Letters** | Default 5 Lloyd iterations |
-| **Streamline** | Edge Field, Flow Field, Superformula | Sobel flow tracing |
+|--------|---------|-------|
+| **Sketch** | Lines, Squares, Curves, Catmull-Roms, Shapes, Sobel Edges, Beziers, Waves, Spirals, Flow Fields, Superformula, Radial, Scribble, Abstract, Voronoi, Delaunay | Core + premium-style extras |
+| **Hatch** | Lines + multi-angle variants + Sawtooth + Circular Scribbles | |
+| **Stipple** | Dots + shape variants + variable variants | |
+| **Adaptive** | Stippling, Circular Scribbles, Shapes, Triangulation, Tree, Dashes, Diagram, TSP, Letters | |
+| **LBG** | Circular Scribbles, Shapes, Triangulation, Tree, Stippling, Dashes, Diagram, TSP, Letters | Lloyd iterations default to 5 |
+| **Voronoi** | Stippling, Circles, Triangulation, Tree, Dashes, Diagram, Shapes, TSP, Letters | |
+| **Streamline** | Flow Field, Edge Field, Superformula | |
 | **Spiral** | Sketch Spirals + Sawtooth + Circular Scribbles | |
 | **Mosaic** | Rectangles, Voronoi, Custom | |
-| **Grid** | Shapes, Dashes, **Letters** | Grid letter glyphs |
-| **Composite** | Layers PFM, **Stipple Layers** | Multi-band processing |
-| **Maze / TSP** | 10 mazes + 6 TSP variants | All premium |
+| **Grid** | Shapes, Dashes, Letters | |
+| **Composite** | Layers PFM, Stipple Layers | |
+| **Maze / TSP** | Maze/labyrinth variants + TSP variants | |
 | **Special** | Contour Paths, Ambient Flow, Edge Shading | |
 
-**Total: ~105 PFMs** (with `PREMIUM_UNLOCKED = True` in `app/config.py`)
+## Caveats
 
-## Product features
+- Bit-identical output vs official DrawingBot V3 is not claimed.
+- Serial streaming requires a Qt installation that includes `Qt6SerialPort`.
+- vpype optimization requires `vpype` on `PATH`.
 
-| Feature | Status |
-|---------|--------|
-| 63 image filters | Done |
-| Masks, batch, PDF/HPGL/G-code export | Done |
-| Project save/load | Done |
-| Pen editor | Done |
-| Video frame import | Done |
+## Run C++ app
 
-## Algorithm note
-
-Premium PFMs use faithful **Python implementations** (OpenCV Voronoi/Delaunay, Lloyd relaxation, flow fields, stroke letters). Output will differ from the Java DrawingBot reference builds but follows the same visual families.
-
-## Not implemented
-
-- vpype integration  
-- Serial plotter in Qt app  
-- Bit-identical output vs official DBV3  
-
-## Run
-
-```bash
-pip install -r requirements.txt
-python run.py
+```powershell
+cmake --build cpp\build --config Release
+.\cpp\build\Release\imgto2d_qt.exe
 ```

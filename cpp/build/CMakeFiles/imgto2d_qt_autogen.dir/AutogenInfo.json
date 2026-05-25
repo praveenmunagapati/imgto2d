@@ -459,6 +459,12 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_pfms.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_pfms.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.h",
 			"MU",
 			"6X7XSKHGGJ/moc_letters_pfms.cpp",
@@ -841,6 +847,7 @@
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tsp_pfms.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_pfms.cpp", "MU", null ],

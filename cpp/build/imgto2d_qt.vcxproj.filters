@@ -67,6 +67,9 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\lbg_pfms.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -211,6 +214,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\adaptive_extras.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\lbg_pfms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\composite_pfms.h">
