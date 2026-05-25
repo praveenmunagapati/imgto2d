@@ -191,6 +191,15 @@ C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginConfig.c
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginTargets-debug.cmake
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginTargets-relwithdebinfo.cmake
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginTargets.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortAdditionalTargetInfo.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfig.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersion.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersionImpl.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortDependencies.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-debug.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-relwithdebinfo.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets.cmake
+C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortVersionlessTargets.cmake
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Svg/Qt6SvgAdditionalTargetInfo.cmake
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Svg/Qt6SvgConfig.cmake
 C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Svg/Qt6SvgConfigVersion.cmake

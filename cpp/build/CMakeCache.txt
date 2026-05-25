@@ -139,7 +139,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 CMAKE_MT:FILEPATH=CMAKE_MT-NOTFOUND
 
 //No help, variable specified on the command line.
-CMAKE_PREFIX_PATH:UNINITIALIZED=C:\Qt\6.9.0\msvc2022_64
+CMAKE_PREFIX_PATH:UNINITIALIZED=C:\Qt\6.7.3\msvc2019_64
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -271,7 +271,7 @@ Qt6Gui_DIR:PATH=C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Gui
 Qt6Network_DIR:PATH=C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Network
 
 //The directory containing a CMake configuration file for Qt6SerialPort.
-Qt6SerialPort_DIR:PATH=Qt6SerialPort_DIR-NOTFOUND
+Qt6SerialPort_DIR:PATH=C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort
 
 //The directory containing a CMake configuration file for Qt6Svg.
 Qt6Svg_DIR:PATH=C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6Svg
@@ -891,6 +891,8 @@ QT_FEATURE_networkproxy:INTERNAL=ON
 QT_FEATURE_no_direct_extern_access:INTERNAL=OFF
 //Qt feature: no_pkg_config (from target Qt6::Core)
 QT_FEATURE_no_pkg_config:INTERNAL=ON
+//Qt feature: ntddmodm (from target Qt6::SerialPort)
+QT_FEATURE_ntddmodm:INTERNAL=ON
 //Qt feature: ocsp (from target Qt6::Network)
 QT_FEATURE_ocsp:INTERNAL=ON
 //Qt feature: opengl (from target Qt6::Gui)

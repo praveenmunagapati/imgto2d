@@ -58,99 +58,286 @@ find_package(Python3 COMPONENTS Development REQUIRED)
 
 # ---- Source files ----
 set(SOURCES
-    main.cpp
+    
+    batch/batch_processor.cpp
     core/color_separation.cpp
     core/coordinates.cpp
     core/mask_manager.cpp
-    export/svg_exporter.cpp
-    export/path_optimizer.cpp
     export/gcode_exporter.cpp
     export/hpgl_exporter.cpp
+    export/path_optimizer.cpp
     export/pdf_exporter.cpp
-    batch/batch_processor.cpp
-    pfm/pfm_base.cpp
-    pfm/sketch_lines.cpp
-    pfm/sketch_squares.cpp
-    pfm/sketch_curves.cpp
-    pfm/sketch_shapes.cpp
-    pfm/sketch_waves.cpp
-    pfm/sketch_spirals.cpp
-    pfm/hatch_lines.cpp
-    pfm/stipple_dots.cpp
-    pfm/adaptive_pfm.cpp
-    pfm/adaptive_extras.cpp
-    pfm/lbg_pfms.cpp
-    pfm/composite_pfms.cpp
-    pfm/sketch_extras.cpp
-    pfm/maze_tsp_pfms.cpp
-    pfm/letters_pfms.cpp
-    pfm/stipple_extras.cpp
-    pfm/voronoi_pfms.cpp
-    pfm/grid_pfms.cpp
-    pfm/mosaic_pfms.cpp
-    pfm/hatch_extras.cpp
-    pfm/streamline_pfms.cpp
-    pfm/special_pfms.cpp
-    pfm/spiral_dbv3.cpp
+    export/svg_exporter.cpp
+    filters/artistic_distort_filters.cpp
     filters/base_filter.cpp
     filters/basic_filters.cpp
     filters/color_filters.cpp
     filters/edge_blur_filters.cpp
-    filters/noise_filters.cpp
     filters/morph_filters.cpp
-    filters/artistic_distort_filters.cpp
+    filters/noise_filters.cpp
     filters/threshold_extra_filters.cpp
-    ui/pfm_worker.cpp
+    main.cpp
+    pfm/_letters_base_pfm.cpp
+    pfm/adaptive_circular_scribbles_pfm.cpp
+    pfm/adaptive_dashes_pfm.cpp
+    pfm/adaptive_diagram_pfm.cpp
+    pfm/adaptive_letters_pfm.cpp
+    pfm/adaptive_pfm.cpp
+    pfm/adaptive_shapes_pfm.cpp
+    pfm/adaptive_tree_pfm.cpp
+    pfm/adaptive_triangulation_pfm.cpp
+    pfm/adaptive_tsppfm.cpp
+    pfm/ambient_flow_pfm.cpp
+    pfm/base_adaptive_pfm.cpp
+    pfm/base_grid_pfm.cpp
+    pfm/base_maze_pfm.cpp
+    pfm/base_mosaic_pfm.cpp
+    pfm/base_multi_hatch_pfm.cpp
+    pfm/base_stipple_pfm.cpp
+    pfm/base_streamline_pfm.cpp
+    pfm/base_tsppfm.cpp
+    pfm/base_voronoi_extra_pfm.cpp
+    pfm/contour_paths_pfm.cpp
+    pfm/edge_shading_pfm.cpp
+    pfm/grid_dashes_pfm.cpp
+    pfm/grid_letters_pfm.cpp
+    pfm/grid_shapes_pfm.cpp
+    pfm/hatch3_way_pfm.cpp
+    pfm/hatch4_way_pfm.cpp
+    pfm/hatch5_way_pfm.cpp
+    pfm/hatch6_way_pfm.cpp
+    pfm/hatch_circular_scribbles_pfm.cpp
+    pfm/hatch_cross_pfm.cpp
+    pfm/hatch_diagonal1_pfm.cpp
+    pfm/hatch_diagonal2_pfm.cpp
+    pfm/hatch_grid_pfm.cpp
+    pfm/hatch_horizontal_pfm.cpp
+    pfm/hatch_lines.cpp
+    pfm/hatch_sawtooth_pfm.cpp
+    pfm/hatch_vertical_pfm.cpp
+    pfm/labyrinth_classic_pfm.cpp
+    pfm/labyrinth_roman_pfm.cpp
+    pfm/layers_pfm.cpp
+    pfm/lbg_circular_scribbles_pfm.cpp
+    pfm/lbg_dashes_pfm.cpp
+    pfm/lbg_diagram_pfm.cpp
+    pfm/lbg_letters_pfm.cpp
+    pfm/lbg_pfms.cpp
+    pfm/lbg_shapes_pfm.cpp
+    pfm/lbg_stippling_pfm.cpp
+    pfm/lbg_tree_pfm.cpp
+    pfm/lbg_triangulation_pfm.cpp
+    pfm/lbgtsppfm.cpp
+    pfm/maze_circle_pfm.cpp
+    pfm/maze_hex_pfm.cpp
+    pfm/maze_hilbert_pfm.cpp
+    pfm/maze_labyrinth_pfm.cpp
+    pfm/maze_peano_pfm.cpp
+    pfm/maze_rect_pfm.cpp
+    pfm/maze_tri_pfm.cpp
+    pfm/maze_voronoi_pfm.cpp
+    pfm/mosaic_custom_pfm.cpp
+    pfm/mosaic_rectangles_pfm.cpp
+    pfm/mosaic_voronoi_pfm.cpp
+    pfm/pfm_base.cpp
+    pfm/sketch_abstract_pfm.cpp
+    pfm/sketch_catmull_roms_pfm.cpp
+    pfm/sketch_cubic_beziers2_pfm.cpp
+    pfm/sketch_cubic_beziers_pfm.cpp
+    pfm/sketch_curves.cpp
+    pfm/sketch_curves_pfm.cpp
+    pfm/sketch_delaunay_pfm.cpp
+    pfm/sketch_flow_fields_pfm.cpp
+    pfm/sketch_lines.cpp
+    pfm/sketch_quad_beziers2_pfm.cpp
+    pfm/sketch_quad_beziers_pfm.cpp
+    pfm/sketch_radial_pfm.cpp
+    pfm/sketch_scribble_pfm.cpp
+    pfm/sketch_shapes.cpp
+    pfm/sketch_sobel_edges_pfm.cpp
+    pfm/sketch_spirals.cpp
+    pfm/sketch_squares.cpp
+    pfm/sketch_superformula_pfm.cpp
+    pfm/sketch_sweeping_curves_pfm.cpp
+    pfm/sketch_voronoi_pfm.cpp
+    pfm/sketch_waves.cpp
+    pfm/spiral_circular_scribbles_pfm.cpp
+    pfm/spiral_sawtooth_pfm.cpp
+    pfm/stipple_chaos_pfm.cpp
+    pfm/stipple_circles_pfm.cpp
+    pfm/stipple_crosses_pfm.cpp
+    pfm/stipple_dots.cpp
+    pfm/stipple_hexagons_pfm.cpp
+    pfm/stipple_layers_pfm.cpp
+    pfm/stipple_lines_pfm.cpp
+    pfm/stipple_squares_pfm.cpp
+    pfm/stipple_stars_pfm.cpp
+    pfm/stipple_triangles_pfm.cpp
+    pfm/stipple_variable_circles_pfm.cpp
+    pfm/stipple_variable_squares_pfm.cpp
+    pfm/streamlines_edge_field_pfm.cpp
+    pfm/streamlines_flow_field_pfm.cpp
+    pfm/streamlines_superformula_pfm.cpp
+    pfm/tsp_classic_pfm.cpp
+    pfm/tsp_outline_pfm.cpp
+    pfm/tsp_shading_pfm.cpp
+    pfm/tsp_stipple_pfm.cpp
+    pfm/tsp_voronoi_pfm.cpp
+    pfm/tspmstpfm.cpp
+    pfm/voronoi_circles_pfm.cpp
+    pfm/voronoi_dashes_pfm.cpp
+    pfm/voronoi_diagram_pfm.cpp
+    pfm/voronoi_letters_pfm.cpp
+    pfm/voronoi_shapes_pfm.cpp
+    pfm/voronoi_stippling_pfm.cpp
+    pfm/voronoi_tree_pfm.cpp
+    pfm/voronoi_triangulation_pfm.cpp
+    pfm/voronoi_tsppfm.cpp
     ui/main_window.cpp
+    ui/pfm_worker.cpp
+
 )
 
 set(HEADERS
-    core/geometry.h
+    
+    batch/batch_processor.h
     core/color_separation.h
     core/coordinates.h
+    core/geometry.h
     core/mask_manager.h
-    export/svg_exporter.h
-    export/path_optimizer.h
     export/gcode_exporter.h
     export/hpgl_exporter.h
+    export/path_optimizer.h
     export/pdf_exporter.h
-    batch/batch_processor.h
-    pfm/pfm_base.h
-    pfm/pfm_sketch_utils.h
-    pfm/sketch_lines.h
-    pfm/sketch_squares.h
-    pfm/sketch_curves.h
-    pfm/sketch_beziers.h
-    pfm/sketch_shapes.h
-    pfm/sketch_waves.h
-    pfm/sketch_spirals.h
-    pfm/hatch_lines.h
-    pfm/stipple_dots.h
-    pfm/adaptive_pfm.h
-    pfm/adaptive_extras.h
-    pfm/lbg_pfms.h
-    pfm/composite_pfms.h
-    pfm/sketch_extras.h
-    pfm/maze_tsp_pfms.h
-    pfm/letters_pfms.h
-    pfm/stipple_extras.h
-    pfm/voronoi_pfms.h
-    pfm/grid_pfms.h
-    pfm/mosaic_pfms.h
-    pfm/hatch_extras.h
-    pfm/streamline_pfms.h
-    pfm/special_pfms.h
-    pfm/spiral_dbv3.h
+    export/svg_exporter.h
+    filters/artistic_distort_filters.h
     filters/base_filter.h
     filters/basic_filters.h
     filters/color_filters.h
     filters/edge_blur_filters.h
-    filters/noise_filters.h
     filters/morph_filters.h
-    filters/artistic_distort_filters.h
+    filters/noise_filters.h
     filters/threshold_extra_filters.h
-    ui/pfm_worker.h
+    pfm/_letters_base_pfm.h
+    pfm/adaptive_circular_scribbles_pfm.h
+    pfm/adaptive_dashes_pfm.h
+    pfm/adaptive_diagram_pfm.h
+    pfm/adaptive_letters_pfm.h
+    pfm/adaptive_pfm.h
+    pfm/adaptive_shapes_pfm.h
+    pfm/adaptive_tree_pfm.h
+    pfm/adaptive_triangulation_pfm.h
+    pfm/adaptive_tsppfm.h
+    pfm/ambient_flow_pfm.h
+    pfm/base_adaptive_pfm.h
+    pfm/base_grid_pfm.h
+    pfm/base_maze_pfm.h
+    pfm/base_mosaic_pfm.h
+    pfm/base_multi_hatch_pfm.h
+    pfm/base_stipple_pfm.h
+    pfm/base_streamline_pfm.h
+    pfm/base_tsppfm.h
+    pfm/base_voronoi_extra_pfm.h
+    pfm/contour_paths_pfm.h
+    pfm/edge_shading_pfm.h
+    pfm/grid_dashes_pfm.h
+    pfm/grid_letters_pfm.h
+    pfm/grid_shapes_pfm.h
+    pfm/hatch3_way_pfm.h
+    pfm/hatch4_way_pfm.h
+    pfm/hatch5_way_pfm.h
+    pfm/hatch6_way_pfm.h
+    pfm/hatch_circular_scribbles_pfm.h
+    pfm/hatch_cross_pfm.h
+    pfm/hatch_diagonal1_pfm.h
+    pfm/hatch_diagonal2_pfm.h
+    pfm/hatch_grid_pfm.h
+    pfm/hatch_horizontal_pfm.h
+    pfm/hatch_lines.h
+    pfm/hatch_sawtooth_pfm.h
+    pfm/hatch_vertical_pfm.h
+    pfm/labyrinth_classic_pfm.h
+    pfm/labyrinth_roman_pfm.h
+    pfm/layers_pfm.h
+    pfm/lbg_circular_scribbles_pfm.h
+    pfm/lbg_dashes_pfm.h
+    pfm/lbg_diagram_pfm.h
+    pfm/lbg_letters_pfm.h
+    pfm/lbg_pfms.h
+    pfm/lbg_shapes_pfm.h
+    pfm/lbg_stippling_pfm.h
+    pfm/lbg_tree_pfm.h
+    pfm/lbg_triangulation_pfm.h
+    pfm/lbgtsppfm.h
+    pfm/maze_circle_pfm.h
+    pfm/maze_hex_pfm.h
+    pfm/maze_hilbert_pfm.h
+    pfm/maze_labyrinth_pfm.h
+    pfm/maze_peano_pfm.h
+    pfm/maze_rect_pfm.h
+    pfm/maze_tri_pfm.h
+    pfm/maze_voronoi_pfm.h
+    pfm/mosaic_custom_pfm.h
+    pfm/mosaic_rectangles_pfm.h
+    pfm/mosaic_voronoi_pfm.h
+    pfm/pfm_base.h
+    pfm/pfm_sketch_utils.h
+    pfm/sketch_abstract_pfm.h
+    pfm/sketch_catmull_roms_pfm.h
+    pfm/sketch_cubic_beziers2_pfm.h
+    pfm/sketch_cubic_beziers_pfm.h
+    pfm/sketch_curves.h
+    pfm/sketch_curves_pfm.h
+    pfm/sketch_delaunay_pfm.h
+    pfm/sketch_flow_fields_pfm.h
+    pfm/sketch_lines.h
+    pfm/sketch_quad_beziers2_pfm.h
+    pfm/sketch_quad_beziers_pfm.h
+    pfm/sketch_radial_pfm.h
+    pfm/sketch_scribble_pfm.h
+    pfm/sketch_shapes.h
+    pfm/sketch_sobel_edges_pfm.h
+    pfm/sketch_spirals.h
+    pfm/sketch_squares.h
+    pfm/sketch_superformula_pfm.h
+    pfm/sketch_sweeping_curves_pfm.h
+    pfm/sketch_voronoi_pfm.h
+    pfm/sketch_waves.h
+    pfm/spiral_circular_scribbles_pfm.h
+    pfm/spiral_sawtooth_pfm.h
+    pfm/stipple_chaos_pfm.h
+    pfm/stipple_circles_pfm.h
+    pfm/stipple_crosses_pfm.h
+    pfm/stipple_dots.h
+    pfm/stipple_hexagons_pfm.h
+    pfm/stipple_layers_pfm.h
+    pfm/stipple_lines_pfm.h
+    pfm/stipple_squares_pfm.h
+    pfm/stipple_stars_pfm.h
+    pfm/stipple_triangles_pfm.h
+    pfm/stipple_variable_circles_pfm.h
+    pfm/stipple_variable_squares_pfm.h
+    pfm/streamlines_edge_field_pfm.h
+    pfm/streamlines_flow_field_pfm.h
+    pfm/streamlines_superformula_pfm.h
+    pfm/tsp_classic_pfm.h
+    pfm/tsp_outline_pfm.h
+    pfm/tsp_shading_pfm.h
+    pfm/tsp_stipple_pfm.h
+    pfm/tsp_voronoi_pfm.h
+    pfm/tspmstpfm.h
+    pfm/voronoi_circles_pfm.h
+    pfm/voronoi_dashes_pfm.h
+    pfm/voronoi_diagram_pfm.h
+    pfm/voronoi_letters_pfm.h
+    pfm/voronoi_shapes_pfm.h
+    pfm/voronoi_stippling_pfm.h
+    pfm/voronoi_tree_pfm.h
+    pfm/voronoi_triangulation_pfm.h
+    pfm/voronoi_tsppfm.h
     ui/main_window.h
+    ui/pfm_worker.h
+
 )
 
 

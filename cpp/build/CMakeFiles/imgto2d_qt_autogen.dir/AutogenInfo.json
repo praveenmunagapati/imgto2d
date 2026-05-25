@@ -300,6 +300,16 @@
 		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
 		"C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeFindDependencyMacro.cmake",
 		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersion.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfigVersionImpl.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortConfig.cmake",
+		"C:/Program Files/CMake/share/cmake-3.27/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortDependencies.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-debug.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortTargets-relwithdebinfo.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortAdditionalTargetInfo.cmake",
+		"C:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6SerialPort/Qt6SerialPortVersionlessTargets.cmake",
 		"C:/tools/opencv/build/OpenCVConfig-version.cmake",
 		"C:/tools/opencv/build/OpenCVConfig.cmake",
 		"C:/tools/opencv/build/x64/vc16/lib/OpenCVConfig.cmake",
@@ -346,6 +356,12 @@
 			"C:/Users/sir/Desktop/imgto2d/cpp/core/mask_manager.h",
 			"MU",
 			"TAC5DWH4SE/moc_mask_manager.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/core/serial_manager.h",
+			"MU",
+			"TAC5DWH4SE/moc_serial_manager.cpp",
 			null
 		],
 		[
@@ -427,9 +443,33 @@
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_extras.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/_letters_base_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_adaptive_extras.cpp",
+			"6X7XSKHGGJ/moc__letters_base_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_circular_scribbles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_circular_scribbles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_dashes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_dashes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_diagram_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_diagram_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_letters_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_letters_pfm.cpp",
 			null
 		],
 		[
@@ -439,21 +479,177 @@
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/composite_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_shapes_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_composite_pfms.cpp",
+			"6X7XSKHGGJ/moc_adaptive_shapes_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_tree_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_grid_pfms.cpp",
+			"6X7XSKHGGJ/moc_adaptive_tree_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_triangulation_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_hatch_extras.cpp",
+			"6X7XSKHGGJ/moc_adaptive_triangulation_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_tsppfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_adaptive_tsppfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/ambient_flow_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_ambient_flow_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_adaptive_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_adaptive_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_grid_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_grid_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_maze_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_maze_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_mosaic_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_mosaic_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_multi_hatch_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_multi_hatch_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_stipple_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_stipple_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_streamline_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_streamline_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_tsppfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_tsppfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_voronoi_extra_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_base_voronoi_extra_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/contour_paths_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_contour_paths_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/edge_shading_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_edge_shading_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_dashes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_grid_dashes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_letters_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_grid_letters_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_shapes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_grid_shapes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch3_way_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch3_way_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch4_way_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch4_way_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch5_way_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch5_way_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch6_way_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch6_way_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_circular_scribbles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_circular_scribbles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_cross_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_cross_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_diagonal1_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_diagonal1_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_diagonal2_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_diagonal2_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_grid_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_grid_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_horizontal_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_horizontal_pfm.cpp",
 			null
 		],
 		[
@@ -463,27 +659,159 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_sawtooth_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_sawtooth_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_vertical_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_hatch_vertical_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/labyrinth_classic_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_labyrinth_classic_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/labyrinth_roman_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_labyrinth_roman_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/layers_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_layers_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_circular_scribbles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_circular_scribbles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_dashes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_dashes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_diagram_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_diagram_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_letters_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_letters_pfm.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_pfms.h",
 			"MU",
 			"6X7XSKHGGJ/moc_lbg_pfms.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_shapes_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_letters_pfms.cpp",
+			"6X7XSKHGGJ/moc_lbg_shapes_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tsp_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_stippling_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_maze_tsp_pfms.cpp",
+			"6X7XSKHGGJ/moc_lbg_stippling_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_tree_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_mosaic_pfms.cpp",
+			"6X7XSKHGGJ/moc_lbg_tree_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_triangulation_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbg_triangulation_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbgtsppfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_lbgtsppfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_circle_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_circle_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_hex_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_hex_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_hilbert_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_hilbert_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_labyrinth_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_labyrinth_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_peano_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_peano_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_rect_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_rect_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tri_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_tri_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_voronoi_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_maze_voronoi_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_custom_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_mosaic_custom_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_rectangles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_mosaic_rectangles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_voronoi_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_mosaic_voronoi_pfm.cpp",
 			null
 		],
 		[
@@ -499,9 +827,27 @@
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_beziers.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_abstract_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_sketch_beziers.cpp",
+			"6X7XSKHGGJ/moc_sketch_abstract_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_catmull_roms_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_catmull_roms_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_cubic_beziers2_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_cubic_beziers2_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_cubic_beziers_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_cubic_beziers_pfm.cpp",
 			null
 		],
 		[
@@ -511,9 +857,21 @@
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_extras.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_curves_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_sketch_extras.cpp",
+			"6X7XSKHGGJ/moc_sketch_curves_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_delaunay_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_delaunay_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_flow_fields_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_flow_fields_pfm.cpp",
 			null
 		],
 		[
@@ -523,9 +881,39 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_quad_beziers2_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_quad_beziers2_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_quad_beziers_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_quad_beziers_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_radial_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_radial_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_scribble_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_scribble_pfm.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_shapes.h",
 			"MU",
 			"6X7XSKHGGJ/moc_sketch_shapes.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_sobel_edges_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_sobel_edges_pfm.cpp",
 			null
 		],
 		[
@@ -541,21 +929,57 @@
 			null
 		],
 		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_superformula_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_superformula_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_sweeping_curves_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_sweeping_curves_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_voronoi_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_sketch_voronoi_pfm.cpp",
+			null
+		],
+		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_waves.h",
 			"MU",
 			"6X7XSKHGGJ/moc_sketch_waves.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/special_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_circular_scribbles_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_special_pfms.cpp",
+			"6X7XSKHGGJ/moc_spiral_circular_scribbles_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_dbv3.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_sawtooth_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_spiral_dbv3.cpp",
+			"6X7XSKHGGJ/moc_spiral_sawtooth_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_chaos_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_chaos_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_circles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_circles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_crosses_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_crosses_pfm.cpp",
 			null
 		],
 		[
@@ -565,21 +989,159 @@
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_extras.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_hexagons_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_stipple_extras.cpp",
+			"6X7XSKHGGJ/moc_stipple_hexagons_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamline_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_layers_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_streamline_pfms.cpp",
+			"6X7XSKHGGJ/moc_stipple_layers_pfm.cpp",
 			null
 		],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_pfms.h",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_lines_pfm.h",
 			"MU",
-			"6X7XSKHGGJ/moc_voronoi_pfms.cpp",
+			"6X7XSKHGGJ/moc_stipple_lines_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_squares_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_squares_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_stars_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_stars_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_triangles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_triangles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_variable_circles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_variable_circles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_variable_squares_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_stipple_variable_squares_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_edge_field_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_streamlines_edge_field_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_flow_field_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_streamlines_flow_field_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_superformula_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_streamlines_superformula_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_classic_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tsp_classic_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_outline_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tsp_outline_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_shading_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tsp_shading_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_stipple_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tsp_stipple_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_voronoi_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tsp_voronoi_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tspmstpfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_tspmstpfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_circles_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_circles_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_dashes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_dashes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_diagram_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_diagram_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_letters_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_letters_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_shapes_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_shapes_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_stippling_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_stippling_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_tree_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_tree_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_triangulation_pfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_triangulation_pfm.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_tsppfm.h",
+			"MU",
+			"6X7XSKHGGJ/moc_voronoi_tsppfm.cpp",
 			null
 		],
 		[
@@ -592,6 +1154,12 @@
 			"C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.h",
 			"MU",
 			"UYX5XTB5RZ/moc_pfm_worker.cpp",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/ui/serial_dialog.h",
+			"MU",
+			"UYX5XTB5RZ/moc_serial_dialog.cpp",
 			null
 		]
 	],
@@ -609,10 +1177,12 @@
 	"MOC_DEFINITIONS" : [],
 	"MOC_DEFINITIONS_Debug" : 
 	[
+		"HAS_SERIAL_PORT",
 		"QT_CONCURRENT_LIB",
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",
 		"QT_NETWORK_LIB",
+		"QT_SERIALPORT_LIB",
 		"QT_SVG_LIB",
 		"QT_WIDGETS_LIB",
 		"UNICODE",
@@ -624,11 +1194,13 @@
 	],
 	"MOC_DEFINITIONS_MinSizeRel" : 
 	[
+		"HAS_SERIAL_PORT",
 		"QT_CONCURRENT_LIB",
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",
 		"QT_NETWORK_LIB",
 		"QT_NO_DEBUG",
+		"QT_SERIALPORT_LIB",
 		"QT_SVG_LIB",
 		"QT_WIDGETS_LIB",
 		"UNICODE",
@@ -640,11 +1212,13 @@
 	],
 	"MOC_DEFINITIONS_RelWithDebInfo" : 
 	[
+		"HAS_SERIAL_PORT",
 		"QT_CONCURRENT_LIB",
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",
 		"QT_NETWORK_LIB",
 		"QT_NO_DEBUG",
+		"QT_SERIALPORT_LIB",
 		"QT_SVG_LIB",
 		"QT_WIDGETS_LIB",
 		"UNICODE",
@@ -656,11 +1230,13 @@
 	],
 	"MOC_DEFINITIONS_Release" : 
 	[
+		"HAS_SERIAL_PORT",
 		"QT_CONCURRENT_LIB",
 		"QT_CORE_LIB",
 		"QT_GUI_LIB",
 		"QT_NETWORK_LIB",
 		"QT_NO_DEBUG",
+		"QT_SERIALPORT_LIB",
 		"QT_SVG_LIB",
 		"QT_WIDGETS_LIB",
 		"UNICODE",
@@ -690,7 +1266,8 @@
 		"C:/Qt/6.7.3/msvc2019_64/include/QtGui",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtConcurrent",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtSvg",
-		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork"
+		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork",
+		"C:/Qt/6.7.3/msvc2019_64/include/QtSerialPort"
 	],
 	"MOC_INCLUDES_MinSizeRel" : 
 	[
@@ -704,7 +1281,8 @@
 		"C:/Qt/6.7.3/msvc2019_64/include/QtGui",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtConcurrent",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtSvg",
-		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork"
+		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork",
+		"C:/Qt/6.7.3/msvc2019_64/include/QtSerialPort"
 	],
 	"MOC_INCLUDES_RelWithDebInfo" : 
 	[
@@ -718,7 +1296,8 @@
 		"C:/Qt/6.7.3/msvc2019_64/include/QtGui",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtConcurrent",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtSvg",
-		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork"
+		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork",
+		"C:/Qt/6.7.3/msvc2019_64/include/QtSerialPort"
 	],
 	"MOC_INCLUDES_Release" : 
 	[
@@ -732,7 +1311,8 @@
 		"C:/Qt/6.7.3/msvc2019_64/include/QtGui",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtConcurrent",
 		"C:/Qt/6.7.3/msvc2019_64/include/QtSvg",
-		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork"
+		"C:/Qt/6.7.3/msvc2019_64/include/QtNetwork",
+		"C:/Qt/6.7.3/msvc2019_64/include/QtSerialPort"
 	],
 	"MOC_MACRO_NAMES" : 
 	[
@@ -779,6 +1359,11 @@
 		],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/core/coordinates.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/core/mask_manager.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/core/serial_manager.cpp",
+			"MU",
+			null
+		],
 		[
 			"C:/Users/sir/Desktop/imgto2d/cpp/export/gcode_exporter.cpp",
 			"MU",
@@ -846,39 +1431,468 @@
 		],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/main.cpp", "MU", null ],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_extras.cpp",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/_letters_base_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_circular_scribbles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_dashes_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_diagram_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_letters_pfm.cpp",
 			"MU",
 			null
 		],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_pfm.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/composite_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_extras.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/letters_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tsp_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/pfm_base.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_curves.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_extras.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_lines.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_shapes.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_spirals.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_squares.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_waves.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/special_pfms.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_dbv3.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_dots.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_extras.cpp", "MU", null ],
 		[
-			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamline_pfms.cpp",
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_shapes_pfm.cpp",
 			"MU",
 			null
 		],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_pfms.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_tree_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_triangulation_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/adaptive_tsppfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/ambient_flow_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_adaptive_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_grid_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_maze_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_mosaic_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_multi_hatch_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_stipple_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_streamline_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_tsppfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/base_voronoi_extra_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/contour_paths_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/edge_shading_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_dashes_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_letters_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/grid_shapes_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch3_way_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch4_way_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch5_way_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch6_way_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_circular_scribbles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_cross_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_diagonal1_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_diagonal2_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_grid_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_horizontal_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_lines.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_sawtooth_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/hatch_vertical_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/labyrinth_classic_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/labyrinth_roman_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/layers_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_circular_scribbles_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_dashes_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_diagram_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_letters_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_pfms.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_shapes_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_stippling_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_tree_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbg_triangulation_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/lbgtsppfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_circle_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_hex_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_hilbert_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_labyrinth_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_peano_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_rect_pfm.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_tri_pfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/maze_voronoi_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_custom_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_rectangles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/mosaic_voronoi_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/pfm_base.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_abstract_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_catmull_roms_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_cubic_beziers2_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_cubic_beziers_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_curves.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_curves_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_delaunay_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_flow_fields_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_lines.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_quad_beziers2_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_quad_beziers_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_radial_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_scribble_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_shapes.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_sobel_edges_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_spirals.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_squares.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_superformula_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_sweeping_curves_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_voronoi_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/sketch_waves.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_circular_scribbles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/spiral_sawtooth_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_chaos_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_circles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_crosses_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_dots.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_hexagons_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_layers_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_lines_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_squares_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_stars_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_triangles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_variable_circles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/stipple_variable_squares_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_edge_field_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_flow_field_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/streamlines_superformula_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_classic_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_outline_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_shading_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_stipple_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/tsp_voronoi_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/tspmstpfm.cpp", "MU", null ],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_circles_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_dashes_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_diagram_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_letters_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_shapes_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_stippling_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_tree_pfm.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_triangulation_pfm.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/pfm/voronoi_tsppfm.cpp", "MU", null ],
 		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/main_window.cpp", "MU", null ],
-		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.cpp", "MU", null ]
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/pfm_worker.cpp", "MU", null ],
+		[ "C:/Users/sir/Desktop/imgto2d/cpp/ui/serial_dialog.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],
