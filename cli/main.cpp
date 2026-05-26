@@ -16,6 +16,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <omp.h>
 
 inline float get_pixel_float(const cv::Mat& image, int y, int x) {
     if (image.type() == CV_32F) return image.at<float>(y, x);
@@ -338,9 +339,23 @@ public:
     void cancel() { m_cancelled = true; }
     bool isCancelled() const { return m_cancelled; }
 
+    std::discrete_distribution<int> m_cachedDist;
+    const std::vector<double>* m_cachedWeightsPtr = nullptr;
+    size_t m_cachedWeightsSize = 0;
+    double m_cachedFirstWeight = -1.0;
+    double m_cachedLastWeight = -1.0;
+
     int weightedChoice(const std::vector<double>& weights) {
-        std::discrete_distribution<int> dist(weights.begin(), weights.end());
-        return dist(m_rng);
+        if (weights.empty()) return 0;
+        if (&weights != m_cachedWeightsPtr || weights.size() != m_cachedWeightsSize || 
+            weights.front() != m_cachedFirstWeight || weights.back() != m_cachedLastWeight) {
+            m_cachedDist = std::discrete_distribution<int>(weights.begin(), weights.end());
+            m_cachedWeightsPtr = &weights;
+            m_cachedWeightsSize = weights.size();
+            m_cachedFirstWeight = weights.front();
+            m_cachedLastWeight = weights.back();
+        }
+        return m_cachedDist(m_rng);
     }
 
     double randUniform(double lo, double hi) {
@@ -413,14 +428,29 @@ static inline Path solve_tsp_nn(const std::vector<cv::Point2f>& points,
         float cx = points[current].x;
         float cy = points[current].y;
         
-        for (size_t i = 0; i < points.size(); ++i) {
-            if (!visited[i]) {
-                float dx = points[i].x - cx;
-                float dy = points[i].y - cy;
-                float d = dx*dx + dy*dy;
-                if (d < best_d) {
-                    best_d = d;
-                    best_i = i;
+        #pragma omp parallel
+        {
+            int local_best_i = -1;
+            float local_best_d = 1e12f;
+            
+            #pragma omp for nowait
+            for (int i = 0; i < (int)points.size(); ++i) {
+                if (!visited[i]) {
+                    float dx = points[i].x - cx;
+                    float dy = points[i].y - cy;
+                    float d = dx*dx + dy*dy;
+                    if (d < local_best_d) {
+                        local_best_d = d;
+                        local_best_i = i;
+                    }
+                }
+            }
+            
+            #pragma omp critical
+            {
+                if (local_best_d < best_d) {
+                    best_d = local_best_d;
+                    best_i = local_best_i;
                 }
             }
         }
@@ -498,6 +528,8 @@ public:
 protected:
     std::vector<double> getProbabilities(const cv::Mat& image) override {
         std::vector<double> probs(image.cols * image.rows, 0.0);
+        #pragma omp parallel for
+
         for (int y = 0; y < image.rows; ++y) {
             const uchar* row = image.ptr<uchar>(y);
             for (int x = 0; x < image.cols; ++x) {
@@ -1825,6 +1857,7 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
     std::vector<double> original_dark(w * h, 0.0);
     double sum = 0.0;
     
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -1863,19 +1896,35 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
             std::vector<cv::Point2f> new_pts(pts.size(), cv::Point2f(0,0));
             std::vector<double> weight_sums(pts.size(), 0.0);
 
-            for (size_t i = 0; i < sub_coords.size(); ++i) {
-                float best_d = 1e12f;
-                int best_c = -1;
-                for (size_t c = 0; c < pts.size(); ++c) {
-                    float dx = sub_coords[i].x - pts[c].x;
-                    float dy = sub_coords[i].y - pts[c].y;
-                    float d = dx*dx + dy*dy;
-                    if (d < best_d) { best_d = d; best_c = c; }
+            #pragma omp parallel
+            {
+                std::vector<cv::Point2f> local_new_pts(pts.size(), cv::Point2f(0,0));
+                std::vector<double> local_weight_sums(pts.size(), 0.0);
+
+                #pragma omp for nowait
+                for (int i = 0; i < (int)sub_coords.size(); ++i) {
+                    float best_d = 1e12f;
+                    int best_c = -1;
+                    for (int c = 0; c < (int)pts.size(); ++c) {
+                        float dx = sub_coords[i].x - pts[c].x;
+                        float dy = sub_coords[i].y - pts[c].y;
+                        float d = dx*dx + dy*dy;
+                        if (d < best_d) { best_d = d; best_c = c; }
+                    }
+                    if (best_c != -1) {
+                        local_new_pts[best_c].x += sub_coords[i].x * sub_w[i];
+                        local_new_pts[best_c].y += sub_coords[i].y * sub_w[i];
+                        local_weight_sums[best_c] += sub_w[i];
+                    }
                 }
-                if (best_c != -1) {
-                    new_pts[best_c].x += sub_coords[i].x * sub_w[i];
-                    new_pts[best_c].y += sub_coords[i].y * sub_w[i];
-                    weight_sums[best_c] += sub_w[i];
+
+                #pragma omp critical
+                {
+                    for (size_t c = 0; c < pts.size(); ++c) {
+                        new_pts[c].x += local_new_pts[c].x;
+                        new_pts[c].y += local_new_pts[c].y;
+                        weight_sums[c] += local_weight_sums[c];
+                    }
                 }
             }
 
@@ -1897,11 +1946,10 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
         }
     }
 
-    std::vector<DrawingGeometry> geoms;
-    for (size_t i = 0; i < filtered_pts.size(); ++i) {
-        if (isCancelled()) break;
-        if (i % 40 == 0) emitProgress(float(i) / std::max<size_t>(1, filtered_pts.size()), geoms.size(), "Placing letters...");
-        
+    std::vector<DrawingGeometry> geoms(filtered_pts.size());
+    std::vector<bool> valid(filtered_pts.size(), false);
+    #pragma omp parallel for schedule(dynamic, 64)
+    for (int i = 0; i < (int)filtered_pts.size(); ++i) {
         float cx = filtered_pts[i].x;
         float cy = filtered_pts[i].y;
         
@@ -1914,13 +1962,16 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
         
         Path path = letter_glyph_path(letter, cx, cy, std::max(4.0f, r));
         if (path.size() >= 2) {
-            DrawingGeometry dg;
-            dg.path = path;
-            geoms.push_back(dg);
+            geoms[i].path = path;
+            valid[i] = true;
         }
     }
-
-    return geoms;
+    // Compact
+    std::vector<DrawingGeometry> result;
+    for (int i = 0; i < (int)geoms.size(); ++i) {
+        if (valid[i]) result.push_back(std::move(geoms[i]));
+    }
+    return result;
 }
 
 
@@ -1951,6 +2002,7 @@ std::vector<cv::Point2f> BaseAdaptivePFM::getSeeds(const cv::Mat& image) {
     // Build darkness weight map
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -2184,6 +2236,7 @@ std::vector<DrawingGeometry> BaseStipplePFM::_process(const cv::Mat& image) {
 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -2253,6 +2306,7 @@ std::vector<cv::Point2f> BaseVoronoiExtraPFM::getSeeds(const cv::Mat& image) {
     std::vector<double> original_dark(w * h, 0.0);
     double sum = 0.0;
     
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -2291,19 +2345,35 @@ std::vector<cv::Point2f> BaseVoronoiExtraPFM::getSeeds(const cv::Mat& image) {
             std::vector<cv::Point2f> new_pts(pts.size(), cv::Point2f(0,0));
             std::vector<double> weight_sums(pts.size(), 0.0);
 
-            for (size_t i = 0; i < sub_coords.size(); ++i) {
-                float best_d = 1e12f;
-                int best_c = -1;
-                for (size_t c = 0; c < pts.size(); ++c) {
-                    float dx = sub_coords[i].x - pts[c].x;
-                    float dy = sub_coords[i].y - pts[c].y;
-                    float d = dx*dx + dy*dy;
-                    if (d < best_d) { best_d = d; best_c = c; }
+            #pragma omp parallel
+            {
+                std::vector<cv::Point2f> local_new_pts(pts.size(), cv::Point2f(0,0));
+                std::vector<double> local_weight_sums(pts.size(), 0.0);
+
+                #pragma omp for nowait
+                for (int i = 0; i < (int)sub_coords.size(); ++i) {
+                    float best_d = 1e12f;
+                    int best_c = -1;
+                    for (int c = 0; c < (int)pts.size(); ++c) {
+                        float dx = sub_coords[i].x - pts[c].x;
+                        float dy = sub_coords[i].y - pts[c].y;
+                        float d = dx*dx + dy*dy;
+                        if (d < best_d) { best_d = d; best_c = c; }
+                    }
+                    if (best_c != -1) {
+                        local_new_pts[best_c].x += sub_coords[i].x * sub_w[i];
+                        local_new_pts[best_c].y += sub_coords[i].y * sub_w[i];
+                        local_weight_sums[best_c] += sub_w[i];
+                    }
                 }
-                if (best_c != -1) {
-                    new_pts[best_c].x += sub_coords[i].x * sub_w[i];
-                    new_pts[best_c].y += sub_coords[i].y * sub_w[i];
-                    weight_sums[best_c] += sub_w[i];
+
+                #pragma omp critical
+                {
+                    for (size_t c = 0; c < pts.size(); ++c) {
+                        new_pts[c].x += local_new_pts[c].x;
+                        new_pts[c].y += local_new_pts[c].y;
+                        weight_sums[c] += local_weight_sums[c];
+                    }
                 }
             }
 
@@ -2492,6 +2562,7 @@ std::vector<DrawingGeometry> AdaptiveStipplingPFM::_process(const cv::Mat& image
     std::vector<double> weights(W * H);
     double totalW = 0.0;
     const float* fp = imgF.ptr<float>(0);
+    #pragma omp parallel for reduction(+:totalW)
     for (int i = 0; i < W * H; ++i) {
         double d = std::max(0.0, 255.0 - (double)fp[i]);
         weights[i] = d;
@@ -2869,7 +2940,9 @@ std::vector<DrawingGeometry> EdgeShadingPFM::_process(const cv::Mat& image) {
     cv::Mat combined;
     cv::Mat edgesF;
     edges.convertTo(edgesF, CV_32F);
-    cv::addWeighted(image, 0.5, edgesF, 0.5, 0.0, combined);
+    cv::Mat imgF;
+    image.convertTo(imgF, CV_32F);
+    cv::addWeighted(imgF, 0.5, edgesF, 0.5, 0.0, combined);
     
     std::vector<DrawingGeometry> geoms;
     int w = combined.cols;
@@ -3712,6 +3785,7 @@ std::vector<DrawingGeometry> MosaicVoronoiPFM::_process(const cv::Mat& image) {
     int cell_count = m_settings["cell_count"].toInt();
     std::vector<double> probs(image.cols * image.rows, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < image.rows; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < image.cols; ++x) {
@@ -3766,6 +3840,7 @@ std::vector<DrawingGeometry> SketchAbstractPFM::_process(const cv::Mat& image) {
     int h = image.rows;
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - get_pixel_float(image, y, x);
@@ -3834,6 +3909,7 @@ std::vector<DrawingGeometry> SketchCubicBeziers2PFM::_process(const cv::Mat& ima
 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -3988,6 +4064,7 @@ std::vector<DrawingGeometry> runSketchLoop(
         if (lineMaxLimit > 0 && totalSegments >= lineMaxLimit) break;
 
         double darkSum = 0.0;
+        #pragma omp parallel for reduction(+:darkSum)
         for (int i = 0; i < W * H; ++i) {
             double d = std::max(0.0, 255.0 - (double)lp[i]);
             weights[i] = d; darkSum += d;
@@ -4141,6 +4218,7 @@ std::vector<DrawingGeometry> SketchDelaunayPFM::_process(const cv::Mat& image) {
 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -4448,6 +4526,7 @@ std::vector<DrawingGeometry> SketchLinesPFM::_process(const cv::Mat& image) {
     while (iteration < maxIterations && !isCancelled()) {
         // ---- Check stopping conditions ----
         double curBrightness = 0.0;
+        #pragma omp parallel for reduction(+:curBrightness)
         for (int i = 0; i < W * H; ++i) curBrightness += lightenedPtr[i];
         curBrightness /= (W * H);
 
@@ -4462,6 +4541,7 @@ std::vector<DrawingGeometry> SketchLinesPFM::_process(const cv::Mat& image) {
 
         // ---- Step 1: Weighted random start position ----
         double darknessSum = 0.0;
+        #pragma omp parallel for reduction(+:darknessSum)
         for (int i = 0; i < W * H; ++i) {
             double d = std::max(0.0, 255.0 - (double)lightenedPtr[i]);
             weights[i] = d;
@@ -4673,6 +4753,7 @@ std::vector<DrawingGeometry> SketchScribblePFM::_process(const cv::Mat& image) {
     int h = image.rows;
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
             double d = 255.0 - get_pixel_float(image, y, x);
@@ -4778,6 +4859,7 @@ std::vector<DrawingGeometry> SketchShapesPFM::_process(const cv::Mat& image) {
 
         float* lp = lightened.ptr<float>(0);
         double darkSum = 0.0;
+        #pragma omp parallel for reduction(+:darkSum)
         for (int i = 0; i < W * H; ++i) {
             double d = std::max(0.0, 255.0 - (double)lp[i]);
             weights[i] = d; darkSum += d;
@@ -4978,6 +5060,7 @@ std::vector<DrawingGeometry> SketchSquaresPFM::_process(const cv::Mat& image) {
         // Weighted random sample
         float* lp = lightened.ptr<float>(0);
         double darkSum = 0.0;
+        #pragma omp parallel for reduction(+:darkSum)
         for (int i = 0; i < W * H; ++i) {
             double d = std::max(0.0, 255.0 - (double)lp[i]);
             weights[i] = d; darkSum += d;
@@ -5065,6 +5148,7 @@ std::vector<DrawingGeometry> SketchSuperformulaPFM::_process(const cv::Mat& imag
     // Darkness weights
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -5142,6 +5226,7 @@ std::vector<DrawingGeometry> SketchVoronoiPFM::_process(const cv::Mat& image) {
 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -5373,7 +5458,8 @@ std::vector<DrawingGeometry> StippleDotsPFM::_process(const cv::Mat& image) {
     std::vector<double> weights(h * w);
     const float* fp = imgF.ptr<float>(0);
     double total = 0.0;
-    for (int i = 0; i < h * w; ++i) {
+    #pragma omp parallel for reduction(+:total)
+        for (int i = 0; i < h * w; ++i) {
         double d = std::max(0.0, 255.0 - (double)fp[i]);
         weights[i] = d;
         total += d;
@@ -5711,6 +5797,7 @@ std::vector<DrawingGeometry> TSPMSTPFM::_process(const cv::Mat& image) {
 
     std::vector<double> probs(w * h, 0.0);
     double sum = 0.0;
+        #pragma omp parallel for reduction(+:sum)
     for (int y = 0; y < h; ++y) {
         const uchar* row = image.ptr<uchar>(y);
         for (int x = 0; x < w; ++x) {
@@ -5801,13 +5888,11 @@ std::vector<DrawingGeometry> TSPMSTPFM::_process(const cv::Mat& image) {
 // --- voronoi_circles_pfm.cpp ---
 std::vector<DrawingGeometry> VoronoiCirclesPFM::_process(const cv::Mat& image) {
     auto pts = getSeeds(image);
-    std::vector<DrawingGeometry> geoms;
-    for (size_t i = 0; i < pts.size(); ++i) {
-        if (isCancelled()) break;
-        if (i % 40 == 0) emitProgress(float(i) / pts.size(), geoms.size(), "Voronoi Circles...");
+    std::vector<DrawingGeometry> geoms(pts.size());
+    #pragma omp parallel for schedule(dynamic, 64)
+    for (int i = 0; i < (int)pts.size(); ++i) {
         float r = nearest_seed_radius(pts[i].x, pts[i].y, pts);
-        DrawingGeometry dg; dg.path = generate_circle(pts[i].x, pts[i].y, r, 16);
-        geoms.push_back(dg);
+        geoms[i].path = generate_circle(pts[i].x, pts[i].y, r, 16);
     }
     return geoms;
 }
@@ -5874,13 +5959,12 @@ int VoronoiLettersPFM::getLloydIters() const {
 // --- voronoi_shapes_pfm.cpp ---
 std::vector<DrawingGeometry> VoronoiShapesPFM::_process(const cv::Mat& image) {
     auto pts = getSeeds(image);
-    std::vector<DrawingGeometry> geoms;
-    for (size_t i = 0; i < pts.size(); ++i) {
-        if (isCancelled()) break;
+    std::vector<DrawingGeometry> geoms(pts.size());
+    #pragma omp parallel for schedule(dynamic, 64)
+    for (int i = 0; i < (int)pts.size(); ++i) {
         float r = nearest_seed_radius(pts[i].x, pts[i].y, pts);
         int sides = 3 + (i % 5);
-        DrawingGeometry dg; dg.path = generate_polygon(pts[i].x, pts[i].y, r, sides);
-        geoms.push_back(dg);
+        geoms[i].path = generate_polygon(pts[i].x, pts[i].y, r, sides);
     }
     return geoms;
 }
@@ -5889,15 +5973,15 @@ std::vector<DrawingGeometry> VoronoiShapesPFM::_process(const cv::Mat& image) {
 // --- voronoi_stippling_pfm.cpp ---
 std::vector<DrawingGeometry> VoronoiStipplingPFM::_process(const cv::Mat& image) {
     auto pts = getSeeds(image);
-    std::vector<DrawingGeometry> geoms;
-    for (size_t i = 0; i < pts.size(); ++i) {
-        if (isCancelled()) break;
-        int xi = std::clamp(int(pts[i].x), 0, image.cols - 1);
-        int yi = std::clamp(int(pts[i].y), 0, image.rows - 1);
+    int imgCols = image.cols, imgRows = image.rows;
+    std::vector<DrawingGeometry> geoms(pts.size());
+    #pragma omp parallel for schedule(dynamic, 64)
+    for (int i = 0; i < (int)pts.size(); ++i) {
+        int xi = std::clamp(int(pts[i].x), 0, imgCols - 1);
+        int yi = std::clamp(int(pts[i].y), 0, imgRows - 1);
         float dark = (255.0f - get_pixel_float(image, yi, xi)) / 255.0f;
         float r = std::max(0.4f, nearest_seed_radius(pts[i].x, pts[i].y, pts) * 0.15f * dark);
-        DrawingGeometry dg; dg.path = generate_circle(pts[i].x, pts[i].y, r, 8);
-        geoms.push_back(dg);
+        geoms[i].path = generate_circle(pts[i].x, pts[i].y, r, 8);
     }
     return geoms;
 }

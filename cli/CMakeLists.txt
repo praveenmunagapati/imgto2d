@@ -24,6 +24,7 @@ if(NOT OpenCV_DIR)
 endif()
 
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
+find_package(OpenMP REQUIRED)
 
 # ---- Executable ----
 add_executable(imgto2d_standalone_cli
@@ -37,6 +38,7 @@ target_include_directories(imgto2d_standalone_cli PRIVATE
 
 target_link_libraries(imgto2d_standalone_cli PRIVATE
     ${OpenCV_LIBS}
+    OpenMP::OpenMP_CXX
 )
 
 install(TARGETS imgto2d_standalone_cli RUNTIME DESTINATION bin)
