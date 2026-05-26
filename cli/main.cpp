@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include <map>
 #include <variant>
 #include <cmath>
@@ -15,6 +16,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+
+inline float get_pixel_float(const cv::Mat& image, int y, int x) {
+    if (image.type() == CV_32F) return image.at<float>(y, x);
+    if (image.type() == CV_8U) return (float)image.at<uchar>(y, x);
+    return 0.0f;
+}
 
 // ===========================================================================
 // Core Data Types & Geometry
@@ -2142,7 +2149,7 @@ std::vector<DrawingGeometry> BaseMultiHatchPFM::_process(const cv::Mat& image) {
                 float px = x1 + (x2 - x1) * (float(step) / steps);
                 float py = y1 + (y2 - y1) * (float(step) / steps);
                 if (px >= 0 && px < w && py >= 0 && py < h) {
-                    if ((255.0f - image.at<float>(int(py), int(px))) > thresh) {
+                    if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
                         path.push_back({px, py});
                     } else {
                         if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
@@ -3111,7 +3118,7 @@ std::vector<DrawingGeometry> HatchCircularScribblesPFM::_process(const cv::Mat& 
             float py = cy + r * std::sin(theta);
             
             if (px >= 0 && px < image.cols && py >= 0 && py < image.rows) {
-                if ((255.0f - image.at<float>(int(py), int(px))) > thresh) {
+                if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
                     path.push_back({px, py});
                 } else {
                     if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
@@ -3259,8 +3266,8 @@ std::vector<DrawingGeometry> HatchSawtoothPFM::_process(const cv::Mat& image) {
             float py = y1 + (y2 - y1) * (float(step) / steps);
             
             if (px >= 0 && px < w && py >= 0 && py < h) {
-                float brightness = image.at<float>(int(py), int(px)) / 255.0f;
-                if ((255.0f - image.at<float>(int(py), int(px))) > thresh) {
+                float brightness = get_pixel_float(image, int(py), int(px)) / 255.0f;
+                if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
                     float local_depth = depth * (1.0f - brightness);
                     float wx = px + (up ? -dy : dy) * local_depth;
                     float wy = py + (up ? dx : -dx) * local_depth;
@@ -3315,7 +3322,7 @@ std::vector<DrawingGeometry> LabyrinthClassicPFM::_process(const cv::Mat& image)
         int ix = int(x), iy = int(y);
         
         if (ix >= 0 && ix < image.cols && iy >= 0 && iy < image.rows) {
-            float brightness = image.at<float>(iy, ix) / 255.0f;
+            float brightness = get_pixel_float(image, iy, ix) / 255.0f;
             float wx = x + (std::cos(theta * 10.0f) * wobble * (1.0f - brightness));
             float wy = y + (std::sin(theta * 10.0f) * wobble * (1.0f - brightness));
             path.push_back({wx, wy});
@@ -3521,7 +3528,7 @@ std::vector<DrawingGeometry> MazeHilbertPFM::_process(const cv::Mat& image) {
         int x = std::clamp(int(pts[i].first * image.cols), 0, image.cols - 1);
         int y = std::clamp(int(pts[i].second * image.rows), 0, image.rows - 1);
         
-        if ((255.0f - image.at<float>(y, x)) > thresh) {
+        if ((255.0f - get_pixel_float(image, y, x)) > thresh) {
             path.push_back({float(x), float(y)});
         } else {
             if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
@@ -3598,7 +3605,7 @@ std::vector<DrawingGeometry> MazePeanoPFM::_process(const cv::Mat& image) {
         int x = std::clamp(int(nx * image.cols), 0, image.cols - 1);
         int y = std::clamp(int(ny * image.rows), 0, image.rows - 1);
         
-        if ((255.0f - image.at<float>(y, x)) > thresh) {
+        if ((255.0f - get_pixel_float(image, y, x)) > thresh) {
             path.push_back({float(x), float(y)});
         } else {
             if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
@@ -3761,7 +3768,7 @@ std::vector<DrawingGeometry> SketchAbstractPFM::_process(const cv::Mat& image) {
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            double d = 255.0 - image.at<float>(y, x);
+            double d = 255.0 - get_pixel_float(image, y, x);
             if (d < 0) d = 0;
             probs[y * w + x] = d;
             sum += d;
@@ -4634,7 +4641,7 @@ std::vector<DrawingGeometry> SketchRadialPFM::_process(const cv::Mat& image) {
             float x = cx + r * std::cos(theta);
             float y = cy + r * std::sin(theta);
             if (x >= 0 && x < w && y >= 0 && y < h) {
-                if (image.at<float>(int(y), int(x)) < 200.0f) {
+                if (get_pixel_float(image, int(y), int(x)) < 200.0f) {
                     path.push_back({x, y});
                 } else {
                     if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
@@ -4668,7 +4675,7 @@ std::vector<DrawingGeometry> SketchScribblePFM::_process(const cv::Mat& image) {
     double sum = 0.0;
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            double d = 255.0 - image.at<float>(y, x);
+            double d = 255.0 - get_pixel_float(image, y, x);
             if (d < 0) d = 0;
             probs[y * w + x] = d;
             sum += d;
@@ -5257,7 +5264,7 @@ std::vector<DrawingGeometry> SpiralCircularScribblesPFM::_process(const cv::Mat&
         
         int xi = std::clamp(int(cx + r * std::cos(theta)), 0, w - 1);
         int yi = std::clamp(int(cy + r * std::sin(theta)), 0, h - 1);
-        float dark = (255.0f - image.at<float>(yi, xi)) / 255.0f;
+        float dark = (255.0f - get_pixel_float(image, yi, xi)) / 255.0f;
         
         float disp = std::sin(theta * 5.0f) * wobble * dark;
         float x = cx + (r + disp) * std::cos(theta);
@@ -5887,7 +5894,7 @@ std::vector<DrawingGeometry> VoronoiStipplingPFM::_process(const cv::Mat& image)
         if (isCancelled()) break;
         int xi = std::clamp(int(pts[i].x), 0, image.cols - 1);
         int yi = std::clamp(int(pts[i].y), 0, image.rows - 1);
-        float dark = (255.0f - image.at<float>(yi, xi)) / 255.0f;
+        float dark = (255.0f - get_pixel_float(image, yi, xi)) / 255.0f;
         float r = std::max(0.4f, nearest_seed_radius(pts[i].x, pts[i].y, pts) * 0.15f * dark);
         DrawingGeometry dg; dg.path = generate_circle(pts[i].x, pts[i].y, r, 8);
         geoms.push_back(dg);
