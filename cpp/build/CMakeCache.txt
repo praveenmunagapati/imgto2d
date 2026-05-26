@@ -470,7 +470,7 @@ CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding OpenCV
-FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[C:/tools/opencv/build][cfound components: core imgcodecs imgproc ][v4.13.0()]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[C:/tools/opencv/build][cfound components: core imgcodecs imgproc photo videoio ][v4.13.0()]
 //Details about finding Python3
 FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[C:/Python313/libs/python313.lib][C:/Python313/include][cfound components: Development Development.Module Development.Embed ][v3.13.3()]
 //Details about finding Threads

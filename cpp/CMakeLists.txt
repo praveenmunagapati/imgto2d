@@ -59,7 +59,7 @@ endif()
 find_package(Python3 COMPONENTS Development REQUIRED)
 
 # ---- Source files ----
-set(SOURCES
+set(CORE_SOURCES
     
     
     
@@ -80,7 +80,6 @@ set(SOURCES
     filters/morph_filters.cpp
     filters/noise_filters.cpp
     filters/threshold_extra_filters.cpp
-    main.cpp
     pfm/_letters_base_pfm.cpp
     pfm/adaptive_circular_scribbles_pfm.cpp
     pfm/adaptive_dashes_pfm.cpp
@@ -197,11 +196,21 @@ set(SOURCES
     pfm/voronoi_tree_pfm.cpp
     pfm/voronoi_triangulation_pfm.cpp
     pfm/voronoi_tsppfm.cpp
+
+
+
+)
+
+set(GUI_SOURCES
+    main.cpp
     ui/main_window.cpp
     ui/pfm_worker.cpp
+)
 
-
-
+set(CLI_SOURCES
+    cli_main.cpp
+    core/project_processor.cpp
+    core/module_registry.cpp
 )
 
 set(HEADERS
@@ -352,7 +361,7 @@ set(HEADERS
 
 
 # ---- Executable ----
-add_executable(imgto2d_qt WIN32 ${SOURCES} ${HEADERS})
+add_executable(imgto2d_qt WIN32 ${CORE_SOURCES} ${GUI_SOURCES} ${HEADERS})
 
 target_include_directories(imgto2d_qt PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -435,3 +444,31 @@ if(WIN32)
         COMMENT "Copying Python embeddable DLL, _pth and zip files to test_vpype_embed directory..."
     )
 endif()
+
+# ---- CLI Target ----
+add_executable(imgto2d_cli ${CORE_SOURCES} ${CLI_SOURCES})
+target_include_directories(imgto2d_cli PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+    ${Python3_INCLUDE_DIRS}
+)
+target_link_libraries(imgto2d_cli PRIVATE Qt6::Core Qt6::Concurrent ${OpenCV_LIBS} Python3::Python)
+
+if(WIN32)
+    add_custom_command(TARGET imgto2d_cli POST_BUILD
+        COMMAND "${Qt6_DIR}/../../../bin/windeployqt.exe"
+                --no-translations
+                "$<TARGET_FILE:imgto2d_cli>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.dll"
+                "$<TARGET_FILE_DIR:imgto2d_cli>/python313.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313._pth"
+                "$<TARGET_FILE_DIR:imgto2d_cli>/python313._pth"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/../python/runtime/python/python313.zip"
+                "$<TARGET_FILE_DIR:imgto2d_cli>/python313.zip"
+        COMMENT "Running windeployqt and copying Python embeddable files for CLI..."
+    )
+endif()
+install(TARGETS imgto2d_cli RUNTIME DESTINATION bin)

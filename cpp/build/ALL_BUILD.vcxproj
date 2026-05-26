@@ -173,6 +173,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_cli.vcxproj">
+      <Project>{BBCA86D1-4137-3A37-B06E-EB86305A5BFB}</Project>
+      <Name>imgto2d_cli</Name>
+    </ProjectReference>
     <ProjectReference Include="C:\Users\sir\Desktop\imgto2d\cpp\build\imgto2d_qt.vcxproj">
       <Project>{26F866C4-BCE0-30AB-86AF-1B1738A2896F}</Project>
       <Name>imgto2d_qt</Name>

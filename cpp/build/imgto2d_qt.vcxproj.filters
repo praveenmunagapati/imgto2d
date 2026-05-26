@@ -55,9 +55,6 @@
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\filters\threshold_extra_filters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\_letters_base_pfm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -404,6 +401,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\pfm\voronoi_tsppfm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\sir\Desktop\imgto2d\cpp\ui\main_window.cpp">
