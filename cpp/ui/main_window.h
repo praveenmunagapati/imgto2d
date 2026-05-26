@@ -34,6 +34,9 @@ public:
 private slots:
     void onExportSVG();
     void onExportGCode();
+#ifdef HAS_SERIAL_PORT
+    void onStreamGCode();
+#endif
     void onExportHPGL();
     void onExportPDF();
     void onOpenProject();

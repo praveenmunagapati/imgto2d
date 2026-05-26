@@ -36,8 +36,8 @@ QVector<DrawingGeometry> runSketchLoop(
     PathFindingModule* pfm,
     const cv::Mat& image,
     CurveOutputMode mode,
-    int curveSmooth = 10,
-    double curveAlpha = 0.5)
+    int curveSmooth,
+    double curveAlpha)
 {
     cv::Mat workImg;
     double plotRes = pfm->get("plotting_resolution").toDouble();

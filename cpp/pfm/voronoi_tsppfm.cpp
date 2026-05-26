@@ -1,4 +1,5 @@
 #include "pfm/voronoi_tsppfm.h"
+#include "pfm/base_tsppfm.h"
 #include "core/geometry.h"
 #include <opencv2/imgproc.hpp>
 #include <map>
