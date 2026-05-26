@@ -77,18 +77,22 @@ int main(int argc, char *argv[])
     bool exportOk = false;
 
     if (ext == "svg") {
-        exportOk = SVGExporter::exportFile(outputPath, result.geometries, result.penColors, 
-                                           result.previewImage, result.penWidthMm, 
-                                           result.useVpype, result.vpypePipeline);
+        exportOk = SVGExporter::exportSVG(outputPath, result.geometries, result.drawingArea, 
+                                          result.imageWidth, result.imageHeight, 
+                                          result.penColors, result.penWidthMm);
+        // Note: vpype embedding is currently skipped in CLI for simplicity.
     } else if (ext == "pdf") {
-        exportOk = PDFExporter::exportFile(outputPath, result.geometries, result.penColors, 
-                                           result.previewImage, result.penWidthMm);
+        exportOk = PDFExporter::exportPDF(outputPath, result.geometries, result.drawingArea, 
+                                          result.imageWidth, result.imageHeight, 
+                                          result.penColors, result.penWidthMm);
     } else if (ext == "gcode" || ext == "nc") {
-        exportOk = GCodeExporter::exportFile(outputPath, result.geometries, result.penColors, 
-                                             result.previewImage, result.penWidthMm);
+        exportOk = GCodeExporter::exportGCode(outputPath, result.geometries, result.drawingArea, 
+                                              result.imageWidth, result.imageHeight, 
+                                              result.penColors, result.penWidthMm);
     } else if (ext == "hpgl" || ext == "plt") {
-        exportOk = HPGLExporter::exportFile(outputPath, result.geometries, result.penColors, 
-                                            result.previewImage, result.penWidthMm);
+        exportOk = HPGLExporter::exportHPGL(outputPath, result.geometries, result.drawingArea, 
+                                            result.imageWidth, result.imageHeight, 
+                                            result.penColors, result.penWidthMm);
     } else {
         std::cerr << "Error: Unsupported output extension: " << ext.toStdString() << std::endl;
         return 1;

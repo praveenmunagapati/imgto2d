@@ -127,6 +127,17 @@ bool ProjectProcessor::loadProject(const QString& projectPath, const QString& ov
     m_vpypePipeline = root.value("vpype_pipeline").toString("linemerge linesimplify");
     m_penWidthMm = root.value("pen_width_mm").toDouble(0.5);
     
+    QJsonObject da = root.value("drawing_area").toObject();
+    if (!da.isEmpty()) {
+        m_drawingArea.width_mm = da.value("width_mm").toDouble(210.0);
+        m_drawingArea.height_mm = da.value("height_mm").toDouble(297.0);
+        m_drawingArea.padding_left_mm = da.value("padding_left_mm").toDouble(0.0);
+        m_drawingArea.padding_top_mm = da.value("padding_top_mm").toDouble(0.0);
+        m_drawingArea.padding_right_mm = da.value("padding_right_mm").toDouble(0.0);
+        m_drawingArea.padding_bottom_mm = da.value("padding_bottom_mm").toDouble(0.0);
+        m_drawingArea.scaling_mode = static_cast<ScalingMode>(da.value("scaling_mode").toInt(0));
+    }
+
     QVector<QColor> loadedPenColors;
     for (const auto& v : root.value("pen_colors").toArray()) {
         QColor color(v.toString());
@@ -143,6 +154,9 @@ ProcessResult ProjectProcessor::process() {
     res.penWidthMm = m_penWidthMm;
     res.useVpype = m_useVpype;
     res.vpypePipeline = m_vpypePipeline;
+    res.drawingArea = m_drawingArea;
+    res.imageWidth = m_image.cols;
+    res.imageHeight = m_image.rows;
 
     if (m_image.empty()) {
         res.errorMessage = "Input image is empty.";

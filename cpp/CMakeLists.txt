@@ -63,7 +63,6 @@ set(CORE_SOURCES
     
     
     
-    batch/batch_processor.cpp
     core/color_separation.cpp
     core/coordinates.cpp
     core/mask_manager.cpp
@@ -203,6 +202,7 @@ set(CORE_SOURCES
 
 set(GUI_SOURCES
     main.cpp
+    batch/batch_processor.cpp
     ui/main_window.cpp
     ui/pfm_worker.cpp
 )
@@ -452,7 +452,7 @@ target_include_directories(imgto2d_cli PRIVATE
     ${OpenCV_INCLUDE_DIRS}
     ${Python3_INCLUDE_DIRS}
 )
-target_link_libraries(imgto2d_cli PRIVATE Qt6::Core Qt6::Concurrent ${OpenCV_LIBS} Python3::Python)
+target_link_libraries(imgto2d_cli PRIVATE Qt6::Core Qt6::Gui Qt6::Concurrent ${OpenCV_LIBS} Python3::Python)
 
 if(WIN32)
     add_custom_command(TARGET imgto2d_cli POST_BUILD

@@ -7,6 +7,8 @@
 #include <opencv2/core.hpp>
 
 #include "core/geometry.h"
+#include "core/coordinates.h"
+#include "pfm/pfm_base.h"
 
 class PathFindingModule;
 class ImageFilter;
@@ -21,6 +23,9 @@ struct ProcessResult {
     QString vpypePipeline;
     QString pfmName;
     cv::Mat previewImage;
+    DrawingAreaConfig drawingArea;
+    int imageWidth = 0;
+    int imageHeight = 0;
 };
 
 class ProjectProcessor {
@@ -53,6 +58,7 @@ private:
     
     bool m_useVpype = false;
     QString m_vpypePipeline;
+    DrawingAreaConfig m_drawingArea;
     
     bool m_maskEnabled = false;
     QString m_maskPath;

@@ -1,0 +1,14 @@
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/imgto2d_qt.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/test_pfms.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/test_vpype_embed.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/imgto2d_cli.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/edit_cache.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/rebuild_cache.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/list_install_components.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/install.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/install/local.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/install/strip.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/imgto2d_qt_autogen.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/test_pfms_autogen.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/test_vpype_embed_autogen.dir
+C:/Users/sir/Desktop/imgto2d/cpp/build_cli/CMakeFiles/imgto2d_cli_autogen.dir
