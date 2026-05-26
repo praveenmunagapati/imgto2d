@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+#include <QGuiApplication>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QString>
@@ -14,9 +14,9 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("imgto2d_cli");
-    QCoreApplication::setApplicationVersion("1.6.5-cpp");
+    QGuiApplication app(argc, argv);
+    QGuiApplication::setApplicationName("imgto2d_cli");
+    QGuiApplication::setApplicationVersion("1.6.5-cpp");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("imgto2d Headless CLI Tool");
@@ -87,12 +87,10 @@ int main(int argc, char *argv[])
                                           result.penColors, result.penWidthMm);
     } else if (ext == "gcode" || ext == "nc") {
         exportOk = GCodeExporter::exportGCode(outputPath, result.geometries, result.drawingArea, 
-                                              result.imageWidth, result.imageHeight, 
-                                              result.penColors, result.penWidthMm);
+                                              result.imageWidth, result.imageHeight);
     } else if (ext == "hpgl" || ext == "plt") {
         exportOk = HPGLExporter::exportHPGL(outputPath, result.geometries, result.drawingArea, 
-                                            result.imageWidth, result.imageHeight, 
-                                            result.penColors, result.penWidthMm);
+                                            result.imageWidth, result.imageHeight);
     } else {
         std::cerr << "Error: Unsupported output extension: " << ext.toStdString() << std::endl;
         return 1;
