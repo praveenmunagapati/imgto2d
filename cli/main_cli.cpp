@@ -1,20 +1,15 @@
-import re
+#include "pfms.h"
+#include "export_svg.h"
+#include "filters_raw.h"
+#include <iostream>
+#include <string>
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
-content = open('main.cpp', 'r', encoding='utf-8').read()
+using namespace pfm_ported;
 
-classes = re.findall(r'class\s+(\w+PFM)\s*:\s*public\s+\w+', content)
-classes = sorted(list(set(classes)))
-
-factory = "std::unique_ptr<PathFindingModule> create_pfm(const std::string& name) {\n"
-for c in classes:
-    if c in ['BaseTSPPFM', 'TSPClassicPFM']:
-        factory += f'    if (name == "{c}") return std::make_unique<{c}>();\n'
-    else:
-        factory += f'    if (name == "{c}") return std::make_unique<pfm_ported::{c}>();\n'
-factory += "    return nullptr;\n}\n\n"
-
-# We will replace the main function
-main_func = '''int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     std::cout << "imgto2d Standalone CLI\\n";
 
     if (argc < 4) {
@@ -53,17 +48,11 @@ main_func = '''int main(int argc, char* argv[]) {
     cv::Mat filtered = tFilter.process(gray);
 
     pfm->set("nodes", num_nodes);
-    pfm->set("num_lines", num_nodes); // some use num_lines
+    pfm->set("num_lines", num_nodes);
     pfm->set("lines", num_nodes);
     
     auto geometries = pfm->process(filtered);
     export_svg(outputPath, geometries, img.cols, img.rows);
     std::cout << "Saved SVG to " << outputPath << "\\n";
     return 0;
-}'''
-
-content = re.sub(r'int main\(int argc, char\* argv\[\]\) \{.*', factory + main_func, content, flags=re.DOTALL)
-
-with open('main.cpp', 'w', encoding='utf-8') as f:
-    f.write(content)
-print("Updated main.cpp with factory.")
+}

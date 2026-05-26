@@ -23,12 +23,15 @@ if(NOT OpenCV_DIR)
     endforeach()
 endif()
 
-find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
+find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc photo)
 find_package(OpenMP REQUIRED)
 
 # ---- Executable ----
 add_executable(imgto2d_standalone_cli
-    main.cpp
+    main_cli.cpp
+    pfms.cpp
+    export_svg.cpp
+    filters_raw.cpp
 )
 
 target_include_directories(imgto2d_standalone_cli PRIVATE
