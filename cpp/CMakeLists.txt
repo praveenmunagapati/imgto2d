@@ -17,6 +17,7 @@ if(NOT CMAKE_PREFIX_PATH)
         "C:/Qt/6.8.0/msvc2022_64"
         "C:/Qt/6.7.0/msvc2022_64"
         "C:/Qt/6.4.2/msvc2022_64"
+        "C:/Qt/6.4.2/mingw_64"
         "C:/tools/Qt/6.9.0/msvc2022_64"
     )
     foreach(_p ${_QT_SEARCH_PATHS})
@@ -29,12 +30,13 @@ if(NOT CMAKE_PREFIX_PATH)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Svg Network Concurrent)
-find_package(Qt6 COMPONENTS SerialPort)
+find_package(Qt6SerialPort QUIET)
 
 # ---- Find OpenCV ----
 # Try common choco / vcpkg paths if OpenCV_DIR not set
 if(NOT OpenCV_DIR)
     set(_OCV_SEARCH_PATHS
+        "C:/tools/OpenCV-MinGW-Build"
         "C:/tools/opencv/build"
         "C:/opencv/build"
         "C:/ProgramData/chocolatey/lib/opencv/tools/opencv/build"
@@ -48,7 +50,7 @@ if(NOT OpenCV_DIR)
     endforeach()
 endif()
 
-find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
+find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc photo videoio)
 
 # ---- Find Python3 ----
 if(NOT Python3_ROOT_DIR)

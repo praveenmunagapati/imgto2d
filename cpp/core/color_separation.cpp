@@ -30,10 +30,10 @@ std::vector<cv::Mat> splitRGB(const cv::Mat& bgrImage) {
     std::vector<cv::Mat> channels;
     cv::split(bgr, channels);
     
-    // Invert to density: 255 = max ink (black/dark), 0 = no ink (white)
-    cv::Mat rDensity = 255 - channels[2];
-    cv::Mat gDensity = 255 - channels[1];
-    cv::Mat bDensity = 255 - channels[0];
+    cv::Mat rDensity, gDensity, bDensity;
+    cv::bitwise_not(channels[2], rDensity);
+    cv::bitwise_not(channels[1], gDensity);
+    cv::bitwise_not(channels[0], bDensity);
     
     return {rDensity, gDensity, bDensity};
 }

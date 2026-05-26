@@ -1261,6 +1261,7 @@ void MainWindow::onStartProcessing() {
     for (auto& filter : m_activeFilters) {
         filteredImage = filter->process(filteredImage);
     }
+    filteredImage = m_maskMgr.applyMask(filteredImage);
 
     // Reset processing state
     m_lastGeoms.clear();
@@ -1270,7 +1271,7 @@ void MainWindow::onStartProcessing() {
     cv::Mat processImg = filteredImage;
     if (m_fastPreview->isChecked() && (filteredImage.cols > 800 || filteredImage.rows > 800)) {
         float scale = 800.0f / std::max(filteredImage.cols, filteredImage.rows);
-        cv::resize(filteredImage, processImg, cv::Size(), 0, 0, cv::INTER_AREA);
+        cv::resize(filteredImage, processImg, cv::Size(), scale, scale, cv::INTER_AREA);
     }
 
     m_startBtn->setText("⏹  Cancel");
