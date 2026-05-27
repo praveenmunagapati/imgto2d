@@ -1,0 +1,11 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "TSPClassicPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "nodes": 2000
+    },
+    "filter_chain": []
+}

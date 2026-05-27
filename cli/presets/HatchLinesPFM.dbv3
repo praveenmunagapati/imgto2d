@@ -1,0 +1,16 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "HatchLinesPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "angle1": 45,
+        "angle2": -45,
+        "plotting_resolution": 1,
+        "random_seed": 42,
+        "spacing": 5,
+        "threshold": 50
+    },
+    "filter_chain": []
+}

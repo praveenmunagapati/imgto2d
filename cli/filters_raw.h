@@ -112,7 +112,7 @@ public:
     explicit InvertFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Invert"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -140,7 +140,7 @@ public:
     explicit GrayscaleFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Grayscale"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -150,7 +150,7 @@ public:
     explicit DesaturateFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Desaturate"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -204,7 +204,7 @@ public:
     explicit SepiaFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Sepia"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -278,7 +278,7 @@ public:
     explicit PrewittFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Prewitt Edge"; }
     std::string category() const override { return "Edge Detection"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -288,7 +288,7 @@ public:
     explicit ScharrFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Scharr Edge"; }
     std::string category() const override { return "Edge Detection"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -310,6 +310,7 @@ public:
     std::string name() const override { return "Ridge Detection (Hessian)"; }
     std::string category() const override { return "Edge Detection"; }
 public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -320,6 +321,7 @@ public:
     std::string name() const override { return "High Pass"; }
     std::string category() const override { return "Edge Detection"; }
 public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -376,7 +378,7 @@ public:
     explicit BilateralFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Bilateral Filter"; }
     std::string category() const override { return "Blur/Sharpen"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -386,7 +388,7 @@ public:
     explicit LowPassFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Low Pass"; }
     std::string category() const override { return "Blur/Sharpen"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -397,6 +399,7 @@ public:
     std::string name() const override { return "Sharpen More"; }
     std::string category() const override { return "Blur/Sharpen"; }
 public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -489,7 +492,7 @@ public:
     explicit DilateCrossFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Dilate Cross"; }
     std::string category() const override { return "Morphological"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -499,7 +502,7 @@ public:
     explicit ErodeCrossFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Erode Cross"; }
     std::string category() const override { return "Morphological"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -509,7 +512,7 @@ public:
     explicit DilateEllipseFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Dilate Ellipse"; }
     std::string category() const override { return "Morphological"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -519,7 +522,7 @@ public:
     explicit ErodeEllipseFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Erode Ellipse"; }
     std::string category() const override { return "Morphological"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -569,7 +572,7 @@ public:
     explicit GaussianNoise2Filter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Gaussian Noise 2"; }
     std::string category() const override { return "Noise"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -579,13 +582,10 @@ public:
     explicit SpeckleNoiseFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Speckle Noise"; }
     std::string category() const override { return "Noise"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
-
-// --- threshold_extra_filters.h ---
-#pragma once
 
 // ---------------------------------------------------------------------------
 // Threshold Filters
@@ -596,7 +596,7 @@ public:
     explicit OtsuThresholdFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Otsu Threshold"; }
     std::string category() const override { return "Threshold"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -642,7 +642,7 @@ public:
     explicit EqualizeHistFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Equalize Histogram"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -652,7 +652,7 @@ public:
     explicit AutoContrastFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Auto Contrast"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -662,7 +662,7 @@ public:
     explicit AutoColorFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Auto Color"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -672,7 +672,7 @@ public:
     explicit ColorizeFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Colorize (Tint)"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -682,7 +682,7 @@ public:
     explicit InvertHueFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Invert Hue"; }
     std::string category() const override { return "Color"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -709,7 +709,7 @@ public:
     explicit EdgePreserveFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Edge Preserve Smooth"; }
     std::string category() const override { return "Artistic"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -719,7 +719,7 @@ public:
     explicit StylizationFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Stylization"; }
     std::string category() const override { return "Artistic"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -762,7 +762,7 @@ public:
     explicit EmbossFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Emboss"; }
     std::string category() const override { return "Stylize"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -772,7 +772,7 @@ public:
     explicit QuantizeFilter() : ImageFilter() { initSettings(); }
     std::string name() const override { return "Quantize (8 Colors)"; }
     std::string category() const override { return "Artistic"; }
-public:
+    std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
 
@@ -811,6 +811,403 @@ public:
     std::vector<PFMSetting> defineSettings() const override;
     cv::Mat process(const cv::Mat& image) override;
 };
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Borders
+// ===========================================================================
+class DirtyBorderFilter : public ImageFilter {
+public:
+    explicit DirtyBorderFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Dirty Border"; }
+    std::string category() const override { return "Borders"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class CustomOverlayFilter : public ImageFilter {
+public:
+    explicit CustomOverlayFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Custom Overlay"; }
+    std::string category() const override { return "Borders"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Blur
+// ===========================================================================
+class GlowFilter : public ImageFilter {
+public:
+    explicit GlowFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Glow"; }
+    std::string category() const override { return "Blur/Sharpen"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class LensBlurFilter : public ImageFilter {
+public:
+    explicit LensBlurFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Lens Blur"; }
+    std::string category() const override { return "Blur/Sharpen"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class MaximumFilter : public ImageFilter {
+public:
+    explicit MaximumFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Maximum"; }
+    std::string category() const override { return "Blur/Sharpen"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class MinimumFilter : public ImageFilter {
+public:
+    explicit MinimumFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Minimum"; }
+    std::string category() const override { return "Blur/Sharpen"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class SmartBlurFilter : public ImageFilter {
+public:
+    explicit SmartBlurFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Smart Blur"; }
+    std::string category() const override { return "Blur/Sharpen"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Colors
+// ===========================================================================
+class AdjustHSBFilter : public ImageFilter {
+public:
+    explicit AdjustHSBFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Adjust HSB"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class AdjustRGBFilter : public ImageFilter {
+public:
+    explicit AdjustRGBFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Adjust RGB"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class GainFilter : public ImageFilter {
+public:
+    explicit GainFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Gain"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class GrayOutFilter : public ImageFilter {
+public:
+    explicit GrayOutFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Gray Out"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class LevelsFilter : public ImageFilter {
+public:
+    explicit LevelsFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Levels"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class MixChannelsFilter : public ImageFilter {
+public:
+    explicit MixChannelsFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Mix Channels"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class RescaleFilter : public ImageFilter {
+public:
+    explicit RescaleFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Rescale"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class SolarizeFilter : public ImageFilter {
+public:
+    explicit SolarizeFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Solarize"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class TransparencyFilter : public ImageFilter {
+public:
+    explicit TransparencyFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Transparency"; }
+    std::string category() const override { return "Color"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Distort
+// ===========================================================================
+class DiffuseFilter : public ImageFilter {
+public:
+    explicit DiffuseFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Diffuse"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class DisplaceFilter : public ImageFilter {
+public:
+    explicit DisplaceFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Displace"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class KaleidoscopeFilter : public ImageFilter {
+public:
+    explicit KaleidoscopeFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Kaleidoscope"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class MarbleFilter : public ImageFilter {
+public:
+    explicit MarbleFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Marble"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class RippleFilter : public ImageFilter {
+public:
+    explicit RippleFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Ripple"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class ShearFilter : public ImageFilter {
+public:
+    explicit ShearFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Shear"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class SwimFilter : public ImageFilter {
+public:
+    explicit SwimFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Swim"; }
+    std::string category() const override { return "Distort"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Effects
+// ===========================================================================
+class ChromeFilter : public ImageFilter {
+public:
+    explicit ChromeFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Chrome"; }
+    std::string category() const override { return "Effects"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class FeedbackFilter : public ImageFilter {
+public:
+    explicit FeedbackFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Feedback"; }
+    std::string category() const override { return "Effects"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class GlintFilter : public ImageFilter {
+public:
+    explicit GlintFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Glint"; }
+    std::string category() const override { return "Effects"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class MirrorFilter : public ImageFilter {
+public:
+    explicit MirrorFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Mirror"; }
+    std::string category() const override { return "Effects"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Keying
+// ===========================================================================
+class ChromaKeyFilter : public ImageFilter {
+public:
+    explicit ChromaKeyFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Chroma Key"; }
+    std::string category() const override { return "Keying"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Pixellate
+// ===========================================================================
+class ColorHalftoneFilter : public ImageFilter {
+public:
+    explicit ColorHalftoneFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Color Halftone"; }
+    std::string category() const override { return "Pixellate"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class CrystallizeFilter : public ImageFilter {
+public:
+    explicit CrystallizeFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Crystallize"; }
+    std::string category() const override { return "Pixellate"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class PointillizeFilter : public ImageFilter {
+public:
+    explicit PointillizeFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Pointillize"; }
+    std::string category() const override { return "Pixellate"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Render
+// ===========================================================================
+class ScratchesFilter : public ImageFilter {
+public:
+    explicit ScratchesFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Scratches"; }
+    std::string category() const override { return "Render"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+// ===========================================================================
+// MISSING SPEC FILTERS — Stylize
+// ===========================================================================
+class ContoursFilter : public ImageFilter {
+public:
+    explicit ContoursFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Contours"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class DissolveFilter : public ImageFilter {
+public:
+    explicit DissolveFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Dissolve"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class DropShadowFilter : public ImageFilter {
+public:
+    explicit DropShadowFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Drop Shadow"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class FlareFilter : public ImageFilter {
+public:
+    explicit FlareFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Flare"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class OilFilter : public ImageFilter {
+public:
+    explicit OilFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Oil"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class RaysFilter : public ImageFilter {
+public:
+    explicit RaysFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Rays"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class ShapeBurstFilter : public ImageFilter {
+public:
+    explicit ShapeBurstFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Shape Burst"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class SparkleFilter : public ImageFilter {
+public:
+    explicit SparkleFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Sparkle"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
+class StampFilter : public ImageFilter {
+public:
+    explicit StampFilter() : ImageFilter() { initSettings(); }
+    std::string name() const override { return "Stamp"; }
+    std::string category() const override { return "Stylize"; }
+    std::vector<PFMSetting> defineSettings() const override;
+    cv::Mat process(const cv::Mat& image) override;
+};
+
 
 std::unique_ptr<ImageFilter> create_filter(const std::string& name);
 

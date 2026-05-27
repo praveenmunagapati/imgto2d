@@ -1,0 +1,19 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SVGConverterPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "crosshatch": false,
+        "derive_drawing_set": false,
+        "link_ends": false,
+        "max_rotation": 0,
+        "min_rotation": 0,
+        "shape_clipping": true,
+        "shape_filling": true,
+        "spacing": 3,
+        "svg_path": ""
+    },
+    "filter_chain": []
+}

@@ -1,0 +1,15 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SketchWavesPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "lines_count": 100,
+        "plotting_resolution": 0.25,
+        "random_seed": 42,
+        "wave_amp": 20,
+        "wave_freq": 10
+    },
+    "filter_chain": []
+}

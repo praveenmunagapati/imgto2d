@@ -1,0 +1,19 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "PenCalibrationPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "circle_tests": true,
+        "line_tests": true,
+        "nib_size_max": 1,
+        "nib_size_min": 0.3,
+        "rotation": 0,
+        "spacing_x": 10,
+        "spacing_y": 10,
+        "test_count": 5,
+        "test_size": 20
+    },
+    "filter_chain": []
+}

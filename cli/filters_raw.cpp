@@ -56,6 +56,7 @@ cv::Mat ContrastFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // InvertFilter
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> InvertFilter::defineSettings() const { return {}; }
 cv::Mat InvertFilter::process(const cv::Mat& image) {
     cv::Mat out;
     cv::bitwise_not(image, out);
@@ -102,6 +103,7 @@ cv::Mat UnsharpMaskFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // GrayscaleFilter
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> GrayscaleFilter::defineSettings() const { return {}; }
 cv::Mat GrayscaleFilter::process(const cv::Mat& image) {
     if (image.channels() == 3) {
         cv::Mat out;
@@ -115,6 +117,7 @@ cv::Mat GrayscaleFilter::process(const cv::Mat& image) {
     return image.clone();
 }
 
+std::vector<PFMSetting> DesaturateFilter::defineSettings() const { return {}; }
 cv::Mat DesaturateFilter::process(const cv::Mat& image) {
     if (image.channels() == 3) {
         cv::Mat gray;
@@ -254,6 +257,11 @@ cv::Mat ExposureFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // SepiaFilter
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> SepiaFilter::defineSettings() const {
+    return {
+        { "intensity", "Intensity", SettingType::Percentage, 100.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0 }
+    };
+}
 cv::Mat SepiaFilter::process(const cv::Mat& image) {
     cv::Mat img3;
     if (image.channels() == 1) {
@@ -433,6 +441,7 @@ cv::Mat LaplacianFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> PrewittFilter::defineSettings() const { return {}; }
 cv::Mat PrewittFilter::process(const cv::Mat& image) {
     cv::Mat kernelx = (cv::Mat_<float>(3, 3) << 1, 1, 1, 0, 0, 0, -1, -1, -1);
     cv::Mat kernely = (cv::Mat_<float>(3, 3) << -1, 0, 1, -1, 0, 1, -1, 0, 1);
@@ -449,6 +458,7 @@ cv::Mat PrewittFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> ScharrFilter::defineSettings() const { return {}; }
 cv::Mat ScharrFilter::process(const cv::Mat& image) {
     cv::Mat scharrx, scharry;
     cv::Scharr(image, scharrx, CV_32F, 1, 0);
@@ -484,6 +494,7 @@ cv::Mat DoGFilter::process(const cv::Mat& image) {
     return dog;
 }
 
+std::vector<PFMSetting> RidgeDetectionFilter::defineSettings() const { return {}; }
 cv::Mat RidgeDetectionFilter::process(const cv::Mat& image) {
     cv::Mat img;
     if (image.channels() == 3) cv::cvtColor(image, img, cv::COLOR_BGR2GRAY);
@@ -518,6 +529,11 @@ cv::Mat RidgeDetectionFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> HighPassFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 }
+    };
+}
 cv::Mat HighPassFilter::process(const cv::Mat& image) {
     cv::Mat blur;
     cv::GaussianBlur(image, blur, cv::Size(11, 11), 0);
@@ -606,20 +622,42 @@ cv::Mat MotionBlurFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> BilateralFilter::defineSettings() const {
+    return {
+        { "d", "Diameter", SettingType::Integer, 9, SettingValue(), 1, 31, 1, 31, 2 },
+        { "sigma_color", "Sigma Color", SettingType::Number, 75.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0 },
+        { "sigma_space", "Sigma Space", SettingType::Number, 75.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0 }
+    };
+}
 cv::Mat BilateralFilter::process(const cv::Mat& image) {
+    int d = get("d").toInt();
+    double sc = get("sigma_color").toDouble();
+    double ss = get("sigma_space").toDouble();
     cv::Mat out;
-    cv::bilateralFilter(image, out, 9, 75, 75);
+    cv::bilateralFilter(image, out, d, sc, ss);
     return out;
 }
 
+std::vector<PFMSetting> LowPassFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 21, SettingValue(), 3, 99, 3, 99, 2 }
+    };
+}
 cv::Mat LowPassFilter::process(const cv::Mat& image) {
+    int k = get("ksize").toInt(); if (k % 2 == 0) k++;
     cv::Mat out;
-    cv::GaussianBlur(image, out, cv::Size(21, 21), 0);
+    cv::GaussianBlur(image, out, cv::Size(k, k), 0);
     return out;
 }
 
+std::vector<PFMSetting> SharpenMoreFilter::defineSettings() const {
+    return {
+        { "amount", "Amount", SettingType::Number, 1.0, SettingValue(), 0.1, 5.0, 0.1, 5.0, 0.1 }
+    };
+}
 cv::Mat SharpenMoreFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = (cv::Mat_<float>(3,3) << -1, -1, -1, -1, 9, -1, -1, -1, -1);
+    float a = get("amount").toDouble();
+    cv::Mat kernel = (cv::Mat_<float>(3,3) << -a, -a, -a, -a, 1+8*a, -a, -a, -a, -a);
     cv::Mat out;
     cv::filter2D(image, out, -1, kernel);
     return out;
@@ -723,31 +761,59 @@ cv::Mat BlackHatFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // Cross & Ellipse
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> DilateCrossFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 },
+        { "iterations", "Iterations", SettingType::Integer, 1, SettingValue(), 1, 10, 1, 10, 1 }
+    };
+}
 cv::Mat DilateCrossFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(5, 5));
+    int k = get("ksize").toInt(); int iters = get("iterations").toInt();
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(k, k));
     cv::Mat out;
-    cv::dilate(image, out, kernel, cv::Point(-1,-1), 1);
+    cv::dilate(image, out, kernel, cv::Point(-1,-1), iters);
     return out;
 }
 
+std::vector<PFMSetting> ErodeCrossFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 },
+        { "iterations", "Iterations", SettingType::Integer, 1, SettingValue(), 1, 10, 1, 10, 1 }
+    };
+}
 cv::Mat ErodeCrossFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(5, 5));
+    int k = get("ksize").toInt(); int iters = get("iterations").toInt();
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(k, k));
     cv::Mat out;
-    cv::erode(image, out, kernel, cv::Point(-1,-1), 1);
+    cv::erode(image, out, kernel, cv::Point(-1,-1), iters);
     return out;
 }
 
+std::vector<PFMSetting> DilateEllipseFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 },
+        { "iterations", "Iterations", SettingType::Integer, 1, SettingValue(), 1, 10, 1, 10, 1 }
+    };
+}
 cv::Mat DilateEllipseFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+    int k = get("ksize").toInt(); int iters = get("iterations").toInt();
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(k, k));
     cv::Mat out;
-    cv::dilate(image, out, kernel, cv::Point(-1,-1), 1);
+    cv::dilate(image, out, kernel, cv::Point(-1,-1), iters);
     return out;
 }
 
+std::vector<PFMSetting> ErodeEllipseFilter::defineSettings() const {
+    return {
+        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 },
+        { "iterations", "Iterations", SettingType::Integer, 1, SettingValue(), 1, 10, 1, 10, 1 }
+    };
+}
 cv::Mat ErodeEllipseFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
+    int k = get("ksize").toInt(); int iters = get("iterations").toInt();
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(k, k));
     cv::Mat out;
-    cv::erode(image, out, kernel, cv::Point(-1,-1), 1);
+    cv::erode(image, out, kernel, cv::Point(-1,-1), iters);
     return out;
 }
 
@@ -835,9 +901,15 @@ cv::Mat DenoiseFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // GaussianNoise2Filter
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> GaussianNoise2Filter::defineSettings() const {
+    return {
+        { "sigma", "Sigma", SettingType::Number, 10.0, SettingValue(), 1.0, 100.0, 1.0, 100.0, 1.0 }
+    };
+}
 cv::Mat GaussianNoise2Filter::process(const cv::Mat& image) {
+    double sigma = get("sigma").toDouble();
     cv::Mat noise(image.size(), image.type());
-    cv::randn(noise, 0.0, 10.0);
+    cv::randn(noise, 0.0, sigma);
     
     cv::Mat img16;
     image.convertTo(img16, CV_16S);
@@ -855,14 +927,20 @@ cv::Mat GaussianNoise2Filter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // SpeckleNoiseFilter
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> SpeckleNoiseFilter::defineSettings() const {
+    return {
+        { "intensity", "Intensity", SettingType::Number, 0.1, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+    };
+}
 cv::Mat SpeckleNoiseFilter::process(const cv::Mat& image) {
+    float intensity = get("intensity").toDouble();
     cv::Mat noise(image.size(), CV_32F);
     cv::randn(noise, 0.0, 1.0);
     
     cv::Mat img32;
     image.convertTo(img32, CV_32F);
     
-    cv::Mat out = img32 + img32.mul(noise) * 0.1;
+    cv::Mat out = img32 + img32.mul(noise) * intensity;
     out.convertTo(out, CV_8U);
     return out;
 }
@@ -874,6 +952,7 @@ cv::Mat SpeckleNoiseFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // Threshold Filters
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> OtsuThresholdFilter::defineSettings() const { return {}; }
 cv::Mat OtsuThresholdFilter::process(const cv::Mat& image) {
     cv::Mat img;
     if (image.channels() == 3) cv::cvtColor(image, img, cv::COLOR_BGR2GRAY);
@@ -931,6 +1010,7 @@ cv::Mat ToZeroThresholdFilter::process(const cv::Mat& image) {
 // ---------------------------------------------------------------------------
 // Extra/Color Filters
 // ---------------------------------------------------------------------------
+std::vector<PFMSetting> EqualizeHistFilter::defineSettings() const { return {}; }
 cv::Mat EqualizeHistFilter::process(const cv::Mat& image) {
     cv::Mat out;
     if (image.channels() == 3) {
@@ -947,6 +1027,7 @@ cv::Mat EqualizeHistFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> AutoContrastFilter::defineSettings() const { return {}; }
 cv::Mat AutoContrastFilter::process(const cv::Mat& image) {
     double minVal, maxVal;
     // Calculate global min max across all channels (or simply use normalize)
@@ -955,6 +1036,7 @@ cv::Mat AutoContrastFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> AutoColorFilter::defineSettings() const { return {}; }
 cv::Mat AutoColorFilter::process(const cv::Mat& image) {
     cv::Mat out;
     if (image.channels() == 3) {
@@ -970,7 +1052,15 @@ cv::Mat AutoColorFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> ColorizeFilter::defineSettings() const {
+    return {
+        { "hue", "Hue", SettingType::Integer, 30, SettingValue(), 0, 360, 0, 360, 1 },
+        { "saturation_boost", "Saturation Boost", SettingType::Integer, 50, SettingValue(), 0, 255, 0, 255, 1 }
+    };
+}
 cv::Mat ColorizeFilter::process(const cv::Mat& image) {
+    int hue = get("hue").toInt() / 2; // OpenCV hue is 0-179
+    int sat_boost = get("saturation_boost").toInt();
     cv::Mat bgr;
     if (image.channels() == 1) {
         cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
@@ -983,8 +1073,8 @@ cv::Mat ColorizeFilter::process(const cv::Mat& image) {
     
     std::vector<cv::Mat> channels;
     cv::split(hsv, channels);
-    channels[0].setTo(15); // OpenCV hue is 0-179, so 30/2 = 15
-    channels[1] += 50; // Add saturation
+    channels[0].setTo(hue);
+    channels[1] += sat_boost;
     cv::merge(channels, hsv);
     
     cv::Mat out;
@@ -992,6 +1082,7 @@ cv::Mat ColorizeFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> InvertHueFilter::defineSettings() const { return {}; }
 cv::Mat InvertHueFilter::process(const cv::Mat& image) {
     if (image.channels() != 3) return image.clone();
     
@@ -1060,29 +1151,45 @@ cv::Mat PosterizeFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> EdgePreserveFilter::defineSettings() const {
+    return {
+        { "sigma_s", "Sigma S", SettingType::Number, 60.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0 },
+        { "sigma_r", "Sigma R", SettingType::Number, 0.4, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+    };
+}
 cv::Mat EdgePreserveFilter::process(const cv::Mat& image) {
+    float ss = get("sigma_s").toDouble();
+    float sr = get("sigma_r").toDouble();
     cv::Mat out;
     if (image.channels() == 3) {
-        cv::edgePreservingFilter(image, out, 1, 60.0f, 0.4f);
+        cv::edgePreservingFilter(image, out, 1, ss, sr);
     } else {
         cv::Mat bgr;
         cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
         cv::Mat res;
-        cv::edgePreservingFilter(bgr, res, 1, 60.0f, 0.4f);
+        cv::edgePreservingFilter(bgr, res, 1, ss, sr);
         cv::cvtColor(res, out, cv::COLOR_BGR2GRAY);
     }
     return out;
 }
 
+std::vector<PFMSetting> StylizationFilter::defineSettings() const {
+    return {
+        { "sigma_s", "Sigma S", SettingType::Number, 60.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0 },
+        { "sigma_r", "Sigma R", SettingType::Number, 0.45, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+    };
+}
 cv::Mat StylizationFilter::process(const cv::Mat& image) {
+    float ss = get("sigma_s").toDouble();
+    float sr = get("sigma_r").toDouble();
     cv::Mat out;
     if (image.channels() == 3) {
-        cv::stylization(image, out, 60.0f, 0.45f);
+        cv::stylization(image, out, ss, sr);
     } else {
         cv::Mat bgr;
         cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
         cv::Mat res;
-        cv::stylization(bgr, res, 60.0f, 0.45f);
+        cv::stylization(bgr, res, ss, sr);
         cv::cvtColor(res, out, cv::COLOR_BGR2GRAY);
     }
     return out;
@@ -1191,6 +1298,11 @@ cv::Mat PencilSketchFilter::process(const cv::Mat& image) {
     return gray;
 }
 
+std::vector<PFMSetting> EmbossFilter::defineSettings() const {
+    return {
+        { "angle", "Angle", SettingType::Number, 135.0, SettingValue(), 0.0, 360.0, 0.0, 360.0, 45.0 }
+    };
+}
 cv::Mat EmbossFilter::process(const cv::Mat& image) {
     cv::Mat kernel = (cv::Mat_<float>(3, 3) << -2, -1, 0, -1, 1, 1, 0, 1, 2);
     cv::Mat out;
@@ -1198,14 +1310,20 @@ cv::Mat EmbossFilter::process(const cv::Mat& image) {
     return out;
 }
 
+std::vector<PFMSetting> QuantizeFilter::defineSettings() const {
+    return {
+        { "step", "Quantize Step", SettingType::Integer, 32, SettingValue(), 2, 128, 2, 128, 2 }
+    };
+}
 cv::Mat QuantizeFilter::process(const cv::Mat& image) {
+    float step = get("step").toInt();
     cv::Mat img32;
     image.convertTo(img32, CV_32F);
     
     for (int r = 0; r < img32.rows; ++r) {
         float* ptr = img32.ptr<float>(r);
         for (int c = 0; c < img32.cols * img32.channels(); ++c) {
-            ptr[c] = std::round(ptr[c] / 32.0f) * 32.0f;
+            ptr[c] = std::round(ptr[c] / step) * step;
         }
     }
     
@@ -1292,6 +1410,618 @@ cv::Mat WaveFilter::process(const cv::Mat& image) {
 }
 
 
+// ===========================================================================
+// MISSING SPEC FILTER IMPLEMENTATIONS
+// ===========================================================================
+
+// --- Borders ---
+std::vector<PFMSetting> DirtyBorderFilter::defineSettings() const {
+    return { {"width", "Border Width", SettingType::Integer, 15, SettingValue(), 1, 100, 1, 100, 1} };
+}
+cv::Mat DirtyBorderFilter::process(const cv::Mat& image) {
+    int bw = get("width").toInt();
+    cv::Mat out = image.clone();
+    std::mt19937 rng(42);
+    std::uniform_int_distribution<int> dist(0, 255);
+    int h = out.rows, w = out.cols;
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+            if (x < bw || x >= w - bw || y < bw || y >= h - bw) {
+                float fade = 1.0f - std::min({(float)x, (float)y, (float)(w-1-x), (float)(h-1-y)}) / bw;
+                fade = std::clamp(fade, 0.0f, 1.0f);
+                if (out.channels() == 1) {
+                    uchar& px = out.at<uchar>(y, x);
+                    px = cv::saturate_cast<uchar>(px * (1.0f - fade * 0.7f) + dist(rng) * fade * 0.3f);
+                } else {
+                    cv::Vec3b& px = out.at<cv::Vec3b>(y, x);
+                    for (int c = 0; c < 3; ++c)
+                        px[c] = cv::saturate_cast<uchar>(px[c] * (1.0f - fade * 0.7f) + dist(rng) * fade * 0.3f);
+                }
+            }
+    return out;
+}
+
+std::vector<PFMSetting> CustomOverlayFilter::defineSettings() const {
+    return { {"opacity", "Opacity", SettingType::Percentage, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0} };
+}
+cv::Mat CustomOverlayFilter::process(const cv::Mat& image) { return image.clone(); }
+
+// --- Blur ---
+std::vector<PFMSetting> GlowFilter::defineSettings() const {
+    return { {"radius", "Radius", SettingType::Integer, 15, SettingValue(), 1, 101, 1, 101, 2},
+             {"intensity", "Intensity", SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1} };
+}
+cv::Mat GlowFilter::process(const cv::Mat& image) {
+    int r = get("radius").toInt(); if (r % 2 == 0) r++;
+    float i = get("intensity").toDouble() / 100.0f;
+    cv::Mat blurred; cv::GaussianBlur(image, blurred, cv::Size(r, r), 0);
+    cv::Mat out; cv::addWeighted(image, 1.0, blurred, i, 0, out);
+    return out;
+}
+
+std::vector<PFMSetting> LensBlurFilter::defineSettings() const {
+    return { {"radius", "Radius", SettingType::Integer, 11, SettingValue(), 3, 51, 3, 51, 2} };
+}
+cv::Mat LensBlurFilter::process(const cv::Mat& image) {
+    int r = get("radius").toInt(); if (r % 2 == 0) r++;
+    cv::Mat kernel = cv::Mat::zeros(r, r, CV_32F);
+    cv::circle(kernel, cv::Point(r/2, r/2), r/2, cv::Scalar(1), -1);
+    kernel /= cv::sum(kernel)[0];
+    cv::Mat out; cv::filter2D(image, out, -1, kernel);
+    return out;
+}
+
+std::vector<PFMSetting> MaximumFilter::defineSettings() const {
+    return { {"ksize", "Kernel Size", SettingType::Integer, 3, SettingValue(), 1, 31, 1, 31, 2} };
+}
+cv::Mat MaximumFilter::process(const cv::Mat& image) {
+    int k = get("ksize").toInt();
+    cv::Mat el = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(k, k));
+    cv::Mat out; cv::dilate(image, out, el);
+    return out;
+}
+
+std::vector<PFMSetting> MinimumFilter::defineSettings() const {
+    return { {"ksize", "Kernel Size", SettingType::Integer, 3, SettingValue(), 1, 31, 1, 31, 2} };
+}
+cv::Mat MinimumFilter::process(const cv::Mat& image) {
+    int k = get("ksize").toInt();
+    cv::Mat el = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(k, k));
+    cv::Mat out; cv::erode(image, out, el);
+    return out;
+}
+
+std::vector<PFMSetting> SmartBlurFilter::defineSettings() const {
+    return { {"radius", "Radius", SettingType::Integer, 9, SettingValue(), 1, 99, 1, 99, 2},
+             {"sigma_color", "Color Sigma", SettingType::Number, 75.0, SettingValue(), 1, 200, 1, 200, 1},
+             {"sigma_space", "Space Sigma", SettingType::Number, 75.0, SettingValue(), 1, 200, 1, 200, 1} };
+}
+cv::Mat SmartBlurFilter::process(const cv::Mat& image) {
+    int r = get("radius").toInt();
+    float sc = get("sigma_color").toDouble(), ss = get("sigma_space").toDouble();
+    cv::Mat out; cv::bilateralFilter(image, out, r, sc, ss);
+    return out;
+}
+
+// --- Colors ---
+std::vector<PFMSetting> AdjustHSBFilter::defineSettings() const {
+    return { {"hue", "Hue", SettingType::Number, 0.0, SettingValue(), -180, 180, -180, 180, 1},
+             {"saturation", "Saturation", SettingType::Number, 0.0, SettingValue(), -100, 100, -100, 100, 1},
+             {"brightness", "Brightness", SettingType::Number, 0.0, SettingValue(), -100, 100, -100, 100, 1} };
+}
+cv::Mat AdjustHSBFilter::process(const cv::Mat& image) {
+    if (image.channels() != 3) return image.clone();
+    float dh = get("hue").toDouble(), ds = get("saturation").toDouble(), db = get("brightness").toDouble();
+    cv::Mat hsv; cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
+    std::vector<cv::Mat> ch; cv::split(hsv, ch);
+    ch[0].convertTo(ch[0], -1, 1.0, dh / 2.0);
+    ch[1].convertTo(ch[1], -1, 1.0 + ds / 100.0);
+    ch[2].convertTo(ch[2], -1, 1.0 + db / 100.0);
+    cv::merge(ch, hsv);
+    cv::Mat out; cv::cvtColor(hsv, out, cv::COLOR_HSV2BGR);
+    return out;
+}
+
+std::vector<PFMSetting> AdjustRGBFilter::defineSettings() const {
+    return { {"red", "Red", SettingType::Number, 0.0, SettingValue(), -100, 100, -100, 100, 1},
+             {"green", "Green", SettingType::Number, 0.0, SettingValue(), -100, 100, -100, 100, 1},
+             {"blue", "Blue", SettingType::Number, 0.0, SettingValue(), -100, 100, -100, 100, 1} };
+}
+cv::Mat AdjustRGBFilter::process(const cv::Mat& image) {
+    if (image.channels() != 3) return image.clone();
+    float dr = get("red").toDouble(), dg = get("green").toDouble(), db = get("blue").toDouble();
+    std::vector<cv::Mat> ch; cv::split(image, ch);
+    ch[0].convertTo(ch[0], -1, 1.0, db); ch[1].convertTo(ch[1], -1, 1.0, dg); ch[2].convertTo(ch[2], -1, 1.0, dr);
+    cv::Mat out; cv::merge(ch, out);
+    return out;
+}
+
+std::vector<PFMSetting> GainFilter::defineSettings() const {
+    return { {"gain", "Gain", SettingType::Number, 1.0, SettingValue(), 0.0, 5.0, 0.0, 5.0, 0.1},
+             {"bias", "Bias", SettingType::Number, 0.5, SettingValue(), 0.0, 1.0, 0.0, 1.0, 0.01} };
+}
+cv::Mat GainFilter::process(const cv::Mat& image) {
+    float gain = get("gain").toDouble(), bias = get("bias").toDouble();
+    cv::Mat out; image.convertTo(out, -1, gain, (bias - 0.5) * 255.0);
+    return out;
+}
+
+std::vector<PFMSetting> GrayOutFilter::defineSettings() const {
+    return { {"amount", "Amount", SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1} };
+}
+cv::Mat GrayOutFilter::process(const cv::Mat& image) {
+    float a = get("amount").toDouble() / 100.0f;
+    cv::Mat gray;
+    if (image.channels() == 3) { cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); cv::cvtColor(gray, gray, cv::COLOR_GRAY2BGR); }
+    else gray = image.clone();
+    cv::Mat out; cv::addWeighted(image, 1.0 - a, gray, a, 0, out);
+    return out;
+}
+
+std::vector<PFMSetting> LevelsFilter::defineSettings() const {
+    return { {"input_low", "Input Low", SettingType::Integer, 0, SettingValue(), 0, 255, 0, 255, 1},
+             {"input_high", "Input High", SettingType::Integer, 255, SettingValue(), 0, 255, 0, 255, 1},
+             {"output_low", "Output Low", SettingType::Integer, 0, SettingValue(), 0, 255, 0, 255, 1},
+             {"output_high", "Output High", SettingType::Integer, 255, SettingValue(), 0, 255, 0, 255, 1} };
+}
+cv::Mat LevelsFilter::process(const cv::Mat& image) {
+    int il = get("input_low").toInt(), ih = get("input_high").toInt();
+    int ol = get("output_low").toInt(), oh = get("output_high").toInt();
+    if (ih <= il) ih = il + 1;
+    cv::Mat img32; image.convertTo(img32, CV_32F);
+    img32 = (img32 - il) / (ih - il) * (oh - ol) + ol;
+    cv::Mat out; img32.convertTo(out, CV_8U);
+    return out;
+}
+
+std::vector<PFMSetting> MixChannelsFilter::defineSettings() const {
+    return { {"mode", "Mode", SettingType::Enum, std::string("RGB"), SettingValue(), 0, 0, 0, 0, 1, {"RGB", "RBG", "GRB", "GBR", "BRG", "BGR"}} };
+}
+cv::Mat MixChannelsFilter::process(const cv::Mat& image) {
+    if (image.channels() != 3) return image.clone();
+    std::string mode = get("mode").toString();
+    std::vector<cv::Mat> ch; cv::split(image, ch); // BGR
+    std::vector<cv::Mat> out_ch = {ch[0], ch[1], ch[2]};
+    if (mode == "RBG") out_ch = {ch[1], ch[0], ch[2]};
+    else if (mode == "GRB") out_ch = {ch[0], ch[2], ch[1]};
+    else if (mode == "GBR") out_ch = {ch[2], ch[0], ch[1]};
+    else if (mode == "BRG") out_ch = {ch[1], ch[2], ch[0]};
+    cv::Mat out; cv::merge(out_ch, out);
+    return out;
+}
+
+std::vector<PFMSetting> RescaleFilter::defineSettings() const {
+    return { {"scale", "Scale", SettingType::Number, 1.0, SettingValue(), 0.1, 4.0, 0.1, 4.0, 0.1} };
+}
+cv::Mat RescaleFilter::process(const cv::Mat& image) {
+    float s = get("scale").toDouble();
+    cv::Mat out; cv::resize(image, out, cv::Size(), s, s, cv::INTER_LINEAR);
+    return out;
+}
+
+std::vector<PFMSetting> SolarizeFilter::defineSettings() const {
+    return { {"threshold", "Threshold", SettingType::Integer, 128, SettingValue(), 0, 255, 0, 255, 1} };
+}
+cv::Mat SolarizeFilter::process(const cv::Mat& image) {
+    int t = get("threshold").toInt();
+    cv::Mat out = image.clone();
+    for (int y = 0; y < out.rows; ++y)
+        for (int x = 0; x < out.cols * out.channels(); ++x) {
+            uchar& v = out.data[y * out.step + x];
+            if (v > t) v = 255 - v;
+        }
+    return out;
+}
+
+std::vector<PFMSetting> TransparencyFilter::defineSettings() const {
+    return { {"opacity", "Opacity", SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1} };
+}
+cv::Mat TransparencyFilter::process(const cv::Mat& image) {
+    float a = get("opacity").toDouble() / 100.0f;
+    cv::Mat white(image.size(), image.type(), cv::Scalar::all(255));
+    cv::Mat out; cv::addWeighted(image, a, white, 1.0 - a, 0, out);
+    return out;
+}
+
+// --- Distort ---
+std::vector<PFMSetting> DiffuseFilter::defineSettings() const {
+    return { {"scale", "Scale", SettingType::Number, 4.0, SettingValue(), 1, 20, 1, 20, 1} };
+}
+cv::Mat DiffuseFilter::process(const cv::Mat& image) {
+    float s = get("scale").toDouble();
+    int h = image.rows, w = image.cols;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    std::mt19937 rng(42);
+    std::uniform_real_distribution<float> dist(-s, s);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        mx.at<float>(y, x) = x + dist(rng); my.at<float>(y, x) = y + dist(rng);
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> DisplaceFilter::defineSettings() const {
+    return { {"amount", "Amount", SettingType::Number, 10.0, SettingValue(), 1, 100, 1, 100, 1} };
+}
+cv::Mat DisplaceFilter::process(const cv::Mat& image) {
+    float a = get("amount").toDouble();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image;
+    int h = image.rows, w = image.cols;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    cv::Mat gx, gy; cv::Sobel(gray, gx, CV_32F, 1, 0, 3); cv::Sobel(gray, gy, CV_32F, 0, 1, 3);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        mx.at<float>(y, x) = x + gx.at<float>(y, x) / 255.0f * a;
+        my.at<float>(y, x) = y + gy.at<float>(y, x) / 255.0f * a;
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> KaleidoscopeFilter::defineSettings() const {
+    return { {"segments", "Segments", SettingType::Integer, 6, SettingValue(), 2, 24, 2, 24, 1} };
+}
+cv::Mat KaleidoscopeFilter::process(const cv::Mat& image) {
+    int segs = get("segments").toInt();
+    int h = image.rows, w = image.cols;
+    float cx = w / 2.0f, cy = h / 2.0f, seg_angle = 2.0f * 3.14159265f / segs;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        float dx = x - cx, dy = y - cy;
+        float angle = std::atan2(dy, dx); if (angle < 0) angle += 2.0f * 3.14159265f;
+        float r = std::hypot(dx, dy);
+        float sa = std::fmod(angle, seg_angle);
+        if (sa > seg_angle / 2.0f) sa = seg_angle - sa;
+        mx.at<float>(y, x) = cx + r * std::cos(sa);
+        my.at<float>(y, x) = cy + r * std::sin(sa);
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> MarbleFilter::defineSettings() const {
+    return { {"scale", "Scale", SettingType::Number, 10.0, SettingValue(), 1, 100, 1, 100, 1},
+             {"turbulence", "Turbulence", SettingType::Number, 4.0, SettingValue(), 0.1, 20, 0.1, 20, 0.1} };
+}
+cv::Mat MarbleFilter::process(const cv::Mat& image) {
+    float scale = get("scale").toDouble(), turb = get("turbulence").toDouble();
+    int h = image.rows, w = image.cols;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        float v = std::sin((x + y) / scale + turb * std::sin(x * 0.03f) + turb * std::cos(y * 0.03f));
+        mx.at<float>(y, x) = x + v * scale; my.at<float>(y, x) = y + v * scale;
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> RippleFilter::defineSettings() const {
+    return { {"amplitude", "Amplitude", SettingType::Number, 5.0, SettingValue(), 1, 50, 1, 50, 1},
+             {"wavelength", "Wavelength", SettingType::Number, 20.0, SettingValue(), 1, 200, 1, 200, 1} };
+}
+cv::Mat RippleFilter::process(const cv::Mat& image) {
+    float amp = get("amplitude").toDouble(), wl = get("wavelength").toDouble();
+    int h = image.rows, w = image.cols;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        mx.at<float>(y, x) = x + amp * std::sin(2.0f * 3.14159265f * y / wl);
+        my.at<float>(y, x) = y + amp * std::cos(2.0f * 3.14159265f * x / wl);
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> ShearFilter::defineSettings() const {
+    return { {"angle", "Angle", SettingType::Number, 15.0, SettingValue(), -45, 45, -45, 45, 1} };
+}
+cv::Mat ShearFilter::process(const cv::Mat& image) {
+    float a = std::tan(get("angle").toDouble() * 3.14159265f / 180.0f);
+    cv::Mat M = (cv::Mat_<float>(2, 3) << 1, a, 0, 0, 1, 0);
+    cv::Mat out; cv::warpAffine(image, out, M, image.size(), cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+std::vector<PFMSetting> SwimFilter::defineSettings() const {
+    return { {"scale", "Scale", SettingType::Number, 16.0, SettingValue(), 1, 100, 1, 100, 1},
+             {"amount", "Amount", SettingType::Number, 8.0, SettingValue(), 1, 50, 1, 50, 1} };
+}
+cv::Mat SwimFilter::process(const cv::Mat& image) {
+    float sc = get("scale").toDouble(), amt = get("amount").toDouble();
+    int h = image.rows, w = image.cols;
+    cv::Mat mx(h, w, CV_32FC1), my(h, w, CV_32FC1);
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x) {
+        mx.at<float>(y, x) = x + amt * std::sin(y / sc);
+        my.at<float>(y, x) = y + amt * std::cos(x / sc);
+    }
+    cv::Mat out; cv::remap(image, out, mx, my, cv::INTER_LINEAR, cv::BORDER_REFLECT);
+    return out;
+}
+
+// --- Effects ---
+std::vector<PFMSetting> ChromeFilter::defineSettings() const { return {}; }
+cv::Mat ChromeFilter::process(const cv::Mat& image) {
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image.clone();
+    cv::Mat gx, gy; cv::Sobel(gray, gx, CV_32F, 1, 0); cv::Sobel(gray, gy, CV_32F, 0, 1);
+    cv::Mat mag; cv::magnitude(gx, gy, mag);
+    cv::normalize(mag, mag, 0, 255, cv::NORM_MINMAX);
+    cv::Mat out; mag.convertTo(out, CV_8U);
+    if (image.channels() == 3) cv::cvtColor(out, out, cv::COLOR_GRAY2BGR);
+    return out;
+}
+
+std::vector<PFMSetting> FeedbackFilter::defineSettings() const {
+    return { {"iterations", "Iterations", SettingType::Integer, 3, SettingValue(), 1, 10, 1, 10, 1},
+             {"scale", "Scale", SettingType::Number, 0.95, SettingValue(), 0.5, 1.0, 0.5, 1.0, 0.01} };
+}
+cv::Mat FeedbackFilter::process(const cv::Mat& image) {
+    int iters = get("iterations").toInt(); float s = get("scale").toDouble();
+    cv::Mat out = image.clone();
+    for (int i = 0; i < iters; ++i) {
+        cv::Mat resized; cv::resize(out, resized, cv::Size(), s, s);
+        cv::Mat centered(image.size(), image.type(), cv::Scalar::all(128));
+        int ox = (image.cols - resized.cols) / 2, oy = (image.rows - resized.rows) / 2;
+        if (ox >= 0 && oy >= 0) resized.copyTo(centered(cv::Rect(ox, oy, resized.cols, resized.rows)));
+        cv::addWeighted(out, 0.5, centered, 0.5, 0, out);
+    }
+    return out;
+}
+
+std::vector<PFMSetting> GlintFilter::defineSettings() const {
+    return { {"threshold", "Threshold", SettingType::Integer, 230, SettingValue(), 0, 255, 0, 255, 1},
+             {"length", "Length", SettingType::Integer, 20, SettingValue(), 1, 100, 1, 100, 1} };
+}
+cv::Mat GlintFilter::process(const cv::Mat& image) {
+    int t = get("threshold").toInt(), len = get("length").toInt();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image;
+    cv::Mat bright; cv::threshold(gray, bright, t, 255, cv::THRESH_BINARY);
+    cv::Mat kh = cv::Mat::zeros(1, len * 2 + 1, CV_32F); kh.at<float>(0, len) = 1;
+    for (int i = 0; i < len * 2 + 1; ++i) kh.at<float>(0, i) = 1.0f / (len * 2 + 1);
+    cv::Mat kv; cv::transpose(kh, kv);
+    cv::Mat gh, gv; cv::filter2D(bright, gh, -1, kh); cv::filter2D(bright, gv, -1, kv);
+    cv::Mat glints = cv::max(gh, gv);
+    if (image.channels() == 3) cv::cvtColor(glints, glints, cv::COLOR_GRAY2BGR);
+    cv::Mat out; cv::add(image, glints, out);
+    return out;
+}
+
+std::vector<PFMSetting> MirrorFilter::defineSettings() const {
+    return { {"mode", "Mode", SettingType::Enum, std::string("Horizontal"), SettingValue(), 0, 0, 0, 0, 1, {"Horizontal", "Vertical", "Both"}} };
+}
+cv::Mat MirrorFilter::process(const cv::Mat& image) {
+    std::string m = get("mode").toString();
+    cv::Mat out;
+    if (m == "Vertical") cv::flip(image, out, 0);
+    else if (m == "Both") cv::flip(image, out, -1);
+    else cv::flip(image, out, 1);
+    return out;
+}
+
+// --- Keying ---
+std::vector<PFMSetting> ChromaKeyFilter::defineSettings() const {
+    return { {"hue_target", "Target Hue", SettingType::Integer, 60, SettingValue(), 0, 180, 0, 180, 1},
+             {"tolerance", "Tolerance", SettingType::Integer, 30, SettingValue(), 1, 90, 1, 90, 1} };
+}
+cv::Mat ChromaKeyFilter::process(const cv::Mat& image) {
+    if (image.channels() != 3) return image.clone();
+    int hue = get("hue_target").toInt(), tol = get("tolerance").toInt();
+    cv::Mat hsv; cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
+    cv::Mat mask; cv::inRange(hsv, cv::Scalar(hue - tol, 40, 40), cv::Scalar(hue + tol, 255, 255), mask);
+    cv::Mat out = image.clone(); out.setTo(cv::Scalar(255, 255, 255), mask);
+    return out;
+}
+
+// --- Pixellate ---
+std::vector<PFMSetting> ColorHalftoneFilter::defineSettings() const {
+    return { {"dot_size", "Dot Size", SettingType::Integer, 8, SettingValue(), 2, 40, 2, 40, 1} };
+}
+cv::Mat ColorHalftoneFilter::process(const cv::Mat& image) {
+    int ds = get("dot_size").toInt();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image;
+    int h = gray.rows, w = gray.cols;
+    cv::Mat out(h, w, CV_8U, cv::Scalar(255));
+    for (int y = 0; y < h; y += ds) for (int x = 0; x < w; x += ds) {
+        cv::Rect r(x, y, std::min(ds, w - x), std::min(ds, h - y));
+        float m = cv::mean(gray(r))[0];
+        float radius = (255.0f - m) / 255.0f * ds / 2.0f;
+        cv::circle(out, cv::Point(x + ds/2, y + ds/2), (int)radius, cv::Scalar(0), -1);
+    }
+    return out;
+}
+
+std::vector<PFMSetting> CrystallizeFilter::defineSettings() const {
+    return { {"cell_size", "Cell Size", SettingType::Integer, 15, SettingValue(), 2, 100, 2, 100, 1} };
+}
+cv::Mat CrystallizeFilter::process(const cv::Mat& image) {
+    int cs = get("cell_size").toInt();
+    int h = image.rows, w = image.cols;
+    cv::Mat out = image.clone();
+    for (int y = 0; y < h; y += cs) for (int x = 0; x < w; x += cs) {
+        cv::Rect r(x, y, std::min(cs, w - x), std::min(cs, h - y));
+        cv::Scalar m = cv::mean(image(r));
+        out(r).setTo(m);
+    }
+    return out;
+}
+
+std::vector<PFMSetting> PointillizeFilter::defineSettings() const {
+    return { {"cell_size", "Cell Size", SettingType::Integer, 10, SettingValue(), 2, 50, 2, 50, 1} };
+}
+cv::Mat PointillizeFilter::process(const cv::Mat& image) {
+    int cs = get("cell_size").toInt();
+    int h = image.rows, w = image.cols;
+    cv::Mat out(h, w, image.type(), cv::Scalar::all(255));
+    for (int y = 0; y < h; y += cs) for (int x = 0; x < w; x += cs) {
+        cv::Rect r(x, y, std::min(cs, w - x), std::min(cs, h - y));
+        cv::Scalar m = cv::mean(image(r));
+        cv::circle(out, cv::Point(x + cs/2, y + cs/2), cs/2, m, -1);
+    }
+    return out;
+}
+
+// --- Render ---
+std::vector<PFMSetting> ScratchesFilter::defineSettings() const {
+    return { {"count", "Count", SettingType::Integer, 30, SettingValue(), 1, 200, 1, 200, 1},
+             {"length", "Length", SettingType::Integer, 100, SettingValue(), 10, 500, 10, 500, 10} };
+}
+cv::Mat ScratchesFilter::process(const cv::Mat& image) {
+    int cnt = get("count").toInt(), len = get("length").toInt();
+    cv::Mat out = image.clone();
+    std::mt19937 rng(42);
+    for (int i = 0; i < cnt; ++i) {
+        int x1 = rng() % image.cols, y1 = rng() % image.rows;
+        float a = (rng() % 360) * 3.14159265f / 180.0f;
+        int x2 = x1 + (int)(len * std::cos(a)), y2 = y1 + (int)(len * std::sin(a));
+        cv::Scalar color = (image.channels() == 3) ? cv::Scalar(200, 200, 200) : cv::Scalar(200);
+        cv::line(out, cv::Point(x1, y1), cv::Point(x2, y2), color, 1, cv::LINE_AA);
+    }
+    return out;
+}
+
+// --- Stylize ---
+std::vector<PFMSetting> ContoursFilter::defineSettings() const {
+    return { {"levels", "Levels", SettingType::Integer, 8, SettingValue(), 2, 30, 2, 30, 1} };
+}
+cv::Mat ContoursFilter::process(const cv::Mat& image) {
+    int levels = get("levels").toInt();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image.clone();
+    cv::Mat out = cv::Mat::zeros(gray.size(), CV_8U);
+    for (int l = 1; l < levels; ++l) {
+        int t = 255 * l / levels;
+        cv::Mat bin; cv::threshold(gray, bin, t, 255, cv::THRESH_BINARY);
+        std::vector<std::vector<cv::Point>> contours;
+        cv::findContours(bin, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+        cv::drawContours(out, contours, -1, cv::Scalar(255), 1);
+    }
+    cv::bitwise_not(out, out);
+    return out;
+}
+
+std::vector<PFMSetting> DissolveFilter::defineSettings() const {
+    return { {"density", "Density", SettingType::Percentage, 20.0, SettingValue(), 0, 100, 0, 100, 1} };
+}
+cv::Mat DissolveFilter::process(const cv::Mat& image) {
+    float d = get("density").toDouble() / 100.0f;
+    cv::Mat out = image.clone();
+    cv::Mat noise(image.size(), CV_32F); cv::randu(noise, 0.0, 1.0);
+    cv::Mat mask = noise < d;
+    out.setTo(cv::Scalar::all(255), mask);
+    return out;
+}
+
+std::vector<PFMSetting> DropShadowFilter::defineSettings() const {
+    return { {"offset_x", "Offset X", SettingType::Integer, 5, SettingValue(), -50, 50, -50, 50, 1},
+             {"offset_y", "Offset Y", SettingType::Integer, 5, SettingValue(), -50, 50, -50, 50, 1},
+             {"blur", "Blur", SettingType::Integer, 5, SettingValue(), 0, 50, 0, 50, 1} };
+}
+cv::Mat DropShadowFilter::process(const cv::Mat& image) {
+    int ox = get("offset_x").toInt(), oy = get("offset_y").toInt(), bl = get("blur").toInt();
+    if (bl % 2 == 0) bl++;
+    cv::Mat dark; image.convertTo(dark, -1, 0.3);
+    cv::Mat shadow(image.size(), image.type(), cv::Scalar::all(255));
+    int sx = std::max(0, ox), sy = std::max(0, oy);
+    int dw = std::min(image.cols - sx, image.cols - std::abs(ox));
+    int dh = std::min(image.rows - sy, image.rows - std::abs(oy));
+    if (dw > 0 && dh > 0) dark(cv::Rect(std::max(0, -ox), std::max(0, -oy), dw, dh)).copyTo(shadow(cv::Rect(sx, sy, dw, dh)));
+    if (bl > 1) cv::GaussianBlur(shadow, shadow, cv::Size(bl, bl), 0);
+    cv::Mat out; cv::min(shadow, image, out);
+    return out;
+}
+
+std::vector<PFMSetting> FlareFilter::defineSettings() const {
+    return { {"center_x", "Center X", SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+             {"center_y", "Center Y", SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+             {"intensity", "Intensity", SettingType::Percentage, 80.0, SettingValue(), 0, 100, 0, 100, 1} };
+}
+cv::Mat FlareFilter::process(const cv::Mat& image) {
+    float cx = get("center_x").toDouble() / 100.0f * image.cols;
+    float cy = get("center_y").toDouble() / 100.0f * image.rows;
+    float intensity = get("intensity").toDouble() / 100.0f;
+    cv::Mat flare(image.size(), CV_32F);
+    float max_d = std::hypot((float)image.cols, (float)image.rows) / 2.0f;
+    for (int y = 0; y < image.rows; ++y) for (int x = 0; x < image.cols; ++x) {
+        float d = std::hypot(x - cx, y - cy);
+        flare.at<float>(y, x) = std::max(0.0f, 1.0f - d / max_d) * intensity * 255.0f;
+    }
+    cv::Mat fm; flare.convertTo(fm, CV_8U);
+    if (image.channels() == 3) cv::cvtColor(fm, fm, cv::COLOR_GRAY2BGR);
+    cv::Mat out; cv::add(image, fm, out);
+    return out;
+}
+
+std::vector<PFMSetting> OilFilter::defineSettings() const {
+    return { {"radius", "Radius", SettingType::Integer, 3, SettingValue(), 1, 10, 1, 10, 1} };
+}
+cv::Mat OilFilter::process(const cv::Mat& image) {
+    // Delegate to OilPaintingFilter logic (simplified version)
+    cv::Mat bgr;
+    if (image.channels() == 1) cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR); else bgr = image;
+    cv::Mat out;
+    cv::edgePreservingFilter(bgr, out, 1, 60.0f, 0.4f);
+    if (image.channels() == 1) cv::cvtColor(out, out, cv::COLOR_BGR2GRAY);
+    return out;
+}
+
+std::vector<PFMSetting> RaysFilter::defineSettings() const {
+    return { {"count", "Ray Count", SettingType::Integer, 12, SettingValue(), 2, 60, 2, 60, 1},
+             {"length", "Length", SettingType::Integer, 50, SettingValue(), 10, 200, 10, 200, 5} };
+}
+cv::Mat RaysFilter::process(const cv::Mat& image) {
+    int cnt = get("count").toInt(), len = get("length").toInt();
+    cv::Mat out = image.clone();
+    float cx = image.cols / 2.0f, cy = image.rows / 2.0f;
+    for (int i = 0; i < cnt; ++i) {
+        float a = 2.0f * 3.14159265f * i / cnt;
+        cv::Scalar c = (image.channels() == 3) ? cv::Scalar(255, 255, 240) : cv::Scalar(255);
+        cv::line(out, cv::Point((int)cx, (int)cy),
+                 cv::Point((int)(cx + len * std::cos(a)), (int)(cy + len * std::sin(a))), c, 1, cv::LINE_AA);
+    }
+    return out;
+}
+
+std::vector<PFMSetting> ShapeBurstFilter::defineSettings() const {
+    return {
+        { "threshold", "Threshold", SettingType::Integer, 128, SettingValue(), 0, 255, 0, 255, 1 }
+    };
+}
+cv::Mat ShapeBurstFilter::process(const cv::Mat& image) {
+    int t = get("threshold").toInt();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image;
+    cv::Mat bin; cv::threshold(gray, bin, t, 255, cv::THRESH_BINARY);
+    cv::Mat dist; cv::distanceTransform(bin, dist, cv::DIST_L2, 3);
+    cv::normalize(dist, dist, 0, 255, cv::NORM_MINMAX);
+    cv::Mat out; dist.convertTo(out, CV_8U);
+    return out;
+}
+
+std::vector<PFMSetting> SparkleFilter::defineSettings() const {
+    return { {"density", "Density", SettingType::Integer, 50, SettingValue(), 1, 500, 1, 500, 5},
+             {"size", "Size", SettingType::Integer, 3, SettingValue(), 1, 10, 1, 10, 1} };
+}
+cv::Mat SparkleFilter::process(const cv::Mat& image) {
+    int d = get("density").toInt(), s = get("size").toInt();
+    cv::Mat out = image.clone();
+    std::mt19937 rng(42);
+    cv::Scalar c = (image.channels() == 3) ? cv::Scalar(255, 255, 255) : cv::Scalar(255);
+    for (int i = 0; i < d; ++i) {
+        int x = rng() % image.cols, y = rng() % image.rows;
+        cv::line(out, cv::Point(x - s, y), cv::Point(x + s, y), c, 1);
+        cv::line(out, cv::Point(x, y - s), cv::Point(x, y + s), c, 1);
+    }
+    return out;
+}
+
+std::vector<PFMSetting> StampFilter::defineSettings() const {
+    return { {"threshold", "Threshold", SettingType::Integer, 128, SettingValue(), 0, 255, 0, 255, 1},
+             {"smoothness", "Smoothness", SettingType::Integer, 3, SettingValue(), 0, 20, 0, 20, 1} };
+}
+cv::Mat StampFilter::process(const cv::Mat& image) {
+    int t = get("threshold").toInt(), sm = get("smoothness").toInt();
+    cv::Mat gray; if (image.channels() == 3) cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY); else gray = image;
+    if (sm > 0) { int k = sm * 2 + 1; cv::GaussianBlur(gray, gray, cv::Size(k, k), 0); }
+    cv::Mat out; cv::threshold(gray, out, t, 255, cv::THRESH_BINARY);
+    return out;
+}
+
+
 std::unique_ptr<ImageFilter> create_filter(const std::string& name) {
     if (name == "ThresholdFilter") return std::make_unique<ThresholdFilter>();
     if (name == "BrightnessFilter") return std::make_unique<BrightnessFilter>();
@@ -1358,5 +2088,47 @@ std::unique_ptr<ImageFilter> create_filter(const std::string& name) {
     if (name == "VignetteFilter") return std::make_unique<VignetteFilter>();
     if (name == "PixelateFilter") return std::make_unique<PixelateFilter>();
     if (name == "WaveFilter") return std::make_unique<WaveFilter>();
+    // --- New spec filters ---
+    if (name == "DirtyBorderFilter") return std::make_unique<DirtyBorderFilter>();
+    if (name == "CustomOverlayFilter") return std::make_unique<CustomOverlayFilter>();
+    if (name == "GlowFilter") return std::make_unique<GlowFilter>();
+    if (name == "LensBlurFilter") return std::make_unique<LensBlurFilter>();
+    if (name == "MaximumFilter") return std::make_unique<MaximumFilter>();
+    if (name == "MinimumFilter") return std::make_unique<MinimumFilter>();
+    if (name == "SmartBlurFilter") return std::make_unique<SmartBlurFilter>();
+    if (name == "AdjustHSBFilter") return std::make_unique<AdjustHSBFilter>();
+    if (name == "AdjustRGBFilter") return std::make_unique<AdjustRGBFilter>();
+    if (name == "GainFilter") return std::make_unique<GainFilter>();
+    if (name == "GrayOutFilter") return std::make_unique<GrayOutFilter>();
+    if (name == "LevelsFilter") return std::make_unique<LevelsFilter>();
+    if (name == "MixChannelsFilter") return std::make_unique<MixChannelsFilter>();
+    if (name == "RescaleFilter") return std::make_unique<RescaleFilter>();
+    if (name == "SolarizeFilter") return std::make_unique<SolarizeFilter>();
+    if (name == "TransparencyFilter") return std::make_unique<TransparencyFilter>();
+    if (name == "DiffuseFilter") return std::make_unique<DiffuseFilter>();
+    if (name == "DisplaceFilter") return std::make_unique<DisplaceFilter>();
+    if (name == "KaleidoscopeFilter") return std::make_unique<KaleidoscopeFilter>();
+    if (name == "MarbleFilter") return std::make_unique<MarbleFilter>();
+    if (name == "RippleFilter") return std::make_unique<RippleFilter>();
+    if (name == "ShearFilter") return std::make_unique<ShearFilter>();
+    if (name == "SwimFilter") return std::make_unique<SwimFilter>();
+    if (name == "ChromeFilter") return std::make_unique<ChromeFilter>();
+    if (name == "FeedbackFilter") return std::make_unique<FeedbackFilter>();
+    if (name == "GlintFilter") return std::make_unique<GlintFilter>();
+    if (name == "MirrorFilter") return std::make_unique<MirrorFilter>();
+    if (name == "ChromaKeyFilter") return std::make_unique<ChromaKeyFilter>();
+    if (name == "ColorHalftoneFilter") return std::make_unique<ColorHalftoneFilter>();
+    if (name == "CrystallizeFilter") return std::make_unique<CrystallizeFilter>();
+    if (name == "PointillizeFilter") return std::make_unique<PointillizeFilter>();
+    if (name == "ScratchesFilter") return std::make_unique<ScratchesFilter>();
+    if (name == "ContoursFilter") return std::make_unique<ContoursFilter>();
+    if (name == "DissolveFilter") return std::make_unique<DissolveFilter>();
+    if (name == "DropShadowFilter") return std::make_unique<DropShadowFilter>();
+    if (name == "FlareFilter") return std::make_unique<FlareFilter>();
+    if (name == "OilFilter") return std::make_unique<OilFilter>();
+    if (name == "RaysFilter") return std::make_unique<RaysFilter>();
+    if (name == "ShapeBurstFilter") return std::make_unique<ShapeBurstFilter>();
+    if (name == "SparkleFilter") return std::make_unique<SparkleFilter>();
+    if (name == "StampFilter") return std::make_unique<StampFilter>();
     return nullptr;
 }

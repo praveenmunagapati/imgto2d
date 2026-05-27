@@ -1,0 +1,12 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "AmbientFlowPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "length": 150,
+        "lines": 200
+    },
+    "filter_chain": []
+}

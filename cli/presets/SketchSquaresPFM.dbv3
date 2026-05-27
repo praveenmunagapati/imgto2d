@@ -1,0 +1,23 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SketchSquaresPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "edge_power": 0,
+        "erase_max": 125,
+        "erase_min": 50,
+        "line_density": 35,
+        "line_max_limit": 1500,
+        "luminance_power": 100,
+        "plotting_resolution": 0.25,
+        "random_seed": 42,
+        "size_tests": 10,
+        "sobel_power": 0,
+        "square_max_size": 40,
+        "square_min_size": 1,
+        "tone": 50
+    },
+    "filter_chain": []
+}

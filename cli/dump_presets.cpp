@@ -35,10 +35,11 @@ int main() {
         "HatchHorizontalPFM", "HatchLinesPFM", "HatchSawtoothPFM", "HatchVerticalPFM",
         "LBGCircularScribblesPFM", "LBGDashesPFM", "LBGDiagramPFM", "LBGLettersPFM",
         "LBGShapesPFM", "LBGStipplingPFM", "LBGTSPPFM", "LBGTreePFM",
-        "LBGTriangulationPFM", "LabyrinthClassicPFM", "LabyrinthRomanPFM", "LayersPFM",
+        "LBGTriangulationPFM", "LBGQuadTilesPFM", "LabyrinthClassicPFM", "LabyrinthRomanPFM", "LayersPFM",
         "MazeCirclePFM", "MazeHexPFM", "MazeHilbertPFM", "MazeLabyrinthPFM",
         "MazePeanoPFM", "MazeRectPFM", "MazeTriPFM", "MazeVoronoiPFM",
-        "MosaicCustomPFM", "MosaicRectanglesPFM", "MosaicVoronoiPFM", "SketchAbstractPFM",
+        "MosaicCustomPFM", "MosaicRectanglesPFM", "MosaicVoronoiPFM",
+        "MosaicTriangulationPFM", "MosaicSegmentsPFM", "SketchAbstractPFM",
         "SketchCatmullRomsPFM", "SketchCubicBeziers2PFM", "SketchCubicBeziersPFM", "SketchCurvesPFM",
         "SketchDelaunayPFM", "SketchFlowFieldsPFM", "SketchLinesPFM", "SketchQuadBeziers2PFM",
         "SketchQuadBeziersPFM", "SketchRadialPFM", "SketchScribblePFM", "SketchShapesPFM",
@@ -51,7 +52,8 @@ int main() {
         "TSPClassicPFM", "TSPMSTPFM", "TSPOutlinePFM", "TSPShadingPFM",
         "TSPStipplePFM", "TSPVoronoiPFM", "VoronoiCirclesPFM", "VoronoiDashesPFM",
         "VoronoiDiagramPFM", "VoronoiLettersPFM", "VoronoiShapesPFM", "VoronoiStipplingPFM",
-        "VoronoiTSPPFM", "VoronoiTreePFM", "VoronoiTriangulationPFM"
+        "VoronoiTSPPFM", "VoronoiTreePFM", "VoronoiTriangulationPFM",
+        "SVGConverterPFM", "PenCalibrationPFM"
     };
 
     for (const auto& name : pfmNames) {

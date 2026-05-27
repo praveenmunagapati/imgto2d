@@ -1496,6 +1496,66 @@ public: explicit VoronoiTSPPFM(){} std::string name() const override{return "Vor
 
 
 
+// --- lbg_quad_tiles_pfm.h ---
+class LBGQuadTilesPFM : public BaseAdaptivePFM {
+public:
+    explicit LBGQuadTilesPFM();
+    std::string name() const override { return "LBG Quad Tiles"; }
+    std::string category() const override { return "LBG"; }
+protected:
+    std::vector<PFMSetting> defineSettings() const override;
+    std::vector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+
+// --- mosaic_triangulation_pfm.h ---
+class MosaicTriangulationPFM : public BaseMosaicPFM {
+public:
+    explicit MosaicTriangulationPFM();
+    std::string name() const override { return "Mosaic Triangulation"; }
+protected:
+    std::vector<PFMSetting> defineSettings() const override;
+    std::vector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+
+// --- mosaic_segments_pfm.h ---
+class MosaicSegmentsPFM : public BaseMosaicPFM {
+public:
+    explicit MosaicSegmentsPFM();
+    std::string name() const override { return "Mosaic Segments"; }
+protected:
+    std::vector<PFMSetting> defineSettings() const override;
+    std::vector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+
+// --- svg_converter_pfm.h ---
+class SVGConverterPFM : public PathFindingModule {
+public:
+    explicit SVGConverterPFM();
+    std::string name() const override { return "SVG Converter"; }
+    std::string category() const override { return "Special"; }
+    bool isPremium() const override { return true; }
+protected:
+    std::vector<PFMSetting> defineSettings() const override;
+    std::vector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+
+// --- pen_calibration_pfm.h ---
+class PenCalibrationPFM : public PathFindingModule {
+public:
+    explicit PenCalibrationPFM();
+    std::string name() const override { return "Pen Calibration"; }
+    std::string category() const override { return "Special"; }
+    bool isPremium() const override { return true; }
+protected:
+    std::vector<PFMSetting> defineSettings() const override;
+    std::vector<DrawingGeometry> _process(const cv::Mat& image) override;
+};
+
+
 std::unique_ptr<PathFindingModule> create_pfm(const std::string& name);
 
 } // namespace pfm_ported

@@ -5201,8 +5201,492 @@ std::vector<DrawingGeometry> VoronoiTSPPFM::_process(const cv::Mat& image) {
 
 
 
+// --- lbg_quad_tiles_pfm.cpp ---
+// ---------------------------------------------------------------------------
+LBGQuadTilesPFM::LBGQuadTilesPFM() { initSettings(); }
 
- // namespace pfm_ported
+std::vector<PFMSetting> LBGQuadTilesPFM::defineSettings() const {
+    auto s = makeLbgSettings(BaseAdaptivePFM::defineSettings());
+    s.push_back({"tile_scale", "Tile Scale", SettingType::Number, 0.8, SettingValue(), 0.1, 2.0, 0.1, 2.0, 0.05});
+    s.push_back({"subdivisions", "Subdivisions", SettingType::Integer, 2, SettingValue(), 1, 4, 1, 4, 1});
+    return s;
+}
+
+std::vector<DrawingGeometry> LBGQuadTilesPFM::_process(const cv::Mat& image) {
+    cv::Mat workImg;
+    double plotRes = m_settings["plotting_resolution"].toDouble();
+    if (std::abs(plotRes - 1.0) > 1e-4) {
+        int nw = std::max(1, (int)(image.cols * plotRes));
+        int nh = std::max(1, (int)(image.rows * plotRes));
+        cv::resize(image, workImg, cv::Size(nw, nh), 0, 0, cv::INTER_AREA);
+    } else {
+        workImg = image;
+    }
+    auto pts = getSeeds(workImg);
+    if (pts.empty()) return {};
+
+    float tile_scale = get("tile_scale").toDouble();
+    int subdivisions = get("subdivisions").toInt();
+
+    float sx = (float)image.cols / workImg.cols;
+    float sy = (float)image.rows / workImg.rows;
+
+    std::vector<DrawingGeometry> geoms;
+    for (size_t i = 0; i < pts.size(); ++i) {
+        if (isCancelled()) break;
+        if (i % 100 == 0) emitProgress(float(i) / pts.size(), geoms.size(), "LBG Quad Tiles...");
+
+        float cx = pts[i].x;
+        float cy = pts[i].y;
+        int xi = std::clamp(int(cx), 0, workImg.cols - 1);
+        int yi = std::clamp(int(cy), 0, workImg.rows - 1);
+        float luminance = workImg.at<uchar>(yi, xi) / 255.0f;
+        float darkness = 1.0f - luminance;
+
+        float base_r = nearest_seed_radius(cx, cy, pts) * tile_scale;
+        if (base_r < 1.0f) base_r = 1.0f;
+
+        // Draw quad tiles: subdivide the cell into quadrants based on darkness
+        int subs = std::max(1, (int)(subdivisions * darkness + 0.5f));
+        float sub_size = base_r * 2.0f / subs;
+
+        for (int qy = 0; qy < subs; ++qy) {
+            for (int qx = 0; qx < subs; ++qx) {
+                float qcx = (cx - base_r + sub_size * (qx + 0.5f)) * sx;
+                float qcy = (cy - base_r + sub_size * (qy + 0.5f)) * sy;
+                float qw = sub_size * 0.85f * sx;
+                float qh = sub_size * 0.85f * sy;
+                DrawingGeometry dg;
+                dg.path = generate_rectangle(qcx, qcy, qw, qh);
+                geoms.push_back(dg);
+            }
+        }
+    }
+    emitProgress(1.0f, (int)geoms.size(), "LBG Quad Tiles done");
+    return geoms;
+}
+
+
+// --- mosaic_triangulation_pfm.cpp ---
+// ---------------------------------------------------------------------------
+MosaicTriangulationPFM::MosaicTriangulationPFM() { initSettings(); }
+
+std::vector<PFMSetting> MosaicTriangulationPFM::defineSettings() const {
+    auto s = BaseMosaicPFM::defineSettings();
+    s.push_back({"cell_count", "Cell Count", SettingType::Integer, 500, SettingValue(), 20, 5000, 20, 5000, 50});
+    s.push_back({"triangulate_corners", "Triangulate Corners", SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1});
+    return s;
+}
+
+std::vector<DrawingGeometry> MosaicTriangulationPFM::_process(const cv::Mat& image) {
+    int cell_count = get("cell_count").toInt();
+    bool triangulate_corners = get("triangulate_corners").toBool();
+    float thresh = m_settings["threshold"].toDouble();
+    int w = image.cols, h = image.rows;
+
+    // Build weighted probability map
+    std::vector<double> probs(w * h, 0.0);
+    double sum = 0.0;
+    #pragma omp parallel for reduction(+:sum)
+    for (int y = 0; y < h; ++y) {
+        const uchar* row = image.ptr<uchar>(y);
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - row[x];
+            if (d > 0) { probs[y * w + x] = d; sum += d; }
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+
+    // Sample points
+    std::vector<cv::Point2f> pts;
+    for (int i = 0; i < cell_count; ++i) {
+        if (isCancelled()) return {};
+        int idx = weightedChoice(probs);
+        pts.push_back(cv::Point2f(idx % w, idx / w));
+    }
+
+    // Add corners if requested
+    if (triangulate_corners) {
+        pts.push_back(cv::Point2f(0, 0));
+        pts.push_back(cv::Point2f(w - 1, 0));
+        pts.push_back(cv::Point2f(0, h - 1));
+        pts.push_back(cv::Point2f(w - 1, h - 1));
+    }
+
+    emitProgress(0.5f, 0, "Mosaic Triangulation: Delaunay...");
+
+    // Delaunay triangulation
+    cv::Subdiv2D subdiv(cv::Rect(0, 0, w, h));
+    for (const auto& p : pts) {
+        cv::Point2f clamped(std::clamp(p.x, 0.0f, (float)(w - 1)),
+                            std::clamp(p.y, 0.0f, (float)(h - 1)));
+        subdiv.insert(clamped);
+    }
+
+    std::vector<cv::Vec6f> triangles;
+    subdiv.getTriangleList(triangles);
+
+    std::vector<DrawingGeometry> geoms;
+    for (const auto& t : triangles) {
+        if (isCancelled()) break;
+        cv::Point2f p0(t[0], t[1]), p1(t[2], t[3]), p2(t[4], t[5]);
+        // Skip triangles outside image bounds
+        if (p0.x < 0 || p0.x >= w || p0.y < 0 || p0.y >= h) continue;
+        if (p1.x < 0 || p1.x >= w || p1.y < 0 || p1.y >= h) continue;
+        if (p2.x < 0 || p2.x >= w || p2.y < 0 || p2.y >= h) continue;
+
+        // Check darkness at centroid
+        float cx = (p0.x + p1.x + p2.x) / 3.0f;
+        float cy = (p0.y + p1.y + p2.y) / 3.0f;
+        int xi = std::clamp(int(cx), 0, w - 1);
+        int yi = std::clamp(int(cy), 0, h - 1);
+        float dark = 255.0f - image.at<uchar>(yi, xi);
+        if (dark < thresh) continue;
+
+        DrawingGeometry dg;
+        dg.path = {{p0.x, p0.y}, {p1.x, p1.y}, {p2.x, p2.y}, {p0.x, p0.y}};
+        geoms.push_back(dg);
+    }
+    emitProgress(1.0f, (int)geoms.size(), "Mosaic Triangulation done");
+    return geoms;
+}
+
+
+// --- mosaic_segments_pfm.cpp ---
+// ---------------------------------------------------------------------------
+MosaicSegmentsPFM::MosaicSegmentsPFM() { initSettings(); }
+
+std::vector<PFMSetting> MosaicSegmentsPFM::defineSettings() const {
+    auto s = BaseMosaicPFM::defineSettings();
+    s.push_back({"segments", "Segments", SettingType::Integer, 200, SettingValue(), 1, 5000, 1, 5000, 10});
+    s.push_back({"iterations", "Iterations", SettingType::Integer, 10, SettingValue(), 1, 100, 1, 100, 1});
+    s.push_back({"compactness", "Compactness", SettingType::Number, 30.0, SettingValue(), 1.0, 100.0, 1.0, 100.0, 1.0});
+    return s;
+}
+
+std::vector<DrawingGeometry> MosaicSegmentsPFM::_process(const cv::Mat& image) {
+    int num_segments = get("segments").toInt();
+    int iterations = get("iterations").toInt();
+    float compactness = get("compactness").toDouble();
+    float thresh = m_settings["threshold"].toDouble();
+    int w = image.cols, h = image.rows;
+
+    // SLIC-like superpixel segmentation (simplified k-means on [x, y, brightness])
+    float grid_step = std::sqrt(float(w * h) / std::max(1, num_segments));
+    if (grid_step < 2.0f) grid_step = 2.0f;
+
+    // Initialize cluster centers on a grid
+    std::vector<cv::Point2f> centers;
+    std::vector<float> center_bright;
+    for (float y = grid_step / 2.0f; y < h; y += grid_step) {
+        for (float x = grid_step / 2.0f; x < w; x += grid_step) {
+            int xi = std::clamp(int(x), 0, w - 1);
+            int yi = std::clamp(int(y), 0, h - 1);
+            centers.push_back(cv::Point2f(x, y));
+            center_bright.push_back(image.at<uchar>(yi, xi));
+        }
+    }
+    int k = (int)centers.size();
+    if (k == 0) return {};
+
+    // Labels for each pixel
+    cv::Mat labels(h, w, CV_32S, cv::Scalar(-1));
+    float spatial_weight = compactness / grid_step;
+
+    for (int iter = 0; iter < iterations; ++iter) {
+        if (isCancelled()) return {};
+        emitProgress(float(iter) / iterations, 0, "Mosaic Segments: clustering...");
+
+        // Assignment step
+        #pragma omp parallel for schedule(dynamic, 16)
+        for (int ci = 0; ci < k; ++ci) {
+            int cx = (int)centers[ci].x;
+            int cy = (int)centers[ci].y;
+            float cb = center_bright[ci];
+            int range = (int)(grid_step * 1.5f);
+            int ylo = std::max(0, cy - range);
+            int yhi = std::min(h - 1, cy + range);
+            int xlo = std::max(0, cx - range);
+            int xhi = std::min(w - 1, cx + range);
+
+            for (int y = ylo; y <= yhi; ++y) {
+                const uchar* row = image.ptr<uchar>(y);
+                for (int x = xlo; x <= xhi; ++x) {
+                    float dx = x - centers[ci].x;
+                    float dy = y - centers[ci].y;
+                    float db = row[x] - cb;
+                    float dist = std::sqrt(dx * dx + dy * dy) * spatial_weight + std::abs(db);
+
+                    // Compare with current best
+                    int cur_label = labels.at<int>(y, x);
+                    if (cur_label == -1) {
+                        labels.at<int>(y, x) = ci;
+                    } else {
+                        float cur_dx = x - centers[cur_label].x;
+                        float cur_dy = y - centers[cur_label].y;
+                        float cur_db = row[x] - center_bright[cur_label];
+                        float cur_dist = std::sqrt(cur_dx*cur_dx + cur_dy*cur_dy) * spatial_weight + std::abs(cur_db);
+                        if (dist < cur_dist) {
+                            labels.at<int>(y, x) = ci;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Update step
+        std::vector<double> sum_x(k, 0), sum_y(k, 0), sum_b(k, 0);
+        std::vector<int> counts(k, 0);
+        for (int y = 0; y < h; ++y) {
+            const uchar* row = image.ptr<uchar>(y);
+            for (int x = 0; x < w; ++x) {
+                int ci = labels.at<int>(y, x);
+                if (ci >= 0 && ci < k) {
+                    sum_x[ci] += x;
+                    sum_y[ci] += y;
+                    sum_b[ci] += row[x];
+                    counts[ci]++;
+                }
+            }
+        }
+        for (int ci = 0; ci < k; ++ci) {
+            if (counts[ci] > 0) {
+                centers[ci].x = sum_x[ci] / counts[ci];
+                centers[ci].y = sum_y[ci] / counts[ci];
+                center_bright[ci] = sum_b[ci] / counts[ci];
+            }
+        }
+    }
+
+    // Extract contours for each segment
+    std::vector<DrawingGeometry> geoms;
+    for (int ci = 0; ci < k; ++ci) {
+        if (isCancelled()) break;
+        // Check darkness at centroid
+        int xi = std::clamp(int(centers[ci].x), 0, w - 1);
+        int yi = std::clamp(int(centers[ci].y), 0, h - 1);
+        float dark = 255.0f - image.at<uchar>(yi, xi);
+        if (dark < thresh) continue;
+
+        // Build mask for this segment
+        cv::Mat mask(h, w, CV_8U, cv::Scalar(0));
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
+                if (labels.at<int>(y, x) == ci) {
+                    mask.at<uchar>(y, x) = 255;
+                }
+            }
+        }
+
+        std::vector<std::vector<cv::Point>> contours;
+        cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+        for (const auto& contour : contours) {
+            if (contour.size() < 3) continue;
+            DrawingGeometry dg;
+            for (const auto& pt : contour) dg.path.push_back({(double)pt.x, (double)pt.y});
+            dg.path.push_back({(double)contour[0].x, (double)contour[0].y});
+            geoms.push_back(dg);
+        }
+    }
+    emitProgress(1.0f, (int)geoms.size(), "Mosaic Segments done");
+    return geoms;
+}
+
+
+// --- svg_converter_pfm.cpp ---
+// ---------------------------------------------------------------------------
+SVGConverterPFM::SVGConverterPFM() { initSettings(); }
+
+std::vector<PFMSetting> SVGConverterPFM::defineSettings() const {
+    return {
+        {"svg_path", "SVG Path", SettingType::Text, std::string(""), SettingValue(), 0, 0, 0, 0, 1, {}, "Special", "Path to source SVG file"},
+        {"shape_clipping", "Shape Clipping", SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+        {"derive_drawing_set", "Derive Drawing Set", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+        {"shape_filling", "Shape Filling", SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+        {"spacing", "Spacing", SettingType::Number, 3.0, SettingValue(), 1.0, 10.0, 1.0, 10.0, 0.5},
+        {"min_rotation", "Min Rotation", SettingType::Number, 0.0, SettingValue(), 0.0, 360.0, 0.0, 360.0, 5.0},
+        {"max_rotation", "Max Rotation", SettingType::Number, 0.0, SettingValue(), 0.0, 360.0, 0.0, 360.0, 5.0},
+        {"link_ends", "Link Ends", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+        {"crosshatch", "Crosshatch", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+    };
+}
+
+std::vector<DrawingGeometry> SVGConverterPFM::_process(const cv::Mat& image) {
+    // SVG Converter: generates hatch-fill patterns based on image brightness
+    // Note: Full SVG parsing requires an external library. This generates the
+    // fill pattern that Drawing Bot V3 uses when filling shapes from SVG input.
+    float spacing = get("spacing").toDouble();
+    bool crosshatch = get("crosshatch").toBool();
+    bool shape_filling = get("shape_filling").toBool();
+    float min_rot = get("min_rotation").toDouble();
+    float max_rot = get("max_rotation").toDouble();
+    int w = image.cols, h = image.rows;
+
+    std::vector<DrawingGeometry> geoms;
+    if (!shape_filling) return geoms;
+
+    // Generate hatch lines over the entire image, spaced by 'spacing'
+    float angle_rad = (min_rot + max_rot) / 2.0f * 3.14159265f / 180.0f;
+    float cosA = std::cos(angle_rad);
+    float sinA = std::sin(angle_rad);
+    float diag = std::hypot((float)w, (float)h);
+
+    for (float offset = -diag; offset < diag; offset += spacing) {
+        if (isCancelled()) break;
+        Path line;
+        for (float t = -diag; t < diag; t += 1.0f) {
+            float px = w / 2.0f + cosA * t - sinA * offset;
+            float py = h / 2.0f + sinA * t + cosA * offset;
+            if (px >= 0 && px < w && py >= 0 && py < h) {
+                int xi = std::clamp(int(px), 0, w - 1);
+                int yi = std::clamp(int(py), 0, h - 1);
+                float dark = 255.0f - image.at<uchar>(yi, xi);
+                if (dark > 30.0f) {
+                    line.push_back({px, py});
+                } else if (!line.empty()) {
+                    if (line.size() >= 2) {
+                        DrawingGeometry dg;
+                        dg.path = line;
+                        geoms.push_back(dg);
+                    }
+                    line.clear();
+                }
+            }
+        }
+        if (line.size() >= 2) {
+            DrawingGeometry dg;
+            dg.path = line;
+            geoms.push_back(dg);
+        }
+    }
+
+    // Add perpendicular crosshatch if enabled
+    if (crosshatch) {
+        float cross_angle = angle_rad + 3.14159265f / 2.0f;
+        float cosC = std::cos(cross_angle);
+        float sinC = std::sin(cross_angle);
+        for (float offset = -diag; offset < diag; offset += spacing) {
+            if (isCancelled()) break;
+            Path line;
+            for (float t = -diag; t < diag; t += 1.0f) {
+                float px = w / 2.0f + cosC * t - sinC * offset;
+                float py = h / 2.0f + sinC * t + cosC * offset;
+                if (px >= 0 && px < w && py >= 0 && py < h) {
+                    int xi = std::clamp(int(px), 0, w - 1);
+                    int yi = std::clamp(int(py), 0, h - 1);
+                    float dark = 255.0f - image.at<uchar>(yi, xi);
+                    if (dark > 60.0f) {
+                        line.push_back({px, py});
+                    } else if (!line.empty()) {
+                        if (line.size() >= 2) {
+                            DrawingGeometry dg;
+                            dg.path = line;
+                            geoms.push_back(dg);
+                        }
+                        line.clear();
+                    }
+                }
+            }
+            if (line.size() >= 2) {
+                DrawingGeometry dg;
+                dg.path = line;
+                geoms.push_back(dg);
+            }
+        }
+    }
+
+    emitProgress(1.0f, (int)geoms.size(), "SVG Converter done");
+    return geoms;
+}
+
+
+// --- pen_calibration_pfm.cpp ---
+// ---------------------------------------------------------------------------
+PenCalibrationPFM::PenCalibrationPFM() { initSettings(); }
+
+std::vector<PFMSetting> PenCalibrationPFM::defineSettings() const {
+    return {
+        {"nib_size_min", "Nib Size Min", SettingType::Number, 0.3, SettingValue(), 0.1, 2.0, 0.1, 2.0, 0.1},
+        {"nib_size_max", "Nib Size Max", SettingType::Number, 1.0, SettingValue(), 0.1, 2.0, 0.1, 2.0, 0.1},
+        {"test_count", "Test Count", SettingType::Integer, 5, SettingValue(), 1, 20, 1, 20, 1},
+        {"test_size", "Test Size", SettingType::Number, 20.0, SettingValue(), 10.0, 40.0, 10.0, 40.0, 1.0},
+        {"spacing_x", "Spacing X", SettingType::Number, 10.0, SettingValue(), 0.0, 40.0, 0.0, 40.0, 1.0},
+        {"spacing_y", "Spacing Y", SettingType::Number, 10.0, SettingValue(), 0.0, 40.0, 0.0, 40.0, 1.0},
+        {"rotation", "Rotation", SettingType::Number, 0.0, SettingValue(), 0.0, 360.0, 0.0, 360.0, 5.0},
+        {"line_tests", "Line Tests", SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+        {"circle_tests", "Circle Tests", SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+    };
+}
+
+std::vector<DrawingGeometry> PenCalibrationPFM::_process(const cv::Mat& image) {
+    float nib_min = get("nib_size_min").toDouble();
+    float nib_max = get("nib_size_max").toDouble();
+    int test_count = get("test_count").toInt();
+    float test_size = get("test_size").toDouble();
+    float spacing_x = get("spacing_x").toDouble();
+    float spacing_y = get("spacing_y").toDouble();
+    float rotation = get("rotation").toDouble();
+    bool line_tests = get("line_tests").toBool();
+    bool circle_tests = get("circle_tests").toBool();
+
+    int w = image.cols, h = image.rows;
+    float margin = 20.0f;
+    float start_x = margin;
+    float start_y = margin;
+
+    std::vector<DrawingGeometry> geoms;
+
+    float cosR = std::cos(rotation * 3.14159265f / 180.0f);
+    float sinR = std::sin(rotation * 3.14159265f / 180.0f);
+
+    for (int t = 0; t < test_count; ++t) {
+        if (isCancelled()) break;
+        float frac = (test_count > 1) ? float(t) / (test_count - 1) : 0.5f;
+        float nib_size = nib_min + frac * (nib_max - nib_min);
+        float cx = start_x + t * (test_size + spacing_x);
+        float cy = start_y;
+
+        // Line tests: draw straight lines at increasing densities
+        if (line_tests) {
+            int num_lines = std::max(3, int(test_size / std::max(0.5f, nib_size)));
+            float line_spacing = test_size / num_lines;
+            for (int i = 0; i < num_lines; ++i) {
+                float y_offset = i * line_spacing;
+                float x0 = cx, y0 = cy + y_offset;
+                float x1 = cx + test_size, y1 = cy + y_offset;
+                // Apply rotation
+                float rx0 = cx + (x0 - cx) * cosR - (y0 - cy) * sinR;
+                float ry0 = cy + (x0 - cx) * sinR + (y0 - cy) * cosR;
+                float rx1 = cx + (x1 - cx) * cosR - (y1 - cy) * sinR;
+                float ry1 = cy + (x1 - cx) * sinR + (y1 - cy) * cosR;
+
+                DrawingGeometry dg;
+                dg.path = {{rx0, ry0}, {rx1, ry1}};
+                geoms.push_back(dg);
+            }
+        }
+
+        // Circle tests: draw concentric circles
+        if (circle_tests) {
+            float circle_cx = cx + test_size / 2.0f;
+            float circle_cy = cy + test_size + spacing_y + test_size / 2.0f;
+            int num_circles = std::max(2, int(test_size / (2.0f * std::max(0.5f, nib_size))));
+            for (int i = 1; i <= num_circles; ++i) {
+                float r = (test_size / 2.0f) * float(i) / num_circles;
+                DrawingGeometry dg;
+                dg.path = generate_circle(circle_cx, circle_cy, r, 32);
+                geoms.push_back(dg);
+            }
+        }
+
+        emitProgress(float(t + 1) / test_count, (int)geoms.size(), "Pen Calibration...");
+    }
+
+    emitProgress(1.0f, (int)geoms.size(), "Pen Calibration done");
+    return geoms;
+}
 
 
 std::vector<PFMSetting> makeLbgSettings(std::vector<PFMSetting> settings) {
@@ -5252,6 +5736,7 @@ std::unique_ptr<PathFindingModule> create_pfm(const std::string& name) {
     if (name == "LBGTSPPFM") return std::make_unique<pfm_ported::LBGTSPPFM>();
     if (name == "LBGTreePFM") return std::make_unique<pfm_ported::LBGTreePFM>();
     if (name == "LBGTriangulationPFM") return std::make_unique<pfm_ported::LBGTriangulationPFM>();
+    if (name == "LBGQuadTilesPFM") return std::make_unique<pfm_ported::LBGQuadTilesPFM>();
     if (name == "LabyrinthClassicPFM") return std::make_unique<pfm_ported::LabyrinthClassicPFM>();
     if (name == "LabyrinthRomanPFM") return std::make_unique<pfm_ported::LabyrinthRomanPFM>();
     if (name == "LayersPFM") return std::make_unique<pfm_ported::LayersPFM>();
@@ -5265,6 +5750,8 @@ std::unique_ptr<PathFindingModule> create_pfm(const std::string& name) {
     if (name == "MazeVoronoiPFM") return std::make_unique<pfm_ported::MazeVoronoiPFM>();
     if (name == "MosaicCustomPFM") return std::make_unique<pfm_ported::MosaicCustomPFM>();
     if (name == "MosaicRectanglesPFM") return std::make_unique<pfm_ported::MosaicRectanglesPFM>();
+    if (name == "MosaicTriangulationPFM") return std::make_unique<pfm_ported::MosaicTriangulationPFM>();
+    if (name == "MosaicSegmentsPFM") return std::make_unique<pfm_ported::MosaicSegmentsPFM>();
     if (name == "MosaicVoronoiPFM") return std::make_unique<pfm_ported::MosaicVoronoiPFM>();
     if (name == "SketchAbstractPFM") return std::make_unique<pfm_ported::SketchAbstractPFM>();
     if (name == "SketchCatmullRomsPFM") return std::make_unique<pfm_ported::SketchCatmullRomsPFM>();
@@ -5318,6 +5805,8 @@ std::unique_ptr<PathFindingModule> create_pfm(const std::string& name) {
     if (name == "VoronoiTSPPFM") return std::make_unique<pfm_ported::VoronoiTSPPFM>();
     if (name == "VoronoiTreePFM") return std::make_unique<pfm_ported::VoronoiTreePFM>();
     if (name == "VoronoiTriangulationPFM") return std::make_unique<pfm_ported::VoronoiTriangulationPFM>();
+    if (name == "SVGConverterPFM") return std::make_unique<pfm_ported::SVGConverterPFM>();
+    if (name == "PenCalibrationPFM") return std::make_unique<pfm_ported::PenCalibrationPFM>();
     return nullptr;
 }
 

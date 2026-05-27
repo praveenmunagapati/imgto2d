@@ -1,0 +1,15 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "MosaicTriangulationPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "cell_count": 500,
+        "cols": 20,
+        "rows": 20,
+        "threshold": 40,
+        "triangulate_corners": true
+    },
+    "filter_chain": []
+}

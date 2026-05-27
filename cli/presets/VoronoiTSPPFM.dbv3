@@ -1,0 +1,13 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "VoronoiTSPPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "cell_count": 800,
+        "lloyd_iterations": 5,
+        "min_brightness": 0
+    },
+    "filter_chain": []
+}

@@ -1,0 +1,11 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SketchDelaunayPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "nodes": 500
+    },
+    "filter_chain": []
+}

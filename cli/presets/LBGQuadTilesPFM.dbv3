@@ -1,0 +1,17 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "LBGQuadTilesPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "cell_count": 800,
+        "lloyd_iterations": 5,
+        "min_brightness": 80,
+        "plotting_resolution": 1,
+        "random_seed": 42,
+        "subdivisions": 2,
+        "tile_scale": 0.8
+    },
+    "filter_chain": []
+}

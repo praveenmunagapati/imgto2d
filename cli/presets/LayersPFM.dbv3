@@ -1,0 +1,14 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "LayersPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "line_density": 40,
+        "num_layers": 4,
+        "plotting_resolution": 1,
+        "random_seed": 42
+    },
+    "filter_chain": []
+}
