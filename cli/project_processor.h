@@ -12,6 +12,16 @@ namespace pfm_ported {
     class PathFindingModule;
 }
 
+struct ParametricMask {
+    std::string type; // "Rect", "Circle"
+    double x = 0.0;
+    double y = 0.0;
+    double width = 0.0;
+    double height = 0.0;
+    double rotation = 0.0; // degrees
+    bool invert = false;
+};
+
 struct ProjectSettings {
     std::string imagePath;
     std::string pfmName;
@@ -20,6 +30,7 @@ struct ProjectSettings {
     
     std::vector<std::string> penColors;
     double penWidthMm = 0.3;
+    std::string orientation = "Portrait";
     double widthMm = 210.0;
     double heightMm = 297.0;
     
@@ -31,9 +42,18 @@ struct ProjectSettings {
     
     bool enableMasking = false;
     std::string maskPath;
+    bool softClip = false;
+    std::vector<ParametricMask> parametricMasks;
+    
     double simplifyTolerance = 0.0;
+    double mergeTolerance = 0.0;
+
+    // Colour Match settings
+    double colourAccuracy = 80.0;    // 0-100, maps to Delta-E threshold
+    double brightnessMult = 1.0;     // multiplier applied to density before sampling
 
     // Hardware Settings
+    int multipass = 1;
     double gcodeOffsetX = 0.0;
     double gcodeOffsetY = 0.0;
     bool gcodeCenterZero = false;

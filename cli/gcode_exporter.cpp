@@ -40,7 +40,8 @@ bool GCodeExporter::exportGCode(const std::string& filepath,
 
     // Prepare, filter and optimize paths
     std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
-        mmGeoms, settings.minPathLength, settings.optimizePaths, settings.simplifyTolerance);
+        mmGeoms, settings.minPathLength, settings.optimizePaths,
+        settings.simplifyTolerance, settings.mergeTolerance);
 
     double h_mm = drawingArea.height_mm;
     double cx = settings.centerZero ? (drawingArea.width_mm / 2.0) : 0.0;
@@ -66,19 +67,22 @@ bool GCodeExporter::exportGCode(const std::string& filepath,
         for (const auto& path : it->second) {
             if (path.size() < 2) continue;
 
-            // Move to start
-            double x0 = path[0].first - cx + settings.xOffset;
-            double y0 = (h_mm - path[0].second) - cy + settings.yOffset; // Invert Y for CNC
-            out << format_coord("G0 X%.3f Y%.3f\n", x0, y0);
-            out << settings.penDownCmd << "\n";
+            int passes = std::max(1, settings.multipass);
+            for (int p = 0; p < passes; ++p) {
+                // Move to start
+                double x0 = path[0].first - cx + settings.xOffset;
+                double y0 = (h_mm - path[0].second) - cy + settings.yOffset; // Invert Y for CNC
+                out << format_coord("G0 X%.3f Y%.3f\n", x0, y0);
+                out << settings.penDownCmd << "\n";
 
-            // Draw line
-            for (std::size_t i = 1; i < path.size(); ++i) {
-                double xf = path[i].first - cx + settings.xOffset;
-                double yf = (h_mm - path[i].second) - cy + settings.yOffset;
-                out << format_coord("G1 X%.3f Y%.3f\n", xf, yf);
+                // Draw line
+                for (std::size_t i = 1; i < path.size(); ++i) {
+                    double xf = path[i].first - cx + settings.xOffset;
+                    double yf = (h_mm - path[i].second) - cy + settings.yOffset;
+                    out << format_coord("G1 X%.3f Y%.3f\n", xf, yf);
+                }
+                out << settings.penUpCmd << "\n";
             }
-            out << settings.penUpCmd << "\n";
         }
 
         if (!settings.endLayerCmd.empty()) {

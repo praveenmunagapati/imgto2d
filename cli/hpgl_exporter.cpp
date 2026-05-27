@@ -83,7 +83,8 @@ bool HPGLExporter::exportHPGL(const std::string& filepath,
 
     // Prepare, filter and optimize paths
     std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
-        mmGeoms, settings.minPathLength, settings.optimizePaths, settings.simplifyTolerance);
+        mmGeoms, settings.minPathLength, settings.optimizePaths,
+        settings.simplifyTolerance, settings.mergeTolerance);
 
     double h_mm = drawingArea.height_mm;
 
@@ -103,17 +104,20 @@ bool HPGLExporter::exportHPGL(const std::string& filepath,
         for (const auto& path : it->second) {
             if (path.size() < 2) continue;
 
-            auto [hx0, hy0] = mmToHPGL(path[0].first, h_mm - path[0].second, drawingArea, settings);
-            out << format_coord("PU%.0f,%.0f;\n", hx0, hy0);
+            int passes = std::max(1, settings.multipass);
+            for (int p = 0; p < passes; ++p) {
+                auto [hx0, hy0] = mmToHPGL(path[0].first, h_mm - path[0].second, drawingArea, settings);
+                out << format_coord("PU%.0f,%.0f;\n", hx0, hy0);
 
-            std::vector<std::string> segments;
-            for (std::size_t i = 1; i < path.size(); ++i) {
-                auto [hx, hy] = mmToHPGL(path[i].first, h_mm - path[i].second, drawingArea, settings);
-                segments.push_back(std::to_string(hx) + "," + std::to_string(hy));
-            }
+                std::vector<std::string> segments;
+                for (std::size_t i = 1; i < path.size(); ++i) {
+                    auto [hx, hy] = mmToHPGL(path[i].first, h_mm - path[i].second, drawingArea, settings);
+                    segments.push_back(std::to_string(hx) + "," + std::to_string(hy));
+                }
 
-            if (!segments.empty()) {
-                out << "PD" << join_segments(segments, ",") << ";\n";
+                if (!segments.empty()) {
+                    out << "PD" << join_segments(segments, ",") << ";\n";
+                }
             }
         }
     }

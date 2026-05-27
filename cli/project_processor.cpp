@@ -41,8 +41,13 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
         }
     }
     m_settings.penWidthMm = j.value("pen_width_mm", j.value("penWidthMm", 0.3));
+    m_settings.orientation = j.value("orientation", "Portrait");
     m_settings.widthMm = j.value("width_mm", j.value("width", 210.0));
     m_settings.heightMm = j.value("height_mm", j.value("height", 297.0));
+
+    if (m_settings.orientation == "Landscape") {
+        std::swap(m_settings.widthMm, m_settings.heightMm);
+    }
 
     m_settings.paddingLeftMm = j.value("padding_left_mm", j.value("paddingLeft", 0.0));
     m_settings.paddingTopMm = j.value("padding_top_mm", j.value("paddingTop", 0.0));
@@ -52,9 +57,30 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
 
     m_settings.enableMasking = j.value("enable_masking", j.value("enableMasking", false));
     m_settings.maskPath = j.value("mask_path", j.value("maskPath", ""));
+    m_settings.softClip = j.value("soft_clip", j.value("softClip", false));
+
+    if (j.contains("parametric_masks") && j["parametric_masks"].is_array()) {
+        for (auto& pm : j["parametric_masks"]) {
+            ParametricMask mask;
+            mask.type = pm.value("type", "Rect");
+            mask.x = pm.value("x", 0.0);
+            mask.y = pm.value("y", 0.0);
+            mask.width = pm.value("width", 0.0);
+            mask.height = pm.value("height", 0.0);
+            mask.rotation = pm.value("rotation", 0.0);
+            mask.invert = pm.value("invert", false);
+            m_settings.parametricMasks.push_back(mask);
+        }
+    }
     m_settings.simplifyTolerance = j.value("simplify_tolerance", j.value("simplifyTolerance", 0.0));
+    m_settings.mergeTolerance = j.value("merge_tolerance", j.value("mergeTolerance", 0.0));
+
+    // Colour Match settings
+    m_settings.colourAccuracy = j.value("colour_accuracy", j.value("colourAccuracy", 80.0));
+    m_settings.brightnessMult = j.value("brightness_multiplier", j.value("brightnessMult", 1.0));
 
     // Hardware Settings
+    m_settings.multipass = j.value("multipass", 1);
     m_settings.gcodeOffsetX = j.value("gcode_offset_x", j.value("gcodeOffsetX", 0.0));
     m_settings.gcodeOffsetY = j.value("gcode_offset_y", j.value("gcodeOffsetY", 0.0));
     m_settings.gcodeCenterZero = j.value("gcode_center_zero", j.value("gcodeCenterZero", false));

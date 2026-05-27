@@ -20,7 +20,8 @@ void export_svg(const std::string& filename,
                 int imageHeight,
                 const std::vector<std::string>& penColorsHex,
                 double penWidthMm,
-                double simplifyTolerance) {
+                double simplifyTolerance,
+                double mergeTolerance) {
     if (geometries.empty()) return;
 
     std::ofstream out(filename);
@@ -46,9 +47,9 @@ void export_svg(const std::string& filename,
         }
     }
 
-    // Prepare and simplify paths
+    // Prepare, simplify, and merge paths
     std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
-        mmGeoms, 0.0, true, simplifyTolerance);
+        mmGeoms, 0.0, true, simplifyTolerance, mergeTolerance);
 
     // Write groups
     for (auto it = penPaths.begin(); it != penPaths.end(); ++it) {

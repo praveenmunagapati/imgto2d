@@ -4,6 +4,7 @@
  */
 
 #include <opencv2/opencv.hpp>
+#include "project_processor.h" // For ParametricMask
 
 
 class MaskManager {
@@ -16,8 +17,11 @@ public:
     bool isEnabled() const { return m_enabled; }
     std::string maskPath() const { return m_maskPath; }
 
-    // Multiplies the image by the mask. Masked out areas become white (255).
-    cv::Mat applyMask(const cv::Mat& image) const;
+    // Constructs the mask using parametric vector primitives.
+    void drawParametricMasks(int width, int height, const std::vector<ParametricMask>& shapes);
+
+    // Multiplies or alpha-blends the image by the mask. Masked out areas become white (255).
+    cv::Mat applyMask(const cv::Mat& image, bool softClip = false) const;
 
 private:
     cv::Mat m_mask;

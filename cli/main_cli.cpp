@@ -53,13 +53,27 @@ int main(int argc, char* argv[]) {
         
         cv::Mat filtered = processor.applyFilters(img);
         
-        if (settings.enableMasking && !settings.maskPath.empty()) {
-            std::cout << "Applying mask: " << settings.maskPath << std::endl;
+        if (settings.enableMasking) {
             MaskManager maskMgr;
-            if (maskMgr.load(settings.maskPath)) {
-                filtered = maskMgr.applyMask(filtered);
-            } else {
-                std::cerr << "Warning: Could not load mask from " << settings.maskPath << std::endl;
+            bool hasMask = false;
+            
+            if (!settings.maskPath.empty()) {
+                std::cout << "Applying image mask: " << settings.maskPath << std::endl;
+                if (maskMgr.load(settings.maskPath)) {
+                    hasMask = true;
+                } else {
+                    std::cerr << "Warning: Could not load image mask from " << settings.maskPath << std::endl;
+                }
+            }
+            
+            if (!settings.parametricMasks.empty()) {
+                std::cout << "Applying " << settings.parametricMasks.size() << " parametric mask(s)." << std::endl;
+                maskMgr.drawParametricMasks(filtered.cols, filtered.rows, settings.parametricMasks);
+                hasMask = true;
+            }
+            
+            if (hasMask) {
+                filtered = maskMgr.applyMask(filtered, settings.softClip);
             }
         }
         
@@ -68,7 +82,12 @@ int main(int argc, char* argv[]) {
         std::vector<cv::Mat> channels;
         if (settings.colourSeparation == "CMYK") {
             channels = splitCMYK(filtered);
-        } else if (settings.colourSeparation == "Colour Match" || settings.colourSeparation == "RGB") {
+        } else if (settings.colourSeparation == "Colour Match") {
+            std::cout << "Using Delta-E Colour Match separation (accuracy=" << settings.colourAccuracy
+                      << ", brightness_mult=" << settings.brightnessMult << ")\n";
+            channels = splitColourMatch(filtered, settings.penColors,
+                                        settings.colourAccuracy, settings.brightnessMult);
+        } else if (settings.colourSeparation == "RGB") {
             channels = splitRGB(filtered);
         } else {
             channels = splitGrayscale(filtered);
@@ -104,6 +123,8 @@ int main(int argc, char* argv[]) {
         if (outPath.size() >= 6 && outPath.substr(outPath.size() - 6) == ".gcode") {
             GCodeSettings gset;
             gset.simplifyTolerance = settings.simplifyTolerance;
+            gset.mergeTolerance = settings.mergeTolerance;
+            gset.multipass = settings.multipass;
             gset.xOffset = settings.gcodeOffsetX;
             gset.yOffset = settings.gcodeOffsetY;
             gset.centerZero = settings.gcodeCenterZero;
@@ -115,6 +136,8 @@ int main(int argc, char* argv[]) {
         } else if (outPath.size() >= 5 && outPath.substr(outPath.size() - 5) == ".hpgl") {
             HPGLSettings hset;
             hset.simplifyTolerance = settings.simplifyTolerance;
+            hset.mergeTolerance = settings.mergeTolerance;
+            hset.multipass = settings.multipass;
             hset.xMirror = settings.hpglXMirror;
             hset.yMirror = settings.hpglYMirror;
             hset.penVelocity = settings.hpglPenVelocity;
@@ -122,7 +145,7 @@ int main(int argc, char* argv[]) {
             hset.rotation = settings.hpglRotation;
             HPGLExporter::exportHPGL(outPath, geometries, dac, img.cols, img.rows, hset);
         } else {
-            export_svg(outPath, geometries, dac, img.cols, img.rows, settings.penColors, settings.penWidthMm, settings.simplifyTolerance);
+            export_svg(outPath, geometries, dac, img.cols, img.rows, settings.penColors, settings.penWidthMm, settings.simplifyTolerance, settings.mergeTolerance);
             
             // Optional vpype hook
             if (argc > 5 && std::string(argv[5]) == "--vpype") {

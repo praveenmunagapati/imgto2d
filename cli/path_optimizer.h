@@ -16,5 +16,6 @@ public:
         const std::vector<DrawingGeometry>& geometries,
         double minLength = 0.0,
         bool optimize = true,
-        double simplifyTolerance = 0.0);
+        double simplifyTolerance = 0.0,
+        double mergeTolerance = 0.0);
 };

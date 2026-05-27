@@ -5,7 +5,8 @@ std::map<int, std::vector<Path>> PathOptimizer::preparePenPaths(
     const std::vector<DrawingGeometry>& geometries,
     double minLength,
     bool optimize,
-    double simplifyTolerance) 
+    double simplifyTolerance,
+    double mergeTolerance) 
 {
     std::map<int, std::vector<Path>> penPaths;
     
@@ -20,19 +21,24 @@ std::map<int, std::vector<Path>> PathOptimizer::preparePenPaths(
     for (auto it = penPaths.begin(); it != penPaths.end(); ++it) {
         std::vector<Path> stdPaths(it->second.begin(), it->second.end());
         
-        // Filter short paths
+        // 1. Filter short paths
         if (minLength > 0.0) {
             stdPaths = filter_short_paths(stdPaths, minLength);
         }
         
-        // Simplify paths using Douglas-Peucker
+        // 2. Merge adjacent paths to reduce pen lifts
+        if (mergeTolerance > 0.0) {
+            stdPaths = merge_adjacent_paths(stdPaths, mergeTolerance);
+        }
+        
+        // 3. Simplify merged paths using Douglas-Peucker
         if (simplifyTolerance > 0.0) {
             for (auto& path : stdPaths) {
                 path = simplify_path_dp(path, simplifyTolerance);
             }
         }
         
-        // Optimize travel path using nearest neighbor
+        // 4. Optimize travel order using nearest neighbor
         if (optimize) {
             stdPaths = sort_paths_nearest(stdPaths);
         }

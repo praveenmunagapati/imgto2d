@@ -353,4 +353,18 @@ CMakeFiles/imgto2d_standalone_cli.dir/mask_manager.cpp.obj: \
  C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/camera.hpp \
  C:/msys64/mingw64/include/opencv4/opencv2/video.hpp \
  C:/msys64/mingw64/include/opencv4/opencv2/video/tracking.hpp \
- C:/msys64/mingw64/include/opencv4/opencv2/video/background_segm.hpp
+ C:/msys64/mingw64/include/opencv4/opencv2/video/background_segm.hpp \
+ C:\Users\sir\Desktop\imgto2d\cli\project_processor.h \
+ C:\Users\sir\Desktop\imgto2d\cli\core_types.h \
+ C:/MinGW/include/c++/13.2.0/variant C:/MinGW/include/c++/13.2.0/random \
+ C:/MinGW/include/c++/13.2.0/bits/random.h \
+ C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/opt_random.h \
+ C:/MinGW/include/c++/13.2.0/bits/random.tcc \
+ C:/MinGW/include/c++/13.2.0/numeric \
+ C:/MinGW/include/c++/13.2.0/bits/stl_numeric.h \
+ C:/MinGW/include/c++/13.2.0/pstl/glue_numeric_defs.h \
+ C:/MinGW/include/c++/13.2.0/fstream \
+ C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/basic_file.h \
+ C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/c++io.h \
+ C:/MinGW/include/c++/13.2.0/bits/fstream.tcc \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/13.2.0/include/omp.h

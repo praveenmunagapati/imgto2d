@@ -23,6 +23,8 @@ struct GCodeSettings {
     double minPathLength = 0.5; // mm
     bool optimizePaths = true;
     double simplifyTolerance = 0.0;
+    double mergeTolerance = 0.0;
+    int multipass = 1;
 };
 
 class GCodeExporter {

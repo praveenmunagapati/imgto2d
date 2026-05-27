@@ -137,3 +137,64 @@ inline std::vector<Path> translate_paths(const std::vector<Path>& paths,
 }
 
 // ---------------------------------------------------------------------------
+// Path Merging — joins paths whose endpoints are within mergeTolerance
+// ---------------------------------------------------------------------------
+/**
+ * Greedily concatenates paths whose endpoints fall within `mergeTolerance`
+ * of one another, eliminating unnecessary pen-up/pen-down cycles.
+ *
+ * Algorithm:
+ *  1. Pick first unused path as the "current" chain.
+ *  2. Scan all remaining paths for the closest endpoint (considering reversal).
+ *  3. If distance <= mergeTolerance, append it (reversing if needed); otherwise
+ *     close the chain and start a new one.
+ *  4. Repeat until all paths are consumed.
+ */
+inline std::vector<Path> merge_adjacent_paths(const std::vector<Path>& paths,
+                                               double mergeTolerance) {
+    if (paths.empty() || mergeTolerance <= 0.0) return paths;
+
+    std::vector<bool> used(paths.size(), false);
+    std::vector<Path> merged;
+    merged.reserve(paths.size());
+
+    for (std::size_t seed = 0; seed < paths.size(); ++seed) {
+        if (used[seed] || paths[seed].empty()) continue;
+
+        Path chain = paths[seed];
+        used[seed] = true;
+
+        bool extended = true;
+        while (extended) {
+            extended = false;
+            double bestDist = mergeTolerance;
+            int    bestIdx  = -1;
+            bool   bestRev  = false;
+
+            const Point& tail = chain.back();
+            for (std::size_t i = 0; i < paths.size(); ++i) {
+                if (used[i] || paths[i].empty()) continue;
+                double dFront = geom_distance(tail, paths[i].front());
+                double dBack  = geom_distance(tail, paths[i].back());
+                if (dFront <= bestDist) { bestDist = dFront; bestIdx = (int)i; bestRev = false; }
+                if (dBack  <= bestDist) { bestDist = dBack;  bestIdx = (int)i; bestRev = true;  }
+            }
+
+            if (bestIdx >= 0) {
+                used[bestIdx] = true;
+                const Path& ext = paths[bestIdx];
+                if (bestRev) {
+                    chain.insert(chain.end(), ext.rbegin(), ext.rend());
+                } else {
+                    chain.insert(chain.end(), ext.begin(), ext.end());
+                }
+                extended = true;
+            }
+        }
+
+        merged.push_back(std::move(chain));
+    }
+    return merged;
+}
+
+// ---------------------------------------------------------------------------
