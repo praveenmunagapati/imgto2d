@@ -10,14 +10,16 @@ namespace DrawingBot {
         return 0.299f * px[2] + 0.587f * px[1] + 0.114f * px[0];
     }
 
-    static std::vector<cv::Point2f> generateLBGPoints(const cv::Mat& ref, const LBGSettings& settings) {
+    static std::vector<cv::Point2f> generateLBGPoints(const cv::Mat& ref, const LBGBaseSettings& settings) {
         cv::Mat workImg;
         if (ref.channels() == 3) { workImg = ref.clone(); } 
         else { cv::cvtColor(ref, workImg, cv::COLOR_GRAY2BGR); }
 
         // Rejection sampling to build dataset for K-Means
+        int clusterCount = (int)(settings.density / 100.0f * 5000.0f);
+        if (clusterCount < 50) clusterCount = 50;
         std::vector<cv::Point2f> samples;
-        int maxSamples = settings.clusterCount * 10;
+        int maxSamples = clusterCount * 10;
         if (maxSamples < 1000) maxSamples = 1000;
         if (maxSamples > 100000) maxSamples = 100000;
         
@@ -32,8 +34,7 @@ namespace DrawingBot {
             }
         }
         
-        if (samples.size() < settings.clusterCount) {
-            // Not enough samples, just return them
+        if ((int)samples.size() < clusterCount) {
             return samples;
         }
 
@@ -46,8 +47,8 @@ namespace DrawingBot {
         
         cv::Mat labels;
         cv::Mat centers;
-        cv::kmeans(sampleMat, settings.clusterCount, labels, 
-                   cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, settings.maxIterations, settings.minError),
+        cv::kmeans(sampleMat, clusterCount, labels, 
+                   cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, settings.maxIterations, 0.01),
                    3, cv::KMEANS_PP_CENTERS, centers);
                    
         std::vector<cv::Point2f> finalPoints;
@@ -136,7 +137,23 @@ namespace DrawingBot {
         return paths;
     }
 
-    std::vector<PlotPath> LBGDiagram::generate(const cv::Mat& ref) { LBGTree t; t.settings = settings; return t.generate(ref); }
+    std::vector<PlotPath> LBGDiagram::generate(const cv::Mat& ref) {
+        auto pts = generateLBGPoints(ref, settings);
+        std::vector<PlotPath> paths;
+        cv::Rect bounds(0, 0, ref.cols, ref.rows);
+        cv::Subdiv2D subdiv(bounds);
+        for(const auto& pt : pts) if(bounds.contains(pt)) subdiv.insert(pt);
+        std::vector<std::vector<cv::Point2f>> facets;
+        std::vector<cv::Point2f> centers;
+        subdiv.getVoronoiFacetList(std::vector<int>(), facets, centers);
+        for (const auto& facet : facets) {
+            PlotPath p;
+            for (const auto& fp : facet) p.points.push_back(fp);
+            if (!p.points.empty()) p.points.push_back(p.points[0]);
+            paths.push_back(p);
+        }
+        return paths;
+    }
     
     std::vector<PlotPath> LBGTSP::generate(const cv::Mat& ref) {
         auto pts = generateLBGPoints(ref, settings);

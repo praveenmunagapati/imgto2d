@@ -1,6 +1,6 @@
 #pragma once
 #include "PFMBase.h"
-#include "PFM_Voronoi.h"
+#include "PFMSettings.h"
 
 namespace DrawingBot {
 
@@ -11,53 +11,47 @@ namespace DrawingBot {
         float weight;         // distribution probability
     };
 
+    // ── Composite PFMs ──────────────────────────────────────────────────
+
     class MosaicRectangles : public PFMBase {
     public:
+        MosaicRectanglesSettings settings;
         std::vector<DrawingStyle> drawingStyles;
-        bool  drawOutlines;
-        bool  squareTiles;
-        int   columns;              // 1-64
-        int   rows;                 // 1-64
-        float columnPaddingPercent; // 1-100
-        float rowPaddingPercent;    // 1-100
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
-    class MosaicVoronoi : public VoronoiBase {
+    class MosaicVoronoi : public PFMBase {
     public:
+        MosaicVoronoiSettings settings;
         std::vector<DrawingStyle> drawingStyles;
-        bool  drawOutlines;
-        int   tileCount;     // -20 to 20
-        float offsetCells;   // -20.0 to 20.0
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
-    class MosaicTriangulation : public MosaicVoronoi {
+    class MosaicTriangulation : public PFMBase {
     public:
-        bool triangulateCorners;
+        MosaicTriangulationSettings settings;
+        std::vector<DrawingStyle> drawingStyles;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
-    class MosaicSegments : public MosaicVoronoi {
+    class MosaicSegments : public PFMBase {
     public:
-        int   segments;     // 1-5000 (SLIC superpixel count)
-        int   iterations;   // 1-100 (SLIC accuracy)
-        float compactness;  // 1-100
+        MosaicSegmentsSettings settings;
+        std::vector<DrawingStyle> drawingStyles;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
     class MosaicCustom : public PFMBase {
     public:
+        CompositeBaseSettings settings;
         std::vector<DrawingStyle> drawingStyles;
-        bool drawOutlines;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
     class LayersPFM : public PFMBase {
     public:
+        LayersPFMSettings settings;
         std::vector<DrawingStyle> drawingStyles;
-        bool keepLightenedImage;
-        enum class LayerDistribution { NONE, ORDERED_PER_PFM, ORDERED } layerDistribution;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 

@@ -31,9 +31,9 @@ namespace DrawingBot {
     std::vector<PlotPath> SVGConverter::generate(const cv::Mat& ref) {
         // Fallback rudimentary parser that looks for basic paths
         std::vector<PlotPath> paths;
-        if(svgPath.empty()) return paths;
+        if(settings.svgPath.empty()) return paths;
         
-        std::ifstream file(svgPath);
+        std::ifstream file(settings.svgPath);
         if(!file.is_open()) return paths;
         
         std::string line;
@@ -62,9 +62,9 @@ namespace DrawingBot {
         std::vector<PlotPath> paths;
         float cx = ref.cols / 2.0f;
         float cy = ref.rows / 2.0f;
-        for(int i = 0; i < testCount; i++) {
+        for(int i = 0; i < settings.testCount; i++) {
             PlotPath p;
-            float r = testSize + (i * spacingX);
+            float r = settings.testSize + (i * settings.spacingX);
             for(float a = 0; a < 6.28f; a += 0.1f) {
                 p.points.push_back(cv::Point2f(cx + r * std::cos(a), cy + r * std::sin(a)));
             }

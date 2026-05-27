@@ -24,8 +24,8 @@ namespace DrawingBot {
 
     std::vector<PlotPath> MosaicRectangles::generate(const cv::Mat& ref) {
         std::vector<PlotPath> paths;
-        int cols = columns > 0 ? columns : 10;
-        int rws = rows > 0 ? rows : 10;
+        int cols = settings.columns > 0 ? settings.columns : 10;
+        int rws = settings.rows > 0 ? settings.rows : 10;
         float w = (float)ref.cols / cols;
         float h = (float)ref.rows / rws;
         
@@ -40,7 +40,7 @@ namespace DrawingBot {
                 
                 generateNestedPaths(ref, poly, drawingStyles, paths);
 
-                if (drawOutlines) {
+                if (settings.drawOutlines) {
                     PlotPath path;
                     path.points = poly;
                     path.points.push_back(poly.front());
@@ -53,7 +53,7 @@ namespace DrawingBot {
 
     std::vector<PlotPath> MosaicVoronoi::generate(const cv::Mat& ref) {
         std::vector<PlotPath> paths;
-        int pointCount = tileCount > 0 ? tileCount : 100;
+        int pointCount = settings.tileCount > 0 ? settings.tileCount : 100;
         cv::Rect bounds(0, 0, ref.cols, ref.rows);
         cv::Subdiv2D subdiv(bounds);
         
@@ -68,7 +68,7 @@ namespace DrawingBot {
         for (const auto& facet : facets) {
             generateNestedPaths(ref, facet, drawingStyles, paths);
 
-            if (drawOutlines && !facet.empty()) {
+            if (settings.drawOutlines && !facet.empty()) {
                 PlotPath path;
                 path.points = facet;
                 path.points.push_back(facet.front());
@@ -80,7 +80,7 @@ namespace DrawingBot {
 
     std::vector<PlotPath> MosaicTriangulation::generate(const cv::Mat& ref) {
         std::vector<PlotPath> paths;
-        int pointCount = tileCount > 0 ? tileCount : 100;
+        int pointCount = settings.tileCount > 0 ? settings.tileCount : 100;
         cv::Rect bounds(0, 0, ref.cols, ref.rows);
         cv::Subdiv2D subdiv(bounds);
         
@@ -96,7 +96,7 @@ namespace DrawingBot {
                 std::vector<cv::Point2f> poly = {p1, p2, p3};
                 generateNestedPaths(ref, poly, drawingStyles, paths);
 
-                if (drawOutlines) {
+                if (settings.drawOutlines) {
                     PlotPath p; p.points = poly; p.points.push_back(p1); paths.push_back(p);
                 }
             }
@@ -105,11 +105,35 @@ namespace DrawingBot {
     }
 
     std::vector<PlotPath> MosaicSegments::generate(const cv::Mat& ref) {
-        return MosaicTriangulation().generate(ref);
+        std::vector<PlotPath> paths;
+        int pointCount = settings.tileCount > 0 ? settings.tileCount : 100;
+        cv::Rect bounds(0, 0, ref.cols, ref.rows);
+        cv::Subdiv2D subdiv(bounds);
+        
+        for (int i = 0; i < pointCount; i++) {
+            subdiv.insert(cv::Point2f(rand() % ref.cols, rand() % ref.rows));
+        }
+        
+        std::vector<cv::Vec6f> triangles;
+        subdiv.getTriangleList(triangles);
+        for (const auto& t : triangles) {
+            cv::Point2f p1(t[0], t[1]), p2(t[2], t[3]), p3(t[4], t[5]);
+            if (bounds.contains(p1) && bounds.contains(p2) && bounds.contains(p3)) {
+                std::vector<cv::Point2f> poly = {p1, p2, p3};
+                generateNestedPaths(ref, poly, drawingStyles, paths);
+
+                if (settings.drawOutlines) {
+                    PlotPath p; p.points = poly; p.points.push_back(p1); paths.push_back(p);
+                }
+            }
+        }
+        return paths;
     }
 
     std::vector<PlotPath> MosaicCustom::generate(const cv::Mat& ref) {
-        return MosaicVoronoi().generate(ref);
+        // Dummy implementation. Will need true custom shapes.
+        std::vector<PlotPath> paths;
+        return paths;
     }
 
     std::vector<PlotPath> LayersPFM::generate(const cv::Mat& ref) {

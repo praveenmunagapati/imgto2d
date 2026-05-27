@@ -1,30 +1,69 @@
 #pragma once
 #include "PFMBase.h"
-#include "PFM_Mixins.h"
 #include "PFMSettings.h"
 
 namespace DrawingBot {
 
-    class LBGBase : public PFMBase {
-    public:
-        LBGSettings settings;
-    };
+    // ── LBG PFMs ────────────────────────────────────────────────────────
 
-    class LBGCircularScribbles : public LBGBase, public CircularScribblesBase { public: std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGShapes : public LBGBase, public ShapesBase { public: std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGTriangulation : public LBGBase { public: bool triangulateCorners; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGTree : public LBGBase { public: bool createCurves; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGStippling : public LBGBase { public: float stippleSize; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGDashes : public LBGBase, public ShapesBase { public: float distortion; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGLetters : public LBGBase, public ShapesBase { public: LetterParams letterParams; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    
-    class LBGDiagram : public LBGBase {
+    class LBGCircularScribbles : public PFMBase {
     public:
-        enum class VoronoiStyle { CLASSIC, SMOOTH, SHARP, OFFSET_A, OFFSET_B, OFFSET_C } voronoiStyle;
+        LBGCircularScribblesSettings settings;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
-    
-    class LBGTSP : public LBGBase { public: bool mergeTSPPaths; std::vector<PlotPath> generate(const cv::Mat& ref) override; };
-    class LBGQuadTiles : public LBGBase { public: std::vector<PlotPath> generate(const cv::Mat& ref) override; };
+
+    class LBGShapes : public PFMBase {
+    public:
+        LBGShapesSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGTriangulation : public PFMBase {
+    public:
+        LBGTriangulationSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGTree : public PFMBase {
+    public:
+        LBGTreeSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGStippling : public PFMBase {
+    public:
+        LBGStipplingSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGDashes : public PFMBase {
+    public:
+        LBGDashesSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGLetters : public PFMBase {
+    public:
+        LBGLettersSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGDiagram : public PFMBase {
+    public:
+        LBGDiagramSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGQuadTiles : public PFMBase {
+    public:
+        LBGQuadTilesSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
+
+    class LBGTSP : public PFMBase {
+    public:
+        LBGTSPSettings settings;
+        std::vector<PlotPath> generate(const cv::Mat& ref) override;
+    };
 
 } // namespace DrawingBot

@@ -5,14 +5,16 @@
 
 namespace DrawingBot {
     
-    static std::vector<cv::Point2f> generateAdaptivePoints(const cv::Mat& ref, const AdaptiveSettings& settings) {
+    static std::vector<cv::Point2f> generateAdaptivePoints(const cv::Mat& ref, const AdaptiveBaseSettings& settings) {
         cv::Mat gray;
         if (ref.channels() == 3) cv::cvtColor(ref, gray, cv::COLOR_BGR2GRAY); else gray = ref.clone();
         
+        // Adjust brightness/contrast
+        gray.convertTo(gray, -1, settings.contrast, (settings.brightness - 1.0f) * 128.0f);
+        
         std::vector<cv::Point2f> corners;
-        // Shi-Tomasi corners based on user settings
-        int maxVerts = settings.maxVertices > 0 ? settings.maxVertices : 1000;
-        cv::goodFeaturesToTrack(gray, corners, maxVerts, 0.01, 2.0);
+        int maxVerts = (int)(1.0f / std::max(0.1f, settings.minSampleRadius) * 1000.0f);
+        cv::goodFeaturesToTrack(gray, corners, maxVerts, 0.01, settings.minSampleRadius);
         return corners;
     }
 
@@ -97,7 +99,24 @@ namespace DrawingBot {
         return paths;
     }
 
-    std::vector<PlotPath> AdaptiveDiagram::generate(const cv::Mat& ref) { AdaptiveTree t; t.settings = settings; return t.generate(ref); }
+    std::vector<PlotPath> AdaptiveDiagram::generate(const cv::Mat& ref) {
+        auto pts = generateAdaptivePoints(ref, settings);
+        std::vector<PlotPath> paths;
+        if(pts.empty()) return paths;
+        cv::Rect bounds(0, 0, ref.cols, ref.rows);
+        cv::Subdiv2D subdiv(bounds);
+        for(const auto& pt : pts) if(bounds.contains(pt)) subdiv.insert(pt);
+        std::vector<std::vector<cv::Point2f>> facets;
+        std::vector<cv::Point2f> centers;
+        subdiv.getVoronoiFacetList(std::vector<int>(), facets, centers);
+        for (const auto& facet : facets) {
+            PlotPath p;
+            for (const auto& fp : facet) p.points.push_back(fp);
+            if (!p.points.empty()) p.points.push_back(p.points[0]);
+            paths.push_back(p);
+        }
+        return paths;
+    }
     
     std::vector<PlotPath> AdaptiveTSP::generate(const cv::Mat& ref) {
         auto pts = generateAdaptivePoints(ref, settings);

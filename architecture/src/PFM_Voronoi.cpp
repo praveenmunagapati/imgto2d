@@ -11,14 +11,16 @@ namespace DrawingBot {
         return 0.299f * px[2] + 0.587f * px[1] + 0.114f * px[0];
     }
 
-    static std::vector<cv::Point2f> generateVoronoiPoints(const cv::Mat& ref, const VoronoiSettings& settings) {
+    static std::vector<cv::Point2f> generateVoronoiPoints(const cv::Mat& ref,
+        float pointDensity, int pointLimit, float luminancePower, float densityPower,
+        int voronoiIterations, float voronoiAccuracy, bool ignoreWhite) {
         cv::Mat workImg;
         if (ref.channels() == 3) { workImg = ref.clone(); } 
         else { cv::cvtColor(ref, workImg, cv::COLOR_GRAY2BGR); }
 
-        int pointsCount = (ref.cols * ref.rows) * (settings.stipplingDensity / 10000.0f);
+        int pointsCount = (int)(pointDensity);
         if (pointsCount <= 0) pointsCount = 100;
-        if (pointsCount > settings.maxPoints) pointsCount = settings.maxPoints;
+        if (pointsCount > pointLimit) pointsCount = pointLimit;
         
         std::vector<cv::Point2f> points;
         for (int i = 0; i < pointsCount; i++) {
@@ -27,7 +29,7 @@ namespace DrawingBot {
 
         cv::Rect bounds(0, 0, ref.cols, ref.rows);
 
-        for (int iter = 0; iter < settings.lloydsIterations; iter++) {
+        for (int iter = 0; iter < voronoiIterations; iter++) {
             cv::Subdiv2D subdiv(bounds);
             for (const auto& p : points) {
                 if (bounds.contains(p)) subdiv.insert(p);
@@ -54,10 +56,8 @@ namespace DrawingBot {
                         if (cv::pointPolygonTest(facets[i], cv::Point2f(x, y), false) >= 0) {
                             float luma = getLuma(workImg.at<cv::Vec3b>(y, x));
                             float normLuma = luma / 255.0f;
-                            float weight = settings.invertDensity ? normLuma : (1.0f - normLuma);
-                            
-                            // To make the stippling more pronounced
-                            weight = std::pow(weight, 2.0f);
+                            float weight = 1.0f - normLuma;
+                            weight = std::pow(weight, densityPower / 10.0f);
                             
                             sumX += x * weight;
                             sumY += y * weight;
@@ -77,24 +77,28 @@ namespace DrawingBot {
         return points;
     }
 
+    // Convenience overload for VoronoiBaseSettings
+    static std::vector<cv::Point2f> generateVoronoiPointsFromBase(const cv::Mat& ref, const VoronoiBaseSettings& s) {
+        return generateVoronoiPoints(ref, s.pointDensity, s.pointLimit, s.luminancePower,
+            s.densityPower, s.voronoiIterations, s.voronoiAccuracy, s.ignoreWhite);
+    }
+
     std::vector<PlotPath> VoronoiShapes::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         std::vector<PlotPath> paths;
         for (const auto& pt : pts) {
-            auto shapePaths = GeometryUtils::createShape(DrawingBot::ShapeType::CIRCLE, pt, fillSize);
+            auto shapePaths = GeometryUtils::createShape(DrawingBot::ShapeType::CIRCLE, pt, settings.fillSize);
             paths.insert(paths.end(), shapePaths.begin(), shapePaths.end());
         }
         return paths;
     }
 
     std::vector<PlotPath> VoronoiTriangulation::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         std::vector<PlotPath> paths;
         cv::Rect bounds(0, 0, ref.cols, ref.rows);
         cv::Subdiv2D subdiv(bounds);
-        
         for(const auto& pt : pts) if(bounds.contains(pt)) subdiv.insert(pt);
-        
         std::vector<cv::Vec6f> triangles;
         subdiv.getTriangleList(triangles);
         for (const auto& t : triangles) {
@@ -107,12 +111,11 @@ namespace DrawingBot {
     }
 
     std::vector<PlotPath> VoronoiTree::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         if(pts.empty()) return {};
         std::vector<PlotPath> paths;
         std::vector<bool> inTree(pts.size(), false);
         inTree[0] = true;
-        
         for(size_t i=1; i<pts.size(); i++) {
             float minDist = std::numeric_limits<float>::max();
             int bestU = -1, bestV = -1;
@@ -135,14 +138,13 @@ namespace DrawingBot {
     }
 
     std::vector<PlotPath> VoronoiTSP::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         if(pts.empty()) return {};
         std::vector<PlotPath> paths; PlotPath tsp;
         cv::Mat features(pts.size(), 2, CV_32F);
         for (size_t i = 0; i < pts.size(); i++) { features.at<float>(i, 0) = pts[i].x; features.at<float>(i, 1) = pts[i].y; }
         cv::flann::Index kdtree(features, cv::flann::KDTreeIndexParams(1));
         std::vector<bool> visited(pts.size(), false);
-        
         cv::Point2f curr = pts[0]; visited[0] = true; tsp.points.push_back(curr);
         for (size_t i = 1; i < pts.size(); i++) {
             std::vector<int> indices(50); std::vector<float> dists(50);
@@ -157,45 +159,59 @@ namespace DrawingBot {
     }
 
     std::vector<PlotPath> VoronoiStippling::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         std::vector<PlotPath> paths;
-        for (const auto& pt : pts) { PlotPath path; path.points = {pt, cv::Point2f(pt.x + 0.1f, pt.y)}; paths.push_back(path); }
+        for (const auto& pt : pts) { PlotPath path; path.points = {pt, cv::Point2f(pt.x + settings.stippleSize * 0.1f, pt.y)}; paths.push_back(path); }
         return paths;
     }
 
     std::vector<PlotPath> VoronoiDashes::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         std::vector<PlotPath> paths;
         cv::Mat gray;
         if (ref.channels() == 3) cv::cvtColor(ref, gray, cv::COLOR_BGR2GRAY);
         else gray = ref.clone();
-        
         cv::Mat grad_x, grad_y;
         cv::Sobel(gray, grad_x, CV_32F, 1, 0, 3);
         cv::Sobel(gray, grad_y, CV_32F, 0, 1, 3);
-
         for (const auto& pt : pts) {
             int cx = std::clamp((int)std::round(pt.x), 0, ref.cols - 1);
             int cy = std::clamp((int)std::round(pt.y), 0, ref.rows - 1);
             float gx = grad_x.at<float>(cy, cx);
             float gy = grad_y.at<float>(cy, cx);
-            float angle = std::atan2(gy, gx) + CV_PI / 2.0f; // Tangent
-            auto dashPaths = GeometryUtils::createDash(pt, 6.0f, angle);
+            float angle = std::atan2(gy, gx) + CV_PI / 2.0f;
+            auto dashPaths = GeometryUtils::createDash(pt, settings.fillSize, angle);
             paths.insert(paths.end(), dashPaths.begin(), dashPaths.end());
         }
         return paths;
     }
 
     std::vector<PlotPath> VoronoiLetters::generate(const cv::Mat& ref) {
-        auto pts = generateVoronoiPoints(ref, settings);
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
         std::vector<PlotPath> paths;
         for (const auto& pt : pts) {
-            auto textPaths = GeometryUtils::createText("A", pt, 0.05f); // Example char
+            auto textPaths = GeometryUtils::createText("A", pt, 0.05f);
             paths.insert(paths.end(), textPaths.begin(), textPaths.end());
         }
         return paths;
     }
 
-    std::vector<PlotPath> VoronoiDiagram::generate(const cv::Mat& ref) { VoronoiTree t; t.settings = settings; return t.generate(ref); }
+    std::vector<PlotPath> VoronoiDiagram::generate(const cv::Mat& ref) {
+        auto pts = generateVoronoiPointsFromBase(ref, settings);
+        std::vector<PlotPath> paths;
+        cv::Rect bounds(0, 0, ref.cols, ref.rows);
+        cv::Subdiv2D subdiv(bounds);
+        for(const auto& pt : pts) if(bounds.contains(pt)) subdiv.insert(pt);
+        std::vector<std::vector<cv::Point2f>> facets;
+        std::vector<cv::Point2f> centers;
+        subdiv.getVoronoiFacetList(std::vector<int>(), facets, centers);
+        for (const auto& facet : facets) {
+            PlotPath p;
+            for (const auto& fp : facet) p.points.push_back(fp);
+            if (!p.points.empty()) p.points.push_back(p.points[0]); // close
+            paths.push_back(p);
+        }
+        return paths;
+    }
 
 }

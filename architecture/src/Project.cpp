@@ -20,18 +20,7 @@ namespace DrawingBot {
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GCodeSettings, offsetX, offsetY, curveFlatness, centerZeroPoint, commentType, gcodeStart, gcodeEnd, gcodePenDown, gcodePenUp, gcodeStartLayer, gcodeEndLayer)
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HPGLSettings, hardClipMinX, hardClipMinY, hardClipMaxX, hardClipMaxY, rotation, xAxisMirror, yAxisMirror, penVelocity, penForce, initialPen)
     
-    // PFMSettings
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VoronoiSettings, stipplingDensity, lloydsIterations, lineSpacing, maxPoints, invertDensity)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(LBGSettings, clusterCount, maxIterations, minError, pathSimplification)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AdaptiveSettings, densityMultiplier, maxVertices, edgeWeight)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GridSettings, gridSizeX, gridSizeY, cellScale, angle)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HatchSettings, hatchAngle, hatchSpacing, crossHatchAngle, enableCrossHatch, hatchLevels)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SketchSettings, luminanceThreshold, lineLength, maxLines, curveSmoothness)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StreamlineSettings, dSep, dTest, stepSize, maxStreamlineLength, flowFieldSmoothness)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpiralSettings, pitch, originX, originY, maxRadius, clockwise)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompositeSettings, mosaicTileSize, edgeBlending, complexity)
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SpecialSettings, calibrationSize, calibrationLines)
-
+    // PFMSettings are now parsed manually by ProjectParser so we don't define macro here
     // ImageFilters
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DirtyBorderFilter, enabled, width)
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomOverlayFilter, enabled, overlayImagePath, opacity)

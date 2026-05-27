@@ -1,42 +1,26 @@
 #pragma once
 #include "PFMBase.h"
-#include "PFM_Mixins.h"
 #include "PFMSettings.h"
 
 namespace DrawingBot {
 
-    class GridBase : public PFMBase {
-    public:
-        GridSettings settings;
-        bool  uniformSpacing;
-        float gridXSpacing;      // 1.0-32.0
-        float gridYSpacing;      // 1.0-32.0
-        float shapeScale;        // 0.01-4.0
-        float randOffsetX;       // 0.0-64.0
-        float randOffsetY;       // 0.0-64.0
-        bool  interleave;
-        float brightness;        // 0.0-2.0
-        float contrast;          // 0.0-2.0
-        float threshold;         // 0.0-100.0
-        float thresholdFeather;  // 0.0-100.0
-        bool  concentricFills;
-        float convergence;       // 0.0-100.0
-    };
+    // ── Grid PFMs ───────────────────────────────────────────────────────
 
-    class GridShapes : public GridBase, public ShapesBase {
+    class GridShapes : public PFMBase {
     public:
+        GridShapesSettings settings;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
-    class GridDashes : public GridBase, public ShapesBase {
+    class GridDashes : public PFMBase {
     public:
-        float distortion; // 0-100
+        GridDashesSettings settings;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
-    class GridLetters : public GridBase, public ShapesBase {
+    class GridLetters : public PFMBase {
     public:
-        LetterParams letterParams;
+        GridLettersSettings settings;
         std::vector<PlotPath> generate(const cv::Mat& ref) override;
     };
 
