@@ -1,5 +1,5 @@
 {
-    "image_path": "../cli/0.jpg",
+    "image_path": "",
     "pfm_name": "MosaicRectanglesPFM",
     "colour_separation": "Grayscale",
     "pen_colors": ["#0F0F3C"],

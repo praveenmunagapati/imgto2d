@@ -18,8 +18,8 @@ You can build the project using CMake. Open your terminal or command prompt and 
 cd cli
 mkdir build
 cd build
-cmake ..
-cmake --build . --config Release
+cmake -G "MinGW Makefiles" ..
+cmake --build .
 ```
 
 The compiled executable `imgto2d_standalone_cli` will be located in the `build` directory (or `build/Release` depending on your generator).
