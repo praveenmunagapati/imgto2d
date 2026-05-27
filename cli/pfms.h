@@ -975,7 +975,7 @@ public: explicit MosaicCustomPFM(){} std::string name() const override{return "M
 
 // --- mosaic_voronoi_pfm.h ---
 class MosaicVoronoiPFM : public BaseMosaicPFM {
-public: explicit MosaicVoronoiPFM(){} std::string name() const override{return "Mosaic Voronoi";} protected: std::vector<PFMSetting> defineSettings() const override; std::vector<DrawingGeometry> _process(const cv::Mat& image) override; };
+public: MosaicVoronoiPFM(); std::string name() const override{return "Mosaic Voronoi";} protected: std::vector<PFMSetting> defineSettings() const override; std::vector<DrawingGeometry> _process(const cv::Mat& image) override; };
 
 
 // --- sketch_abstract_pfm.h ---

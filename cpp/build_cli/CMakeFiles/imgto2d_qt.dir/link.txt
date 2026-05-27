@@ -1,3 +1,0 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\imgto2d_qt.dir/objects.a
-C:\MinGW\bin\ar.exe qc CMakeFiles\imgto2d_qt.dir/objects.a @CMakeFiles\imgto2d_qt.dir\objects1.rsp
-C:\MinGW\bin\c++.exe -mwindows -Wl,--whole-archive CMakeFiles\imgto2d_qt.dir/objects.a -Wl,--no-whole-archive -o imgto2d_qt.exe -Wl,--out-implib,libimgto2d_qt.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\imgto2d_qt.dir\linkLibs.rsp

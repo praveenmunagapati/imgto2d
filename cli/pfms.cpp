@@ -1381,6 +1381,10 @@ std::vector<DrawingGeometry> MosaicRectanglesPFM::_process(const cv::Mat& image)
 
 
 // --- mosaic_voronoi_pfm.cpp ---
+MosaicVoronoiPFM::MosaicVoronoiPFM() {
+    initSettings();
+}
+
 std::vector<PFMSetting> MosaicVoronoiPFM::defineSettings() const {
     return {
         {"cell_count", "Cell Count", SettingType::Integer, 200, SettingValue(), 20, 2000, 20, 2000, 50}

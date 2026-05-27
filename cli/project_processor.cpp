@@ -35,6 +35,13 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
     m_settings.pfmName = j.value("pfm_name", "");
     m_settings.colourSeparation = j.value("colour_separation", "Grayscale");
 
+    if (j.contains("pen_colors") && j["pen_colors"].is_array()) {
+        for (auto& pc : j["pen_colors"]) {
+            if (pc.is_string()) m_settings.penColors.push_back(pc.get<std::string>());
+        }
+    }
+    m_settings.penWidthMm = j.value("pen_width_mm", 0.3);
+
     // Extract PFM Settings
     if (j.contains("pfm_settings") && j["pfm_settings"].is_object()) {
         for (auto& el : j["pfm_settings"].items()) {
@@ -69,24 +76,31 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
 cv::Mat ProjectProcessor::applyFilters(const cv::Mat& inputImage) const {
     cv::Mat current = inputImage.clone();
 
-    // Map of filter names to instantiation functions could be placed here,
-    // but for now we manually route the main ones, or wait until we implement a Filter Registry.
-    // As an example, if the chain has "Threshold", we apply it.
     for (const auto& filter : m_settings.filterChain) {
-        if (filter.name == "Threshold") {
-            ThresholdFilter f;
+        auto f = create_filter(filter.name);
+        if (f) {
             for (const auto& pair : filter.settings) {
-                f.set(pair.first, pair.second);
+                f->set(pair.first, pair.second);
             }
-            current = f.process(current);
+            current = f->process(current);
+        } else {
+            // Check if they stored the name without "Filter" at the end?
+            f = create_filter(filter.name + "Filter");
+            if (f) {
+                for (const auto& pair : filter.settings) {
+                    f->set(pair.first, pair.second);
+                }
+                current = f->process(current);
+            } else {
+                std::cerr << "Warning: Could not create filter '" << filter.name << "'" << std::endl;
+            }
         }
-        // ... (other filters to be added to a registry)
     }
 
     return current;
 }
 
-void ProjectProcessor::applyPFMSettings(PathFindingModule* pfm) const {
+void ProjectProcessor::applyPFMSettings(pfm_ported::PathFindingModule* pfm) const {
     if (!pfm) return;
     for (const auto& pair : m_settings.pfmSettings) {
         pfm->set(pair.first, pair.second);

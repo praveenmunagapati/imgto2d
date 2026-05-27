@@ -30,8 +30,15 @@ find_package(OpenMP REQUIRED)
 add_executable(imgto2d_standalone_cli
     main_cli.cpp
     pfms.cpp
-    export_svg.cpp
     filters_raw.cpp
+    project_processor.cpp
+    export_svg.cpp
+    mask_manager.cpp
+    color_separation.cpp
+    coordinates.cpp
+    path_optimizer.cpp
+    gcode_exporter.cpp
+    hpgl_exporter.cpp
 )
 
 target_include_directories(imgto2d_standalone_cli PRIVATE
@@ -45,3 +52,21 @@ target_link_libraries(imgto2d_standalone_cli PRIVATE
 )
 
 install(TARGETS imgto2d_standalone_cli RUNTIME DESTINATION bin)
+
+# ---- Presets Generator ----
+add_executable(dump_presets
+    dump_presets.cpp
+    pfms.cpp
+    color_separation.cpp
+)
+target_include_directories(dump_presets PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+)
+target_link_libraries(dump_presets PRIVATE
+    ${OpenCV_LIBS}
+    OpenMP::OpenMP_CXX
+)
+
+
+

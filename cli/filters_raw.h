@@ -812,3 +812,6 @@ public:
     cv::Mat process(const cv::Mat& image) override;
 };
 
+std::unique_ptr<ImageFilter> create_filter(const std::string& name);
+
+

@@ -1,1 +1,0 @@
- C:/Qt/6.4.2/mingw_64/lib/libQt6Core.a C:/Python313/libs/python313.lib -pthread -lmpr -luserenv -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

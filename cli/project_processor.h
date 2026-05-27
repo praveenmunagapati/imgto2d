@@ -8,13 +8,18 @@
 
 // Forward declarations
 class ImageFilter;
-class PathFindingModule;
+namespace pfm_ported {
+    class PathFindingModule;
+}
 
 struct ProjectSettings {
     std::string imagePath;
     std::string pfmName;
     std::string colourSeparation;
     std::map<std::string, SettingValue> pfmSettings;
+    
+    std::vector<std::string> penColors;
+    double penWidthMm = 0.3;
     
     // Extracted filter configurations
     struct FilterInfo {
@@ -35,7 +40,7 @@ public:
 
     // Helpers to instantiate the PFM and apply filters
     cv::Mat applyFilters(const cv::Mat& inputImage) const;
-    void applyPFMSettings(PathFindingModule* pfm) const;
+    void applyPFMSettings(pfm_ported::PathFindingModule* pfm) const;
 
 private:
     ProjectSettings m_settings;
