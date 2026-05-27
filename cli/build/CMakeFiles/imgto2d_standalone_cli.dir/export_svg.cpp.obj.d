@@ -270,8 +270,9 @@ CMakeFiles/imgto2d_standalone_cli.dir/export_svg.cpp.obj: \
  C:/MinGW/lib/gcc/x86_64-w64-mingw32/13.2.0/include/omp.h \
  C:\Users\sir\Desktop\imgto2d\cli\coordinates.h \
  C:\Users\sir\Desktop\imgto2d\cli\geometry.h \
- C:/MinGW/include/c++/13.2.0/cassert C:/MinGW/include/c++/13.2.0/iomanip \
- C:/MinGW/include/c++/13.2.0/locale \
+ C:/MinGW/include/c++/13.2.0/cassert \
+ C:\Users\sir\Desktop\imgto2d\cli\path_optimizer.h \
+ C:/MinGW/include/c++/13.2.0/iomanip C:/MinGW/include/c++/13.2.0/locale \
  C:/MinGW/include/c++/13.2.0/bits/locale_facets_nonio.h \
  C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/time_members.h \
  C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/messages_members.h \

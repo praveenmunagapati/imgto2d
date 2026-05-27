@@ -40,7 +40,7 @@ bool GCodeExporter::exportGCode(const std::string& filepath,
 
     // Prepare, filter and optimize paths
     std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
-        mmGeoms, settings.minPathLength, settings.optimizePaths);
+        mmGeoms, settings.minPathLength, settings.optimizePaths, settings.simplifyTolerance);
 
     double h_mm = drawingArea.height_mm;
     double cx = settings.centerZero ? (drawingArea.width_mm / 2.0) : 0.0;

@@ -40,9 +40,34 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
             if (pc.is_string()) m_settings.penColors.push_back(pc.get<std::string>());
         }
     }
-    m_settings.penWidthMm = j.value("pen_width_mm", 0.3);
-    m_settings.widthMm = j.value("width_mm", 210.0);
-    m_settings.heightMm = j.value("height_mm", 297.0);
+    m_settings.penWidthMm = j.value("pen_width_mm", j.value("penWidthMm", 0.3));
+    m_settings.widthMm = j.value("width_mm", j.value("width", 210.0));
+    m_settings.heightMm = j.value("height_mm", j.value("height", 297.0));
+
+    m_settings.paddingLeftMm = j.value("padding_left_mm", j.value("paddingLeft", 0.0));
+    m_settings.paddingTopMm = j.value("padding_top_mm", j.value("paddingTop", 0.0));
+    m_settings.paddingRightMm = j.value("padding_right_mm", j.value("paddingRight", 0.0));
+    m_settings.paddingBottomMm = j.value("padding_bottom_mm", j.value("paddingBottom", 0.0));
+    m_settings.scalingMode = j.value("scaling_mode", j.value("scalingMode", "Fit"));
+
+    m_settings.enableMasking = j.value("enable_masking", j.value("enableMasking", false));
+    m_settings.maskPath = j.value("mask_path", j.value("maskPath", ""));
+    m_settings.simplifyTolerance = j.value("simplify_tolerance", j.value("simplifyTolerance", 0.0));
+
+    // Hardware Settings
+    m_settings.gcodeOffsetX = j.value("gcode_offset_x", j.value("gcodeOffsetX", 0.0));
+    m_settings.gcodeOffsetY = j.value("gcode_offset_y", j.value("gcodeOffsetY", 0.0));
+    m_settings.gcodeCenterZero = j.value("gcode_center_zero", j.value("gcodeCenterZero", false));
+    m_settings.gcodeStartCmd = j.value("gcode_start", j.value("gcodeStart", ""));
+    m_settings.gcodeEndCmd = j.value("gcode_end", j.value("gcodeEnd", ""));
+    m_settings.gcodePenDownCmd = j.value("gcode_pen_down", j.value("gcodePenDown", ""));
+    m_settings.gcodePenUpCmd = j.value("gcode_pen_up", j.value("gcodePenUp", ""));
+
+    m_settings.hpglXMirror = j.value("hpgl_x_mirror", j.value("hpglXMirror", false));
+    m_settings.hpglYMirror = j.value("hpgl_y_mirror", j.value("hpglYMirror", false));
+    m_settings.hpglPenVelocity = j.value("hpgl_pen_velocity", j.value("hpglPenVelocity", 10));
+    m_settings.hpglPenForce = j.value("hpgl_pen_force", j.value("hpglPenForce", -1));
+    m_settings.hpglRotation = j.value("hpgl_rotation", j.value("hpglRotation", 0));
 
     // Extract PFM Settings
     if (j.contains("pfm_settings") && j["pfm_settings"].is_object()) {

@@ -19,6 +19,9 @@ struct HPGLSettings {
     double curveFlatness = 0.1;
     double minPathLength = 0.5; // mm
     bool optimizePaths = true;
+    double simplifyTolerance = 0.0;
+    int rotation = 0; // 0, 90, 180, 270 degrees
+    int penForce = -1; // -1 means disabled, otherwise FS command (Force Select)
 };
 
 class HPGLExporter {

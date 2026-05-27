@@ -8,4 +8,5 @@ void export_svg(const std::string& filename,
                 int imageWidth,
                 int imageHeight,
                 const std::vector<std::string>& penColorsHex,
-                double penWidthMm);
+                double penWidthMm,
+                double simplifyTolerance = 0.0);

@@ -28,8 +28,29 @@ static std::pair<int, int> mmToHPGL(double xMm, double yMm, const DrawingAreaCon
     double wMm = std::max(da.width_mm, 0.001);
     double hMm = std::max(da.height_mm, 0.001);
 
-    int x = static_cast<int>((xMm / wMm) * settings.xMax);
-    int y = static_cast<int>((yMm / hMm) * settings.yMax);
+    double rx = xMm;
+    double ry = yMm;
+    double targetWMm = wMm;
+    double targetHMm = hMm;
+
+    // Apply rotation
+    if (settings.rotation == 90) {
+        rx = yMm;
+        ry = wMm - xMm;
+        targetWMm = hMm;
+        targetHMm = wMm;
+    } else if (settings.rotation == 180) {
+        rx = wMm - xMm;
+        ry = hMm - yMm;
+    } else if (settings.rotation == 270) {
+        rx = hMm - yMm;
+        ry = xMm;
+        targetWMm = hMm;
+        targetHMm = wMm;
+    }
+
+    int x = static_cast<int>((rx / targetWMm) * settings.xMax);
+    int y = static_cast<int>((ry / targetHMm) * settings.yMax);
 
     if (settings.xMirror) x = settings.xMax - x;
     if (settings.yMirror) y = settings.yMax - y;
@@ -50,8 +71,6 @@ bool HPGLExporter::exportHPGL(const std::string& filepath,
         return false;
     }
 
-    
-
     // Convert pixel coordinates to physical mm
     std::vector<DrawingGeometry> mmGeoms;
     mmGeoms.reserve(geometries.size());
@@ -64,14 +83,18 @@ bool HPGLExporter::exportHPGL(const std::string& filepath,
 
     // Prepare, filter and optimize paths
     std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
-        mmGeoms, settings.minPathLength, settings.optimizePaths);
+        mmGeoms, settings.minPathLength, settings.optimizePaths, settings.simplifyTolerance);
 
     double h_mm = drawingArea.height_mm;
 
     out << "IN;\n";
-    out << "SP%1;\n" + std::to_string(settings.penNumber);
-    out << "VS" + std::to_string(settings.penVelocity) + ";\n";
-    out << format_coord("FS%.2f;\n", settings.curveFlatness, 0.0);
+    out << "SP" << settings.penNumber << ";\n";
+    out << "VS" << settings.penVelocity << ";\n";
+    if (settings.penForce >= 0) {
+        out << "FS" << settings.penForce << ";\n";
+    } else {
+        out << format_coord("FS%.2f;\n", settings.curveFlatness, 0.0);
+    }
 
     for (auto it = penPaths.begin(); it != penPaths.end(); ++it) {
         int penIdx = it->first;

@@ -22,6 +22,7 @@ struct GCodeSettings {
     bool centerZero = false;
     double minPathLength = 0.5; // mm
     bool optimizePaths = true;
+    double simplifyTolerance = 0.0;
 };
 
 class GCodeExporter {

@@ -4,7 +4,8 @@
 std::map<int, std::vector<Path>> PathOptimizer::preparePenPaths(
     const std::vector<DrawingGeometry>& geometries,
     double minLength,
-    bool optimize) 
+    bool optimize,
+    double simplifyTolerance) 
 {
     std::map<int, std::vector<Path>> penPaths;
     
@@ -22,6 +23,13 @@ std::map<int, std::vector<Path>> PathOptimizer::preparePenPaths(
         // Filter short paths
         if (minLength > 0.0) {
             stdPaths = filter_short_paths(stdPaths, minLength);
+        }
+        
+        // Simplify paths using Douglas-Peucker
+        if (simplifyTolerance > 0.0) {
+            for (auto& path : stdPaths) {
+                path = simplify_path_dp(path, simplifyTolerance);
+            }
         }
         
         // Optimize travel path using nearest neighbor

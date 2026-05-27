@@ -15,5 +15,6 @@ public:
     static std::map<int, std::vector<Path>> preparePenPaths(
         const std::vector<DrawingGeometry>& geometries,
         double minLength = 0.0,
-        bool optimize = true);
+        bool optimize = true,
+        double simplifyTolerance = 0.0);
 };

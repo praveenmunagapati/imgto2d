@@ -1,5 +1,6 @@
 #include "export_svg.h"
 #include "coordinates.h"
+#include "path_optimizer.h"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -18,7 +19,8 @@ void export_svg(const std::string& filename,
                 int imageWidth,
                 int imageHeight,
                 const std::vector<std::string>& penColorsHex,
-                double penWidthMm) {
+                double penWidthMm,
+                double simplifyTolerance) {
     if (geometries.empty()) return;
 
     std::ofstream out(filename);
@@ -34,14 +36,19 @@ void export_svg(const std::string& filename,
         << "width=\"" << drawingArea.width_mm << "mm\" height=\"" << drawingArea.height_mm << "mm\" "
         << "viewBox=\"0 0 " << drawingArea.width_mm << " " << drawingArea.height_mm << "\">\n";
 
-    // Group paths by pen index
-    std::map<int, std::vector<Path>> penPaths;
+    // Convert pixel coordinates to physical mm
+    std::vector<DrawingGeometry> mmGeoms;
+    mmGeoms.reserve(geometries.size());
     for (const auto& geom : geometries) {
         Path mmPath = pixel_path_to_mm(geom.path, imageWidth, imageHeight, drawingArea);
         if (!mmPath.empty()) {
-            penPaths[geom.penIndex].push_back(mmPath);
+            mmGeoms.push_back({mmPath, geom.penIndex, geom.groupIndex});
         }
     }
+
+    // Prepare and simplify paths
+    std::map<int, std::vector<Path>> penPaths = PathOptimizer::preparePenPaths(
+        mmGeoms, 0.0, true, simplifyTolerance);
 
     // Write groups
     for (auto it = penPaths.begin(); it != penPaths.end(); ++it) {

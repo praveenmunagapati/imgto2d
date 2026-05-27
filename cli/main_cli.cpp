@@ -5,6 +5,7 @@
 #include "filters_raw.h"
 #include "project_processor.h"
 #include "color_separation.h"
+#include "mask_manager.h"
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -51,6 +52,17 @@ int main(int argc, char* argv[]) {
         }
         
         cv::Mat filtered = processor.applyFilters(img);
+        
+        if (settings.enableMasking && !settings.maskPath.empty()) {
+            std::cout << "Applying mask: " << settings.maskPath << std::endl;
+            MaskManager maskMgr;
+            if (maskMgr.load(settings.maskPath)) {
+                filtered = maskMgr.applyMask(filtered);
+            } else {
+                std::cerr << "Warning: Could not load mask from " << settings.maskPath << std::endl;
+            }
+        }
+        
         processor.applyPFMSettings(pfm.get());
         
         std::vector<cv::Mat> channels;
@@ -74,16 +86,43 @@ int main(int argc, char* argv[]) {
             geometries.insert(geometries.end(), ch_geoms.begin(), ch_geoms.end());
         }
         
-        DrawingAreaConfig dac; dac.width_mm = settings.widthMm; dac.height_mm = settings.heightMm;
+        DrawingAreaConfig dac;
+        dac.width_mm = settings.widthMm;
+        dac.height_mm = settings.heightMm;
+        dac.padding_left_mm = settings.paddingLeftMm;
+        dac.padding_top_mm = settings.paddingTopMm;
+        dac.padding_right_mm = settings.paddingRightMm;
+        dac.padding_bottom_mm = settings.paddingBottomMm;
+        if (settings.scalingMode == "Crop") {
+            dac.scaling_mode = ScalingMode::Crop;
+        } else if (settings.scalingMode == "Stretch") {
+            dac.scaling_mode = ScalingMode::Stretch;
+        } else {
+            dac.scaling_mode = ScalingMode::Fit;
+        }
         
         if (outPath.size() >= 6 && outPath.substr(outPath.size() - 6) == ".gcode") {
             GCodeSettings gset;
+            gset.simplifyTolerance = settings.simplifyTolerance;
+            gset.xOffset = settings.gcodeOffsetX;
+            gset.yOffset = settings.gcodeOffsetY;
+            gset.centerZero = settings.gcodeCenterZero;
+            if (!settings.gcodeStartCmd.empty()) gset.startGcode = settings.gcodeStartCmd;
+            if (!settings.gcodeEndCmd.empty()) gset.endGcode = settings.gcodeEndCmd;
+            if (!settings.gcodePenDownCmd.empty()) gset.penDownCmd = settings.gcodePenDownCmd;
+            if (!settings.gcodePenUpCmd.empty()) gset.penUpCmd = settings.gcodePenUpCmd;
             GCodeExporter::exportGCode(outPath, geometries, dac, img.cols, img.rows, gset);
         } else if (outPath.size() >= 5 && outPath.substr(outPath.size() - 5) == ".hpgl") {
             HPGLSettings hset;
+            hset.simplifyTolerance = settings.simplifyTolerance;
+            hset.xMirror = settings.hpglXMirror;
+            hset.yMirror = settings.hpglYMirror;
+            hset.penVelocity = settings.hpglPenVelocity;
+            hset.penForce = settings.hpglPenForce;
+            hset.rotation = settings.hpglRotation;
             HPGLExporter::exportHPGL(outPath, geometries, dac, img.cols, img.rows, hset);
         } else {
-            export_svg(outPath, geometries, dac, img.cols, img.rows, settings.penColors, settings.penWidthMm);
+            export_svg(outPath, geometries, dac, img.cols, img.rows, settings.penColors, settings.penWidthMm, settings.simplifyTolerance);
             
             // Optional vpype hook
             if (argc > 5 && std::string(argv[5]) == "--vpype") {

@@ -278,17 +278,108 @@ CMakeFiles/imgto2d_standalone_cli.dir/main_cli.cpp.obj: \
  C:/msys64/mingw64/include/opencv4/opencv2/photo.hpp \
  C:\Users\sir\Desktop\imgto2d\cli\project_processor.h \
  C:\Users\sir\Desktop\imgto2d\cli\color_separation.h \
- C:/MinGW/include/c++/13.2.0/filesystem \
- C:/MinGW/include/c++/13.2.0/bits/fs_fwd.h \
- C:/MinGW/include/c++/13.2.0/bits/fs_path.h \
- C:/MinGW/include/c++/13.2.0/locale \
+ C:\Users\sir\Desktop\imgto2d\cli\mask_manager.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/opencv.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/calib3d.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/features2d.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/miniflann.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/defines.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/config.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/affine.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/utils/logger.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/utils/logger.defines.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/utils/logtag.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/dnn.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/async.hpp \
+ C:/MinGW/include/c++/13.2.0/chrono \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/version.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/dict.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/layer.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/dnn.inl.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/dnn/dnn.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/flann_base.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/general.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/matrix.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/params.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/any.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/defines.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/saving.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/nn_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/result_set.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/all_indices.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/kdtree_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/dynamic_bitset.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/dist.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/heap.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/allocator.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/random.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/kdtree_single_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/kmeans_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/logger.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/13.2.0/include/stdarg.h \
+ C:/MinGW/x86_64-w64-mingw32/include/stdarg.h \
+ C:/MinGW/x86_64-w64-mingw32/include/_mingw_stdarg.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/composite_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/linear_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/lsh_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/lsh_table.h \
+ C:/MinGW/include/c++/13.2.0/iomanip C:/MinGW/include/c++/13.2.0/locale \
  C:/MinGW/include/c++/13.2.0/bits/locale_facets_nonio.h \
  C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/time_members.h \
  C:/MinGW/include/c++/13.2.0/x86_64-w64-mingw32/bits/messages_members.h \
  C:/MinGW/include/c++/13.2.0/bits/locale_facets_nonio.tcc \
  C:/MinGW/include/c++/13.2.0/bits/locale_conv.h \
- C:/MinGW/include/c++/13.2.0/iomanip \
  C:/MinGW/include/c++/13.2.0/bits/quoted_string.h \
+ C:/MinGW/include/c++/13.2.0/math.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/autotuned_index.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/ground_truth.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/index_testing.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/timer.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/flann/sampling.h \
+ C:/msys64/mingw64/include/opencv4/opencv2/highgui.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/videoio.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/ml.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/ml/ml.inl.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/aruco_detector.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/aruco_dictionary.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/aruco_board.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/graphical_code_detector.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/face.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/charuco_detector.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/objdetect/barcode.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/warpers.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/cuda.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/cuda_types.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/core/cuda.inl.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/util.hpp \
+ C:/MinGW/include/c++/13.2.0/list \
+ C:/MinGW/include/c++/13.2.0/bits/stl_list.h \
+ C:/MinGW/include/c++/13.2.0/bits/list.tcc \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/camera.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/blenders.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/stitching/detail/camera.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/video.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/video/tracking.hpp \
+ C:/msys64/mingw64/include/opencv4/opencv2/video/background_segm.hpp \
+ C:/MinGW/include/c++/13.2.0/filesystem \
+ C:/MinGW/include/c++/13.2.0/bits/fs_fwd.h \
+ C:/MinGW/include/c++/13.2.0/bits/fs_path.h \
  C:/MinGW/include/c++/13.2.0/codecvt \
  C:/MinGW/include/c++/13.2.0/bits/fs_dir.h \
  C:/MinGW/include/c++/13.2.0/bits/fs_ops.h

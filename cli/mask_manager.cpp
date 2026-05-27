@@ -35,6 +35,13 @@ cv::Mat MaskManager::applyMask(const cv::Mat& image) const {
     cv::Mat mFloat;
     m.convertTo(mFloat, CV_32F, 1.0 / 255.0);
 
+    if (image.channels() == 3) {
+        cv::Mat mFloat3;
+        cv::Mat in[] = {mFloat, mFloat, mFloat};
+        cv::merge(in, 3, mFloat3);
+        mFloat = mFloat3;
+    }
+
     // Apply mask: out = img * m + 255 * (1 - m)
     cv::Mat imgFloat;
     image.convertTo(imgFloat, CV_32F);
