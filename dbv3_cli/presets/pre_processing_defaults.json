@@ -1,0 +1,55 @@
+{
+  "jsonMap": [
+    {
+      "presetType": "image_filters",
+      "version": 1,
+      "presetSubType": "",
+      "presetName": "Default",
+      "userCreated": false,
+      "data": {
+        "filters": []
+      }
+    },
+    {
+      "presetType": "image_filters",
+      "version": 1,
+      "presetSubType": "",
+      "presetName": "Original - Dirty Border",
+      "userCreated": false,
+      "data": {
+        "filters": [
+          {
+            "type": "Dirty Border",
+            "settings": {}
+          },
+          {
+            "type": "Dirty Border",
+            "settings": {
+              "Type": "11"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "presetType": "image_filters",
+      "version": 1,
+      "presetSubType": "",
+      "presetName": "Simple Unsharp Mask",
+      "userCreated": false,
+      "data": {
+        "filters": [
+          {
+            "type": "Unsharp Mask",
+            "settings": {
+              "Radius": "6.0",
+              "Premultiply": "true",
+              "Amount": "0.5",
+              "Threshold": "1"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
