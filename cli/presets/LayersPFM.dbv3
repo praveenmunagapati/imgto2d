@@ -7,9 +7,9 @@
     "width_mm": 210.0,
     "height_mm": 297.0,
     "pfm_settings": {
-        "line_density": 40,
+        "line_density": 100,
         "num_layers": 4,
-        "plotting_resolution": 1,
+        "plotting_resolution": 2,
         "random_seed": 42
     },
     "filter_chain": []

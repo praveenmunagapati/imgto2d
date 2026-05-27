@@ -7,8 +7,8 @@
     "width_mm": 210.0,
     "height_mm": 297.0,
     "pfm_settings": {
-        "cols": 40,
-        "rows": 40,
+        "cols": 250,
+        "rows": 250,
         "threshold": 50
     },
     "filter_chain": []

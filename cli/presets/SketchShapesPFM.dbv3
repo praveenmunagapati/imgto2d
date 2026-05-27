@@ -14,7 +14,7 @@
         "enable_triangles": true,
         "erase_max": 125,
         "erase_min": 50,
-        "line_density": 75,
+        "line_density": 100,
         "line_max_limit": -1,
         "luminance_power": 100,
         "plotting_resolution": 1,

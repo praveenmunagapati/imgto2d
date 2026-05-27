@@ -72,7 +72,7 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
     int h = image.rows;
     int cell_count = m_settings["cell_count"].toInt();
     int lloyd_iters = getLloydIters();
-    float min_brightness = m_settings["min_brightness"].toDouble();
+    float min_brightness = (m_settings["min_brightness"].toDouble() / 100.0f) * 255.0f;
     float letter_scale = m_settings["letter_scale"].toDouble();
 
     std::vector<double> probs(w * h, 0.0);
@@ -163,7 +163,7 @@ std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
     for (const auto& p : pts) {
         int xi = std::clamp(int(p.x), 0, w - 1);
         int yi = std::clamp(int(p.y), 0, h - 1);
-        if (original_dark[yi * w + xi] >= min_brightness) {
+        if (original_dark[yi * w + xi] >= (255.0f - min_brightness)) {
             filtered_pts.push_back(p);
         }
     }
@@ -202,10 +202,10 @@ BaseAdaptivePFM::BaseAdaptivePFM() {
 
 std::vector<PFMSetting> BaseAdaptivePFM::defineSettings() const {
     return {
-        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.0, SettingValue(), 0.1, 2.0,   0.1, 2.0,   0.05},
-        {"random_seed",         "Random Seed",         SettingType::Integer, 42,  SettingValue(), 0,   999999, 0,   999999, 1},
-        {"cell_count",          "Cell Count",          SettingType::Integer, 800, SettingValue(), 50,  20000,  50,  20000,  50},
-        {"lloyd_iterations",    "Lloyd Iterations",    SettingType::Integer, 3,   SettingValue(), 0,   20,     0,   10,     1},
+        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.5, SettingValue(), 0.1, 5.0,   0.1, 5.0,   0.05},
+        {"random_seed",         "Random Seed",         SettingType::Integer, 42,    SettingValue(), 0,   10000, 0,   10000, 1},
+        {"cell_count",          "Cell Count",          SettingType::Integer, 25000, SettingValue(), 50,  200000,  50,  200000,  50},
+        {"lloyd_iterations",    "Lloyd Iterations",    SettingType::Integer, 5,   SettingValue(), 0,   20,     0,   10,     1},
         {"min_brightness",      "Min Brightness (%)",  SettingType::Number,  80.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
     };
 }
@@ -308,7 +308,7 @@ std::vector<cv::Point2f> BaseAdaptivePFM::getSeeds(const cv::Mat& image) {
         int xi = std::clamp((int)p.x, 0, w - 1);
         int yi = std::clamp((int)p.y, 0, h - 1);
         float bright = image.at<uchar>(yi, xi);
-        if (bright <= (255.0f - minBright))  // only dark enough pixels
+        if (bright <= minBright)  // keep pixels darker than the minimum brightness threshold
             filtered.push_back(p);
     }
     return filtered;
@@ -320,8 +320,8 @@ BaseGridPFM::BaseGridPFM() {
 
 std::vector<PFMSetting> BaseGridPFM::defineSettings() const {
     return {
-        {"cols", "Columns", SettingType::Integer, 40, SettingValue(), 2, 200, 2, 200, 1},
-        {"rows", "Rows", SettingType::Integer, 40, SettingValue(), 2, 200, 2, 200, 1},
+        {"cols", "Columns", SettingType::Integer, 250, SettingValue(), 2, 1000, 2, 1000, 1},
+        {"rows", "Rows", SettingType::Integer, 250, SettingValue(), 2, 1000, 2, 1000, 1},
         {"threshold", "Darkness Threshold", SettingType::Number, 50.0, SettingValue(), 0.0, 255.0, 0.0, 255.0, 1.0}
     };
 }
@@ -387,8 +387,8 @@ BaseStipplePFM::BaseStipplePFM() {
 
 std::vector<PFMSetting> BaseStipplePFM::defineSettings() const {
     return {
-        {"num_shapes", "Number of Shapes", SettingType::Integer, 5000, SettingValue(), 100, 50000, 100, 50000, 100},
-        {"shape_size", "Shape Size", SettingType::Number, 1.0, SettingValue(), 0.1, 10.0, 0.1, 10.0, 0.1}
+        {"num_shapes", "Number of Shapes", SettingType::Integer, 60000, SettingValue(), 100, 1000000, 100, 1000000, 100},
+        {"shape_size", "Shape Size", SettingType::Number, 0.5, SettingValue(), 0.1, 10.0, 0.1, 10.0, 0.1}
     };
 }
 
@@ -1036,14 +1036,28 @@ std::vector<DrawingGeometry> AdaptiveTreePFM::_process(const cv::Mat& image) {
     for (size_t i = 0; i < pts.size(); ++i) pt2idx[{pts[i].x, pts[i].y}] = i;
 
     std::vector<std::vector<std::pair<int,float>>> adj(pts.size());
-    for (const auto& e : edges) {
-        auto it1 = pt2idx.find({e[0], e[1]});
-        auto it2 = pt2idx.find({e[2], e[3]});
-        if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
-            int u = it1->second, v = it2->second;
-            float d = std::hypot(e[0]-e[2], e[1]-e[3]);
-            adj[u].push_back({v, d});
-            adj[v].push_back({u, d});
+    #pragma omp parallel
+    {
+        std::vector<std::vector<std::pair<int,float>>> local_adj(pts.size());
+        #pragma omp for nowait
+        for (int i = 0; i < (int)edges.size(); ++i) {
+            const auto& e = edges[i];
+            auto it1 = pt2idx.find({e[0], e[1]});
+            auto it2 = pt2idx.find({e[2], e[3]});
+            if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
+                int u = it1->second, v = it2->second;
+                float d = std::hypot(e[0]-e[2], e[1]-e[3]);
+                local_adj[u].push_back({v, d});
+                local_adj[v].push_back({u, d});
+            }
+        }
+        #pragma omp critical
+        {
+            for (size_t i = 0; i < pts.size(); ++i) {
+                if (!local_adj[i].empty()) {
+                    adj[i].insert(adj[i].end(), local_adj[i].begin(), local_adj[i].end());
+                }
+            }
         }
     }
     std::vector<bool> in_mst(pts.size(), false);
@@ -1117,12 +1131,33 @@ inline Path solve_tsp_adaptive(const std::vector<cv::Point2f>& points,
         if (isCancelledFn()) return {};
         int best_i = -1;
         float best_d = 1e12f;
-        for (size_t i = 0; i < points.size(); ++i) {
-            if (!visited[i]) {
-                float dx = points[i].x - points[current].x;
-                float dy = points[i].y - points[current].y;
-                float d = dx*dx + dy*dy;
-                if (d < best_d) { best_d = d; best_i = (int)i; }
+        float cx = points[current].x;
+        float cy = points[current].y;
+        
+        #pragma omp parallel
+        {
+            int local_best_i = -1;
+            float local_best_d = 1e12f;
+            
+            #pragma omp for nowait
+            for (int i = 0; i < (int)points.size(); ++i) {
+                if (!visited[i]) {
+                    float dx = points[i].x - cx;
+                    float dy = points[i].y - cy;
+                    float d = dx*dx + dy*dy;
+                    if (d < local_best_d) {
+                        local_best_d = d;
+                        local_best_i = i;
+                    }
+                }
+            }
+            
+            #pragma omp critical
+            {
+                if (local_best_d < best_d) {
+                    best_d = local_best_d;
+                    best_i = local_best_i;
+                }
             }
         }
         if (best_i == -1) break;
@@ -2347,10 +2382,10 @@ LayersPFM::LayersPFM() {
 
 std::vector<PFMSetting> LayersPFM::defineSettings() const {
     return {
-        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.0, SettingValue(), 0.1, 2.0, 0.1, 2.0, 0.05},
+        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  2.0, SettingValue(), 0.1, 5.0, 0.1, 5.0, 0.05},
         {"random_seed",         "Random Seed",         SettingType::Integer, 42,  SettingValue(), 0, 999999, 0, 999999, 1},
         {"num_layers",          "Number of Layers",    SettingType::Integer, 4,   SettingValue(), 2, 8, 2, 8, 1},
-        {"line_density",        "Line Density (%)",    SettingType::Percentage, 40.0, SettingValue(), 0, 100, 10, 100, 5},
+        {"line_density",        "Line Density (%)",    SettingType::Percentage, 100.0, SettingValue(), 0, 100, 10, 100, 5},
     };
 }
 
@@ -2911,9 +2946,9 @@ std::vector<PFMSetting> makeSketchCommonSettings() {
         { "sobel_power",         "Sobel Power",         SettingType::Number,     0.0,  {}, 0,200,0,100,1,{},"Style" },
         { "luminance_power",     "Luminance Power",     SettingType::Number,   100.0,  {}, 0,200,0,200,1,{},"Style" },
         { "drawing_delta_angle", "Drawing Delta Angle", SettingType::Number,   360.0,  {}, -360,360,-360,360,1,{},"Style" },
-        { "line_density",        "Line Density",        SettingType::Percentage, 75.0, {}, 0,100,0,100,1,{},"Segments" },
+        { "line_density",        "Line Density",        SettingType::Percentage, 100.0, {}, 0,100,0,100,1,{},"Segments" },
         { "line_min_length",     "Line Min Length",     SettingType::Number,     2.0,  {}, 1,1000,2,500,1,{},"Segments" },
-        { "line_max_length",     "Line Max Length",     SettingType::Number,    40.0,  {}, 1,1000,2,500,1,{},"Segments" },
+        { "line_max_length",     "Line Max Length",     SettingType::Number,     5.0,  {}, 1,1000,2,500,1,{},"Segments" },
         { "line_max_limit",      "Line Max Limit",      SettingType::Integer,   -1,    {}, -1,1000000,-1,1000000,1,{},"Segments" },
         { "angle_tests",         "Angle Tests",         SettingType::Integer,    72,   {}, 1,720,1,360,1,{},"Segments" },
         { "squiggle_min_length", "Squiggle Min Length", SettingType::Number,     0.0,  {}, 0,10000,0,5000,1,{},"Squiggles" },
@@ -3278,9 +3313,9 @@ std::vector<PFMSetting> SketchLinesPFM::defineSettings() const {
         { "luminance_power",     "Luminance Power",     SettingType::Number,   100.0,  {}, 0, 200, 0, 200, 1, {}, "Style" },
         { "drawing_delta_angle", "Drawing Delta Angle", SettingType::Number,   360.0,  {}, -360,360,-360,360,1,{}, "Style" },
         // Segments
-        { "line_density",        "Line Density",        SettingType::Percentage, 75.0, {}, 0,100,0,100,1,  {}, "Segments" },
+        { "line_density",        "Line Density",        SettingType::Percentage, 100.0, {}, 0,100,0,100,1,  {}, "Segments" },
         { "line_min_length",     "Line Min Length",     SettingType::Number,     2.0,  {}, 1,1000,2,500,1, {}, "Segments" },
-        { "line_max_length",     "Line Max Length",     SettingType::Number,     40.0, {}, 1,1000,2,500,1, {}, "Segments" },
+        { "line_max_length",     "Line Max Length",     SettingType::Number,      5.0, {}, 1,1000,2,500,1, {}, "Segments" },
         { "line_max_limit",      "Line Max Limit",      SettingType::Integer,    -1,   {}, -1,1000000,-1,1000000,1,{}, "Segments" },
         { "angle_tests",         "Angle Tests",         SettingType::Integer,    72,   {}, 1,720,1,360,1,  {}, "Segments" },
         // Squiggles
@@ -3721,7 +3756,7 @@ std::vector<PFMSetting> SketchShapesPFM::defineSettings() const {
         { "random_seed",         "Random Seed",         SettingType::Integer,    42,   {}, 0,999999,0,999999,1 },
         { "edge_power",          "Edge Power",          SettingType::Number,     0.0,  {}, 0,200,0,100,1,{},"Style" },
         { "luminance_power",     "Luminance Power",     SettingType::Number,   100.0,  {}, 0,200,0,200,1,{},"Style" },
-        { "line_density",        "Line Density",        SettingType::Percentage, 75.0, {}, 0,100,0,100,1,{},"Segments" },
+        { "line_density",        "Line Density",        SettingType::Percentage, 100.0, {}, 0,100,0,100,1,{},"Segments" },
         { "line_max_limit",      "Line Max Limit",      SettingType::Integer,   -1,    {}, -1,1000000,-1,1000000,1,{},"Segments" },
         { "shape_min_size",      "Shape Min Size",      SettingType::Integer,    2,    {}, 1,100,1,50,1,{},"Shapes" },
         { "shape_max_size",      "Shape Max Size",      SettingType::Integer,    40,   {}, 2,500,2,200,1,{},"Shapes" },
@@ -3931,7 +3966,7 @@ std::vector<PFMSetting> SketchSquaresPFM::defineSettings() const {
         { "edge_power",          "Edge Power",          SettingType::Number,     0.0,  {}, 0,200,0,100,1,{},"Style" },
         { "sobel_power",         "Sobel Power",         SettingType::Number,     0.0,  {}, 0,200,0,100,1,{},"Style" },
         { "luminance_power",     "Luminance Power",     SettingType::Number,   100.0,  {}, 0,200,0,200,1,{},"Style" },
-        { "line_density",        "Line Density",        SettingType::Percentage, 75.0, {}, 0,100,0,100,1,{},"Segments" },
+        { "line_density",        "Line Density",        SettingType::Percentage, 100.0, {}, 0,100,0,100,1,{},"Segments" },
         { "line_max_limit",      "Line Max Limit",      SettingType::Integer,   -1,    {}, -1,1000000,-1,1000000,1,{},"Segments" },
         { "square_min_size",     "Square Min Size",     SettingType::Integer,    1,    {}, 1,100,1,50,1,{},"Squares" },
         { "square_max_size",     "Square Max Size",     SettingType::Integer,    40,   {}, 2,500,2,200,1,{},"Squares" },
@@ -4791,7 +4826,7 @@ std::vector<double> TSPOutlinePFM::getProbabilities(const cv::Mat& image) {
 // -------------------------------------------------------------------------
 std::vector<PFMSetting> TSPShadingPFM::defineSettings() const {
     return {
-        {"nodes", "Nodes", SettingType::Integer, 2000, SettingValue(), 100, 20000, 100, 20000, 100},
+        {"nodes", "Nodes", SettingType::Integer, 50000, SettingValue(), 100, 500000, 100, 500000, 100},
         {"threshold", "Darkness Cutoff", SettingType::Number, 25.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0}
     };
 }
@@ -4860,7 +4895,7 @@ TSPMSTPFM::TSPMSTPFM() {
 
 std::vector<PFMSetting> TSPMSTPFM::defineSettings() const {
     return {
-        {"nodes", "Nodes", SettingType::Integer, 3000, SettingValue(), 100, 20000, 100, 20000, 100}
+        {"nodes", "Nodes", SettingType::Integer, 10000, SettingValue(), 100, 50000, 100, 50000, 100}
     };
 }
 
@@ -4906,15 +4941,29 @@ std::vector<DrawingGeometry> TSPMSTPFM::_process(const cv::Mat& image) {
     }
 
     std::vector<std::vector<std::pair<int, float>>> adj(points.size());
-    for(const auto& e : edgeList) {
-        auto it1 = pt2idx.find({e[0], e[1]});
-        auto it2 = pt2idx.find({e[2], e[3]});
-        if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
-            int u = it1->second;
-            int v = it2->second;
-            float d = std::hypot(e[0]-e[2], e[1]-e[3]);
-            adj[u].push_back({v, d});
-            adj[v].push_back({u, d});
+    #pragma omp parallel
+    {
+        std::vector<std::vector<std::pair<int, float>>> local_adj(points.size());
+        #pragma omp for nowait
+        for (int i = 0; i < (int)edgeList.size(); ++i) {
+            const auto& e = edgeList[i];
+            auto it1 = pt2idx.find({e[0], e[1]});
+            auto it2 = pt2idx.find({e[2], e[3]});
+            if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
+                int u = it1->second;
+                int v = it2->second;
+                float d = std::hypot(e[0]-e[2], e[1]-e[3]);
+                local_adj[u].push_back({v, d});
+                local_adj[v].push_back({u, d});
+            }
+        }
+        #pragma omp critical
+        {
+            for (size_t i = 0; i < points.size(); ++i) {
+                if (!local_adj[i].empty()) {
+                    adj[i].insert(adj[i].end(), local_adj[i].begin(), local_adj[i].end());
+                }
+            }
         }
     }
 
@@ -5122,15 +5171,29 @@ std::vector<DrawingGeometry> VoronoiTreePFM::_process(const cv::Mat& image) {
     for (size_t i = 0; i < pts.size(); ++i) pt2idx[{pts[i].x, pts[i].y}] = i;
     
     std::vector<std::vector<std::pair<int, float>>> adj(pts.size());
-    for (const auto& e : edges) {
-        auto it1 = pt2idx.find({e[0], e[1]});
-        auto it2 = pt2idx.find({e[2], e[3]});
-        if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
-            int u = it1->second;
-            int v = it2->second;
-            float d = std::hypot(e[0]-e[2], e[1]-e[3]);
-            adj[u].push_back({v, d});
-            adj[v].push_back({u, d});
+    #pragma omp parallel
+    {
+        std::vector<std::vector<std::pair<int, float>>> local_adj(pts.size());
+        #pragma omp for nowait
+        for (int i = 0; i < (int)edges.size(); ++i) {
+            const auto& e = edges[i];
+            auto it1 = pt2idx.find({e[0], e[1]});
+            auto it2 = pt2idx.find({e[2], e[3]});
+            if (it1 != pt2idx.end() && it2 != pt2idx.end()) {
+                int u = it1->second;
+                int v = it2->second;
+                float d = std::hypot(e[0]-e[2], e[1]-e[3]);
+                local_adj[u].push_back({v, d});
+                local_adj[v].push_back({u, d});
+            }
+        }
+        #pragma omp critical
+        {
+            for (size_t i = 0; i < pts.size(); ++i) {
+                if (!local_adj[i].empty()) {
+                    adj[i].insert(adj[i].end(), local_adj[i].begin(), local_adj[i].end());
+                }
+            }
         }
     }
     

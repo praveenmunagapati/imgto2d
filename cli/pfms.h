@@ -167,7 +167,7 @@ public:
 protected:
     std::vector<PFMSetting> defineSettings() const override {
         return {
-            {"nodes", "Nodes", SettingType::Integer, 2000, SettingValue(), 100.0, 20000.0, 100.0, 20000.0, 100.0}
+            {"nodes", "Nodes", SettingType::Integer, 10000, SettingValue(), 100.0, 50000.0, 100.0, 50000.0, 100.0}
         };
     }
 

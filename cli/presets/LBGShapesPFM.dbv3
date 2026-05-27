@@ -8,13 +8,13 @@
     "height_mm": 297.0,
     "pfm_settings": {
         "align_rotation": false,
-        "cell_count": 800,
+        "cell_count": 25000,
         "fill_size": false,
-        "lloyd_iterations": 3,
+        "lloyd_iterations": 5,
         "max_rotation": 360,
         "min_brightness": 80,
         "min_rotation": 0,
-        "plotting_resolution": 1,
+        "plotting_resolution": 1.5,
         "random_seed": 42,
         "shape_size": 4,
         "shape_type": "Circle"
