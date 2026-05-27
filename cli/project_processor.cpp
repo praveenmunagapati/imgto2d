@@ -41,6 +41,8 @@ bool ProjectProcessor::loadProject(const std::string& dbv3Path, const std::strin
         }
     }
     m_settings.penWidthMm = j.value("pen_width_mm", 0.3);
+    m_settings.widthMm = j.value("width_mm", 210.0);
+    m_settings.heightMm = j.value("height_mm", 297.0);
 
     // Extract PFM Settings
     if (j.contains("pfm_settings") && j["pfm_settings"].is_object()) {

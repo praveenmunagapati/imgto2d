@@ -76,25 +76,15 @@ int main() {
         out << "    \"colour_separation\": \"Grayscale\",\n";
         out << "    \"pen_colors\": [\"#0F0F3C\"],\n";
         out << "    \"pen_width_mm\": 0.3,\n";
+        out << "    \"width_mm\": 210.0,\n";
+        out << "    \"height_mm\": 297.0,\n";
         out << "    \"pfm_settings\": {\n";
 
         auto settings = pfm->settingsList();
         for (size_t i = 0; i < settings.size(); ++i) {
             const auto& s = settings[i];
             out << "        \"" << s.key << "\": ";
-            if (name.find("Sketch") == 0) {
-                if (s.key == "plotting_resolution") {
-                    out << 0.25;
-                } else if (s.key == "line_max_limit") {
-                    out << 1500;
-                } else if (s.key == "line_density") {
-                    out << 35.0;
-                } else {
-                    printValue(out, s.currentValue());
-                }
-            } else {
-                printValue(out, s.currentValue());
-            }
+            printValue(out, s.currentValue());
             if (i + 1 < settings.size()) {
                 out << ",";
             }

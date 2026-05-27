@@ -4,6 +4,8 @@
     "colour_separation": "Grayscale",
     "pen_colors": ["#0F0F3C"],
     "pen_width_mm": 0.3,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
     "pfm_settings": {
         "amplitude": 1,
         "angular_velocity": 30,

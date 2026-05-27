@@ -20,6 +20,8 @@ struct ProjectSettings {
     
     std::vector<std::string> penColors;
     double penWidthMm = 0.3;
+    double widthMm = 210.0;
+    double heightMm = 297.0;
     
     // Extracted filter configurations
     struct FilterInfo {

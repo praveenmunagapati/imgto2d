@@ -275,9 +275,16 @@ cv::Mat SepiaFilter::process(const cv::Mat& image) {
         0.349f, 0.686f, 0.168f,
         0.393f, 0.769f, 0.189f);
     
+    cv::Mat sepia;
+    cv::transform(img3, sepia, kernel);
+    sepia.convertTo(sepia, CV_8U);
+    
+    float intensity = get("intensity").toDouble() / 100.0f;
+    if (intensity >= 0.999f) return sepia;
+    if (intensity <= 0.001f) return img3;
+    
     cv::Mat out;
-    cv::transform(img3, out, kernel);
-    out.convertTo(out, CV_8U);
+    cv::addWeighted(sepia, intensity, img3, 1.0f - intensity, 0, out);
     return out;
 }
 
@@ -531,12 +538,14 @@ cv::Mat RidgeDetectionFilter::process(const cv::Mat& image) {
 
 std::vector<PFMSetting> HighPassFilter::defineSettings() const {
     return {
-        { "ksize", "Kernel Size", SettingType::Integer, 5, SettingValue(), 3, 31, 3, 31, 2 }
+        { "ksize", "Kernel Size", SettingType::Integer, 11, SettingValue(), 3, 31, 3, 31, 2 }
     };
 }
 cv::Mat HighPassFilter::process(const cv::Mat& image) {
+    int ksize = get("ksize").toInt();
+    if (ksize % 2 == 0) ksize++;
     cv::Mat blur;
-    cv::GaussianBlur(image, blur, cv::Size(11, 11), 0);
+    cv::GaussianBlur(image, blur, cv::Size(ksize, ksize), 0);
     
     cv::Mat img32, blur32;
     image.convertTo(img32, CV_32F);
@@ -1280,7 +1289,8 @@ cv::Mat DetailEnhanceFilter::process(const cv::Mat& image) {
 std::vector<PFMSetting> PencilSketchFilter::defineSettings() const {
     return {
         { "sigma_s", "Sigma S", SettingType::Number, 60.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0 },
-        { "sigma_r", "Sigma R", SettingType::Number, 0.07, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01 }
+        { "sigma_r", "Sigma R", SettingType::Number, 0.07, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01 },
+        { "shade_factor", "Shade Factor", SettingType::Number, 0.05, SettingValue(), 0.01, 0.1, 0.01, 0.1, 0.01 }
     };
 }
 
@@ -1288,12 +1298,13 @@ cv::Mat PencilSketchFilter::process(const cv::Mat& image) {
     cv::Mat gray, color;
     float sigmaS = (float)get("sigma_s").toDouble();
     float sigmaR = (float)get("sigma_r").toDouble();
+    float shadeFactor = (float)get("shade_factor").toDouble();
     if (image.channels() == 3) {
-        cv::pencilSketch(image, gray, color, sigmaS, sigmaR, 0.05f);
+        cv::pencilSketch(image, gray, color, sigmaS, sigmaR, shadeFactor);
     } else {
         cv::Mat bgr;
         cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR);
-        cv::pencilSketch(bgr, gray, color, sigmaS, sigmaR, 0.05f);
+        cv::pencilSketch(bgr, gray, color, sigmaS, sigmaR, shadeFactor);
     }
     return gray;
 }
@@ -1304,7 +1315,13 @@ std::vector<PFMSetting> EmbossFilter::defineSettings() const {
     };
 }
 cv::Mat EmbossFilter::process(const cv::Mat& image) {
-    cv::Mat kernel = (cv::Mat_<float>(3, 3) << -2, -1, 0, -1, 1, 1, 0, 1, 2);
+    float angle = get("angle").toDouble() * CV_PI / 180.0;
+    float dx = std::cos(angle);
+    float dy = std::sin(angle);
+    cv::Mat kernel = (cv::Mat_<float>(3, 3) << 
+        -dx-dy, -dy, dx-dy,
+        -dx,     1,  dx,
+        -dx+dy,  dy, dx+dy);
     cv::Mat out;
     cv::filter2D(image, out, -1, kernel);
     return out;
@@ -1948,14 +1965,20 @@ cv::Mat FlareFilter::process(const cv::Mat& image) {
 }
 
 std::vector<PFMSetting> OilFilter::defineSettings() const {
-    return { {"radius", "Radius", SettingType::Integer, 3, SettingValue(), 1, 10, 1, 10, 1} };
+    return { 
+        {"radius", "Radius", SettingType::Integer, 3, SettingValue(), 1, 10, 1, 10, 1},
+        {"sigma_s", "Sigma S", SettingType::Number, 60.0, SettingValue(), 1.0, 200.0, 1.0, 200.0, 1.0},
+        {"sigma_r", "Sigma R", SettingType::Number, 0.4, SettingValue(), 0.01, 1.0, 0.01, 1.0, 0.01}
+    };
 }
 cv::Mat OilFilter::process(const cv::Mat& image) {
     // Delegate to OilPaintingFilter logic (simplified version)
+    float sigmaS = (float)get("sigma_s").toDouble();
+    float sigmaR = (float)get("sigma_r").toDouble();
     cv::Mat bgr;
     if (image.channels() == 1) cv::cvtColor(image, bgr, cv::COLOR_GRAY2BGR); else bgr = image;
     cv::Mat out;
-    cv::edgePreservingFilter(bgr, out, 1, 60.0f, 0.4f);
+    cv::edgePreservingFilter(bgr, out, 1, sigmaS, sigmaR);
     if (image.channels() == 1) cv::cvtColor(out, out, cv::COLOR_BGR2GRAY);
     return out;
 }

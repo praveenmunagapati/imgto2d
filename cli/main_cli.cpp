@@ -74,16 +74,15 @@ int main(int argc, char* argv[]) {
             geometries.insert(geometries.end(), ch_geoms.begin(), ch_geoms.end());
         }
         
+        DrawingAreaConfig dac; dac.width_mm = settings.widthMm; dac.height_mm = settings.heightMm;
+        
         if (outPath.size() >= 6 && outPath.substr(outPath.size() - 6) == ".gcode") {
             GCodeSettings gset;
-            DrawingAreaConfig dac; dac.width_mm = 210; dac.height_mm = 297;
             GCodeExporter::exportGCode(outPath, geometries, dac, img.cols, img.rows, gset);
         } else if (outPath.size() >= 5 && outPath.substr(outPath.size() - 5) == ".hpgl") {
             HPGLSettings hset;
-            DrawingAreaConfig dac; dac.width_mm = 210; dac.height_mm = 297;
             HPGLExporter::exportHPGL(outPath, geometries, dac, img.cols, img.rows, hset);
         } else {
-            DrawingAreaConfig dac; dac.width_mm = 210; dac.height_mm = 297;
             export_svg(outPath, geometries, dac, img.cols, img.rows, settings.penColors, settings.penWidthMm);
             
             // Optional vpype hook
