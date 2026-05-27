@@ -1,0 +1,49 @@
+# CMake and Build Artifacts
+build/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Executables and Binaries
+*.exe
+*.o
+*.obj
+*.dll
+*.so
+*.dylib
+*.lib
+*.a
+
+# Test outputs and Renders
+*.svg
+*.gcode
+*.hpgl
+*.png
+*_log.txt
+stdout.txt
+stderr.txt
+
+# Keep standard test image if required
+# !0.jpg
+# Keep dbv3 presets
+!*.dbv3
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.vs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
