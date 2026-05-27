@@ -1,0 +1,27 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SpiralCircularScribblesPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "amplitude": 1,
+        "angular_velocity": 30,
+        "centre_x": 50,
+        "centre_y": 50,
+        "curvature": 0.5,
+        "ignore_white": false,
+        "max_radius": 8,
+        "max_velocity": 40,
+        "min_radius": 1,
+        "min_velocity": 10,
+        "pitch": 3,
+        "plotting_resolution": 1,
+        "random_seed": 42,
+        "spiral_size": 100,
+        "spiral_type": "Archimedean",
+        "variable_velocity": true,
+        "wobble": 2
+    },
+    "filter_chain": []
+}

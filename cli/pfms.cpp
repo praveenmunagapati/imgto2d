@@ -10,26 +10,627 @@
 
 namespace pfm_ported {
 
+std::map<char, std::vector<std::pair<float, float>>> LETTER_GLYPHS = {
+    {'A', {{0.1, 1}, {0.5, 0}, {0.9, 1}, {0.7, 0.55}, {0.3, 0.55}}},
+    {'B', {{0.2, 0}, {0.2, 1}, {0.6, 1}, {0.8, 0.85}, {0.6, 0.5}, {0.8, 0.15}, {0.6, 0}, {0.2, 0}}},
+    {'C', {{0.9, 0.15}, {0.6, 0}, {0.3, 0}, {0.1, 0.3}, {0.1, 0.7}, {0.3, 1}, {0.6, 1}, {0.9, 0.85}}},
+    {'D', {{0.2, 0}, {0.2, 1}, {0.55, 1}, {0.85, 0.75}, {0.85, 0.25}, {0.55, 0}, {0.2, 0}}},
+    {'E', {{0.8, 0}, {0.2, 0}, {0.2, 1}, {0.8, 1}, {0.2, 0.5}, {0.65, 0.5}}},
+    {'F', {{0.2, 0}, {0.2, 1}, {0.8, 1}, {0.2, 0.5}, {0.7, 0.5}}},
+    {'G', {{0.9, 0.2}, {0.6, 0}, {0.3, 0.05}, {0.1, 0.4}, {0.1, 0.7}, {0.35, 1}, {0.75, 0.9}, {0.75, 0.55}, {0.5, 0.55}}},
+    {'H', {{0.2, 0}, {0.2, 1}, {0.2, 0.5}, {0.8, 0.5}, {0.8, 1}, {0.8, 0}}},
+    {'I', {{0.35, 0}, {0.65, 0}, {0.5, 0}, {0.5, 1}, {0.35, 1}, {0.65, 1}}},
+    {'J', {{0.7, 0}, {0.3, 0}, {0.3, 0.8}, {0.5, 1}, {0.75, 0.85}}},
+    {'K', {{0.2, 0}, {0.2, 1}, {0.2, 0.5}, {0.85, 1}, {0.25, 0.5}, {0.85, 0}}},
+    {'L', {{0.2, 1}, {0.2, 0}, {0.85, 0}}},
+    {'M', {{0.1, 0}, {0.1, 1}, {0.5, 0.5}, {0.9, 1}, {0.9, 0}}},
+    {'N', {{0.15, 0}, {0.15, 1}, {0.85, 0}, {0.85, 1}}},
+    {'O', {{0.5, 0}, {0.15, 0.15}, {0, 0.5}, {0.15, 0.85}, {0.5, 1}, {0.85, 0.85}, {1, 0.5}, {0.85, 0.15}, {0.5, 0}}},
+    {'P', {{0.2, 0}, {0.2, 1}, {0.65, 1}, {0.85, 0.8}, {0.65, 0.5}, {0.2, 0.5}}},
+    {'Q', {{0.5, 0}, {0.15, 0.15}, {0, 0.5}, {0.2, 0.85}, {0.5, 1}, {0.85, 0.85}, {1, 0.5}, {0.85, 0.15}, {0.5, 0}, {0.75, 0.25}, {1, 0}}},
+    {'R', {{0.2, 0}, {0.2, 1}, {0.65, 1}, {0.85, 0.8}, {0.65, 0.5}, {0.2, 0.5}, {0.85, 0}}},
+    {'S', {{0.85, 0.85}, {0.55, 1}, {0.25, 0.9}, {0.15, 0.65}, {0.45, 0.5}, {0.75, 0.35}, {0.85, 0.15}, {0.55, 0}, {0.25, 0.1}}},
+    {'T', {{0, 1}, {1, 1}, {0.5, 1}, {0.5, 0}}},
+    {'U', {{0.15, 1}, {0.15, 0.25}, {0.35, 0}, {0.65, 0}, {0.85, 0.25}, {0.85, 1}}},
+    {'V', {{0, 1}, {0.5, 0}, {1, 1}}},
+    {'W', {{0, 1}, {0.25, 0}, {0.5, 0.6}, {0.75, 0}, {1, 1}}},
+    {'X', {{0, 0}, {1, 1}, {0, 1}, {1, 0}}},
+    {'Y', {{0, 1}, {0.5, 0.45}, {1, 1}, {0.5, 0.45}, {0.5, 0}}},
+    {'Z', {{0.1, 1}, {0.9, 1}, {0.1, 0}, {0.9, 0}}}
+};
+
+Path letter_glyph_path(char letter, float cx, float cy, float size) {
+    if (LETTER_GLYPHS.find(letter) == LETTER_GLYPHS.end()) letter = 'O';
+    Path p;
+    for (const auto& pt : LETTER_GLYPHS[letter]) {
+        p.push_back({cx + (pt.first - 0.5f) * size, cy + (0.5f - pt.second) * size});
+    }
+    return p;
+}
+
+static char letter_for_brightness(float darkness) {
+    int idx = int(std::clamp(darkness / 255.0f, 0.0f, 0.999f) * 26.0f);
+    const char* letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    return letters[idx];
+}
+
+_LettersBasePFM::_LettersBasePFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> _LettersBasePFM::defineSettings() const {
+    return {
+        {"cell_count", "Cell Count", SettingType::Integer, 800, SettingValue(), 50, 20000, 50, 20000, 100},
+        {"lloyd_iterations", "Lloyd Iterations", SettingType::Integer, 0, SettingValue(), 0, 20, 0, 20, 1},
+        {"min_brightness", "Min Brightness", SettingType::Number, 0.0, SettingValue(), 0.0, 255.0, 0.0, 255.0, 1.0},
+        {"letter_scale", "Letter Scale", SettingType::Number, 0.85, SettingValue(), 0.2, 1.5, 0.2, 1.5, 0.05}
+    };
+}
+
+std::vector<DrawingGeometry> _LettersBasePFM::_process(const cv::Mat& image) {
+    int w = image.cols;
+    int h = image.rows;
+    int cell_count = m_settings["cell_count"].toInt();
+    int lloyd_iters = getLloydIters();
+    float min_brightness = m_settings["min_brightness"].toDouble();
+    float letter_scale = m_settings["letter_scale"].toDouble();
+
+    std::vector<double> probs(w * h, 0.0);
+    std::vector<double> original_dark(w * h, 0.0);
+    double sum = 0.0;
+    
+    #pragma omp parallel for reduction(+:sum)
+    for (int y = 0; y < h; ++y) {
+        const uchar* row = image.ptr<uchar>(y);
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - row[x];
+            original_dark[y * w + x] = d;
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+
+    std::vector<cv::Point2f> pts;
+    for (int i = 0; i < cell_count; ++i) {
+        if (isCancelled()) return {};
+        int idx = weightedChoice(probs);
+        pts.push_back(cv::Point2f(idx % w, idx / w));
+    }
+
+    if (lloyd_iters > 0) {
+        int step = std::max(1, int(std::sqrt(h * w / 20000)));
+        std::vector<cv::Point2f> sub_coords;
+        std::vector<double> sub_w;
+        for (int y = 0; y < h; y += step) {
+            for (int x = 0; x < w; x += step) {
+                sub_coords.push_back(cv::Point2f(x, y));
+                sub_w.push_back(probs[y * w + x]);
+            }
+        }
+        
+        for (int iter = 0; iter < lloyd_iters; ++iter) {
+            if (isCancelled()) return {};
+            emitProgress(float(iter) / lloyd_iters, 0, "Lloyd Relaxation...");
+            
+            std::vector<cv::Point2f> new_pts(pts.size(), cv::Point2f(0,0));
+            std::vector<double> weight_sums(pts.size(), 0.0);
+
+            #pragma omp parallel
+            {
+                std::vector<cv::Point2f> local_new_pts(pts.size(), cv::Point2f(0,0));
+                std::vector<double> local_weight_sums(pts.size(), 0.0);
+
+                #pragma omp for nowait
+                for (int i = 0; i < (int)sub_coords.size(); ++i) {
+                    float best_d = 1e12f;
+                    int best_c = -1;
+                    for (int c = 0; c < (int)pts.size(); ++c) {
+                        float dx = sub_coords[i].x - pts[c].x;
+                        float dy = sub_coords[i].y - pts[c].y;
+                        float d = dx*dx + dy*dy;
+                        if (d < best_d) { best_d = d; best_c = c; }
+                    }
+                    if (best_c != -1) {
+                        local_new_pts[best_c].x += sub_coords[i].x * sub_w[i];
+                        local_new_pts[best_c].y += sub_coords[i].y * sub_w[i];
+                        local_weight_sums[best_c] += sub_w[i];
+                    }
+                }
+
+                #pragma omp critical
+                {
+                    for (size_t c = 0; c < pts.size(); ++c) {
+                        new_pts[c].x += local_new_pts[c].x;
+                        new_pts[c].y += local_new_pts[c].y;
+                        weight_sums[c] += local_weight_sums[c];
+                    }
+                }
+            }
+
+            for (size_t c = 0; c < pts.size(); ++c) {
+                if (weight_sums[c] > 1e-9) {
+                    pts[c].x = new_pts[c].x / weight_sums[c];
+                    pts[c].y = new_pts[c].y / weight_sums[c];
+                }
+            }
+        }
+    }
+
+    std::vector<cv::Point2f> filtered_pts;
+    for (const auto& p : pts) {
+        int xi = std::clamp(int(p.x), 0, w - 1);
+        int yi = std::clamp(int(p.y), 0, h - 1);
+        if (original_dark[yi * w + xi] >= min_brightness) {
+            filtered_pts.push_back(p);
+        }
+    }
+
+    std::vector<DrawingGeometry> geoms(filtered_pts.size());
+    std::vector<bool> valid(filtered_pts.size(), false);
+    #pragma omp parallel for schedule(dynamic, 64)
+    for (int i = 0; i < (int)filtered_pts.size(); ++i) {
+        float cx = filtered_pts[i].x;
+        float cy = filtered_pts[i].y;
+        
+        int xi = std::clamp(int(cx), 0, w - 1);
+        int yi = std::clamp(int(cy), 0, h - 1);
+        float dark = original_dark[yi * w + xi];
+        
+        char letter = letter_for_brightness(dark);
+        float r = nearest_seed_radius(cx, cy, filtered_pts) * 2.0f * letter_scale;
+        
+        Path path = letter_glyph_path(letter, cx, cy, std::max(4.0f, r));
+        if (path.size() >= 2) {
+            geoms[i].path = path;
+            valid[i] = true;
+        }
+    }
+    // Compact
+    std::vector<DrawingGeometry> result;
+    for (int i = 0; i < (int)geoms.size(); ++i) {
+        if (valid[i]) result.push_back(std::move(geoms[i]));
+    }
+    return result;
+}
+
+BaseAdaptivePFM::BaseAdaptivePFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseAdaptivePFM::defineSettings() const {
+    return {
+        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.0, SettingValue(), 0.1, 2.0,   0.1, 2.0,   0.05},
+        {"random_seed",         "Random Seed",         SettingType::Integer, 42,  SettingValue(), 0,   999999, 0,   999999, 1},
+        {"cell_count",          "Cell Count",          SettingType::Integer, 800, SettingValue(), 50,  20000,  50,  20000,  50},
+        {"lloyd_iterations",    "Lloyd Iterations",    SettingType::Integer, 3,   SettingValue(), 0,   20,     0,   10,     1},
+        {"min_brightness",      "Min Brightness (%)",  SettingType::Number,  80.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
+    };
+}
+
+std::vector<cv::Point2f> BaseAdaptivePFM::getSeeds(const cv::Mat& image) {
+    int w = image.cols;
+    int h = image.rows;
+    int cellCount   = m_settings["cell_count"].toInt();
+    int lloydIters  = get("lloyd_iterations").toInt();
+    float minBright = (float)(m_settings["min_brightness"].toDouble() / 100.0) * 255.0f;
+
+    // Build darkness weight map
+    std::vector<double> probs(w * h, 0.0);
+    double sum = 0.0;
+    #pragma omp parallel for reduction(+:sum)
+    for (int y = 0; y < h; ++y) {
+        const uchar* row = image.ptr<uchar>(y);
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - row[x];
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+
+    // Initial weighted sampling
+    std::vector<cv::Point2f> pts;
+    pts.reserve(cellCount);
+    for (int i = 0; i < cellCount; ++i) {
+        if (isCancelled()) return {};
+        int idx = weightedChoice(probs);
+        pts.push_back(cv::Point2f(idx % w, idx / w));
+    }
+
+    // Lloyd relaxation
+    if (lloydIters > 0) {
+        int step = std::max(1, int(std::sqrt(h * w / 20000)));
+        std::vector<cv::Point2f> sub_coords;
+        std::vector<double> sub_w;
+        for (int y = 0; y < h; y += step) {
+            for (int x = 0; x < w; x += step) {
+                sub_coords.push_back(cv::Point2f(x, y));
+                sub_w.push_back(probs[y * w + x]);
+            }
+        }
+        
+        for (int iter = 0; iter < lloydIters; ++iter) {
+            if (isCancelled()) return {};
+            emitProgress(float(iter) / lloydIters, 0, "Lloyd relaxation...");
+            
+            std::vector<cv::Point2f> new_pts(pts.size(), cv::Point2f(0,0));
+            std::vector<double> weight_sums(pts.size(), 0.0);
+
+            #pragma omp parallel
+            {
+                std::vector<cv::Point2f> local_new_pts(pts.size(), cv::Point2f(0,0));
+                std::vector<double> local_weight_sums(pts.size(), 0.0);
+
+                #pragma omp for nowait
+                for (int i = 0; i < (int)sub_coords.size(); ++i) {
+                    float best_d = 1e12f;
+                    int best_c = -1;
+                    for (int c = 0; c < (int)pts.size(); ++c) {
+                        float dx = sub_coords[i].x - pts[c].x;
+                        float dy = sub_coords[i].y - pts[c].y;
+                        float d = dx*dx + dy*dy;
+                        if (d < best_d) { best_d = d; best_c = c; }
+                    }
+                    if (best_c != -1) {
+                        local_new_pts[best_c].x += sub_coords[i].x * sub_w[i];
+                        local_new_pts[best_c].y += sub_coords[i].y * sub_w[i];
+                        local_weight_sums[best_c] += sub_w[i];
+                    }
+                }
+
+                #pragma omp critical
+                {
+                    for (size_t c = 0; c < pts.size(); ++c) {
+                        new_pts[c].x += local_new_pts[c].x;
+                        new_pts[c].y += local_new_pts[c].y;
+                        weight_sums[c] += local_weight_sums[c];
+                    }
+                }
+            }
+
+            for (size_t c = 0; c < pts.size(); ++c) {
+                if (weight_sums[c] > 1e-9) {
+                    pts[c].x = new_pts[c].x / weight_sums[c];
+                    pts[c].y = new_pts[c].y / weight_sums[c];
+                }
+            }
+        }
+    }
+
+    // Filter by min brightness
+    std::vector<cv::Point2f> filtered;
+    for (const auto& p : pts) {
+        int xi = std::clamp((int)p.x, 0, w - 1);
+        int yi = std::clamp((int)p.y, 0, h - 1);
+        float bright = image.at<uchar>(yi, xi);
+        if (bright <= (255.0f - minBright))  // only dark enough pixels
+            filtered.push_back(p);
+    }
+    return filtered;
+}
+
+BaseGridPFM::BaseGridPFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseGridPFM::defineSettings() const {
+    return {
+        {"cols", "Columns", SettingType::Integer, 40, SettingValue(), 2, 200, 2, 200, 1},
+        {"rows", "Rows", SettingType::Integer, 40, SettingValue(), 2, 200, 2, 200, 1},
+        {"threshold", "Darkness Threshold", SettingType::Number, 50.0, SettingValue(), 0.0, 255.0, 0.0, 255.0, 1.0}
+    };
+}
+
+Path generate_dfs_maze(int width, int height, BaseMazePFM* pfm) {
+    cv::Mat maze = cv::Mat::zeros(height, width, CV_8UC1);
+    std::vector<std::pair<int, int>> stack;
+    stack.push_back({0, 0});
+    maze.at<uint8_t>(0, 0) = 1;
+    Path path;
+    int dx[] = {0, 2, 0, -2};
+    int dy[] = {2, 0, -2, 0};
+    while (!stack.empty()) {
+        auto [x, y] = stack.back();
+        path.push_back({x * 10.0, y * 10.0});
+        std::vector<std::pair<int, int>> neighbors;
+        for (int i = 0; i < 4; ++i) {
+            int nx = x + dx[i], ny = y + dy[i];
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && maze.at<uint8_t>(ny, nx) == 0) {
+                neighbors.push_back({nx, ny});
+            }
+        }
+        if (!neighbors.empty()) {
+            auto [nx, ny] = neighbors[int(pfm->randUniform(0, neighbors.size() - 0.001))];
+            maze.at<uint8_t>(ny, nx) = 1;
+            maze.at<uint8_t>(y + (ny - y) / 2, x + (nx - x) / 2) = 1;
+            stack.push_back({nx, ny});
+        } else {
+            stack.pop_back();
+        }
+    }
+    return path;
+}
+
+BaseMosaicPFM::BaseMosaicPFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseMosaicPFM::defineSettings() const {
+    return {
+        {"cols", "Columns", SettingType::Integer, 20, SettingValue(), 2, 100, 2, 100, 1},
+        {"rows", "Rows", SettingType::Integer, 20, SettingValue(), 2, 100, 2, 100, 1},
+        {"threshold", "Darkness Threshold", SettingType::Number, 40.0, SettingValue(), 0.0, 255.0, 0.0, 255.0, 1.0}
+    };
+}
+
+BaseMultiHatchPFM::BaseMultiHatchPFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseMultiHatchPFM::defineSettings() const {
+    return {
+        {"spacing", "Spacing", SettingType::Number, 5.0, SettingValue(), 1.0, 50.0, 1.0, 50.0, 0.5},
+        {"threshold", "Darkness Threshold", SettingType::Percentage, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
+        {"crosshatch", "Crosshatch", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+        {"link_ends", "Link Ends", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1}
+    };
+}
+
+BaseStipplePFM::BaseStipplePFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseStipplePFM::defineSettings() const {
+    return {
+        {"num_shapes", "Number of Shapes", SettingType::Integer, 5000, SettingValue(), 100, 50000, 100, 50000, 100},
+        {"shape_size", "Shape Size", SettingType::Number, 1.0, SettingValue(), 0.1, 10.0, 0.1, 10.0, 0.1}
+    };
+}
+
+std::vector<DrawingGeometry> BaseStipplePFM::_process(const cv::Mat& image) {
+    int w = image.cols;
+    int h = image.rows;
+    int num_shapes = m_settings["num_shapes"].toInt();
+    double size = m_settings["shape_size"].toDouble();
+
+    std::vector<double> probs(w * h, 0.0);
+    double sum = 0.0;
+    #pragma omp parallel for reduction(+:sum)
+    for (int y = 0; y < h; ++y) {
+        const uchar* row = image.ptr<uchar>(y);
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - row[x];
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+
+    std::vector<DrawingGeometry> geoms;
+    for (int i = 0; i < num_shapes; ++i) {
+        if (isCancelled()) break;
+        if (i % 500 == 0) emitProgress(float(i) / num_shapes, geoms.size(), "Stippling...");
+
+        int idx = weightedChoice(probs);
+        int cx = idx % w;
+        int cy = idx / w;
+        double local = probs[idx] * sum / 255.0; // recover brightness
+        double r = size * (0.3 + 0.7 * local);
+
+        DrawingGeometry dg;
+        dg.path = generateShape(cx, cy, r);
+        geoms.push_back(dg);
+    }
+    return geoms;
+}
+
+BaseVoronoiExtraPFM::BaseVoronoiExtraPFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseVoronoiExtraPFM::defineSettings() const {
+    return {
+        {"cell_count", "Cell Count", SettingType::Integer, 800, SettingValue(), 50, 20000, 50, 20000, 100},
+        {"lloyd_iterations", "Lloyd Iterations", SettingType::Integer, 5, SettingValue(), 0, 20, 0, 20, 1},
+        {"min_brightness", "Min Brightness", SettingType::Number, 0.0, SettingValue(), 0.0, 255.0, 0.0, 255.0, 1.0}
+    };
+}
+
+std::vector<cv::Point2f> BaseVoronoiExtraPFM::getSeeds(const cv::Mat& image) {
+    int w = image.cols;
+    int h = image.rows;
+    int cell_count = m_settings["cell_count"].toInt();
+    int lloyd_iters = get("lloyd_iterations").toInt();
+    float min_brightness = m_settings["min_brightness"].toDouble();
+
+    std::vector<double> probs(w * h, 0.0);
+    std::vector<double> original_dark(w * h, 0.0);
+    double sum = 0.0;
+    
+    #pragma omp parallel for reduction(+:sum)
+    for (int y = 0; y < h; ++y) {
+        const uchar* row = image.ptr<uchar>(y);
+        for (int x = 0; x < w; ++x) {
+            double d = 255.0 - row[x];
+            original_dark[y * w + x] = d;
+            if (d < 0) d = 0;
+            probs[y * w + x] = d;
+            sum += d;
+        }
+    }
+    if (sum < 1e-6) return {};
+    for (auto& p : probs) p /= sum;
+
+    std::vector<cv::Point2f> pts;
+    for (int i = 0; i < cell_count; ++i) {
+        if (isCancelled()) return {};
+        int idx = weightedChoice(probs);
+        pts.push_back(cv::Point2f(idx % w, idx / w));
+    }
+
+    if (lloyd_iters > 0) {
+        int step = std::max(1, int(std::sqrt(h * w / 20000)));
+        std::vector<cv::Point2f> sub_coords;
+        std::vector<double> sub_w;
+        for (int y = 0; y < h; y += step) {
+            for (int x = 0; x < w; x += step) {
+                sub_coords.push_back(cv::Point2f(x, y));
+                sub_w.push_back(probs[y * w + x]);
+            }
+        }
+        
+        for (int iter = 0; iter < lloyd_iters; ++iter) {
+            if (isCancelled()) return {};
+            emitProgress(float(iter) / lloyd_iters, 0, "Lloyd Relaxation...");
+            
+            std::vector<cv::Point2f> new_pts(pts.size(), cv::Point2f(0,0));
+            std::vector<double> weight_sums(pts.size(), 0.0);
+
+            #pragma omp parallel
+            {
+                std::vector<cv::Point2f> local_new_pts(pts.size(), cv::Point2f(0,0));
+                std::vector<double> local_weight_sums(pts.size(), 0.0);
+
+                #pragma omp for nowait
+                for (int i = 0; i < (int)sub_coords.size(); ++i) {
+                    float best_d = 1e12f;
+                    int best_c = -1;
+                    for (int c = 0; c < (int)pts.size(); ++c) {
+                        float dx = sub_coords[i].x - pts[c].x;
+                        float dy = sub_coords[i].y - pts[c].y;
+                        float d = dx*dx + dy*dy;
+                        if (d < best_d) { best_d = d; best_c = c; }
+                    }
+                    if (best_c != -1) {
+                        local_new_pts[best_c].x += sub_coords[i].x * sub_w[i];
+                        local_new_pts[best_c].y += sub_coords[i].y * sub_w[i];
+                        local_weight_sums[best_c] += sub_w[i];
+                    }
+                }
+
+                #pragma omp critical
+                {
+                    for (size_t c = 0; c < pts.size(); ++c) {
+                        new_pts[c].x += local_new_pts[c].x;
+                        new_pts[c].y += local_new_pts[c].y;
+                        weight_sums[c] += local_weight_sums[c];
+                    }
+                }
+            }
+
+            for (size_t c = 0; c < pts.size(); ++c) {
+                if (weight_sums[c] > 1e-9) {
+                    pts[c].x = new_pts[c].x / weight_sums[c];
+                    pts[c].y = new_pts[c].y / weight_sums[c];
+                }
+            }
+        }
+    }
+
+    std::vector<cv::Point2f> filtered_pts;
+    for (const auto& p : pts) {
+        int xi = std::clamp(int(p.x), 0, w - 1);
+        int yi = std::clamp(int(p.y), 0, h - 1);
+        if (original_dark[yi * w + xi] >= min_brightness) {
+            filtered_pts.push_back(p);
+        }
+    }
+    return filtered_pts;
+}
 
 
 
 
 
+
+
+
+inline Path generate_shape_high_fidelity(float cx, float cy, float max_r, float luminance, float local_angle, const std::string& shape_type, bool fill_size, float shape_size, std::mt19937& rng) {
+    float r = fill_size ? max_r : (shape_size / 2.0f);
+    if (r < 0.1f) r = 0.1f;
+    
+    std::string type = shape_type;
+    if (type == "Random") {
+        std::vector<std::string> options = {"Circle", "Square", "Star", "Triangle", "Cross", "Multiply", "LP Space"};
+        std::uniform_int_distribution<int> dist(0, (int)options.size() - 1);
+        type = options[dist(rng)];
+    }
+    
+    Path path;
+    if (type == "Circle") {
+        path = generate_circle(cx, cy, r, 16);
+    } else if (type == "Square") {
+        path = generate_polygon(cx, cy, r, 4, local_angle + 45.0f);
+    } else if (type == "Star") {
+        path = generate_star(cx, cy, r, r * 0.4, 5, local_angle);
+    } else if (type == "Triangle") {
+        path = generate_polygon(cx, cy, r, 3, local_angle - 90.0f);
+    } else if (type == "Cross" || type == "Multiply") {
+        float angle_offset = (type == "Multiply") ? 45.0f : 0.0f;
+        float rad = (local_angle + angle_offset) * 3.14159265f / 180.0f;
+        float cosR = std::cos(rad);
+        float sinR = std::sin(rad);
+        float w = r * 0.35f;
+        std::vector<std::pair<float, float>> pts = {
+            {w, w}, {r, w}, {r, -w}, {w, -w},
+            {w, -r}, {-w, -r}, {-w, -w}, {-r, -w},
+            {-r, w}, {-w, w}, {-w, r}, {w, r}, {w, w}
+        };
+        for (const auto& pt : pts) {
+            float rx = pt.first * cosR - pt.second * sinR;
+            float ry = pt.first * sinR + pt.second * cosR;
+            path.push_back({cx + rx, cy + ry});
+        }
+    } else if (type == "LP Space") {
+        float p = 1.0f + (1.0f - luminance) * 3.0f;
+        int segments = 24;
+        float rad = local_angle * 3.14159265f / 180.0f;
+        float cosR = std::cos(rad);
+        float sinR = std::sin(rad);
+        for (int s = 0; s <= segments; ++s) {
+            float theta = (float)s / segments * 3.14159265f * 2.0f;
+            float ct = std::cos(theta);
+            float st = std::sin(theta);
+            float sgn_ct = (ct > 0) ? 1.0f : ((ct < 0) ? -1.0f : 0.0f);
+            float sgn_st = (st > 0) ? 1.0f : ((st < 0) ? -1.0f : 0.0f);
+            float x = r * sgn_ct * std::pow(std::abs(ct), 2.0f / p);
+            float y = r * sgn_st * std::pow(std::abs(st), 2.0f / p);
+            float rx = x * cosR - y * sinR;
+            float ry = x * sinR + y * cosR;
+            path.push_back({cx + rx, cy + ry});
+        }
+    } else {
+        path = generate_circle(cx, cy, r, 16);
+    }
+    return path;
+}
 
 // --- adaptive_circular_scribbles_pfm.cpp ---
 // ---------------------------------------------------------------------------
 
-AdaptiveCircularScribblesPFM::AdaptiveCircularScribblesPFM() {}
+AdaptiveCircularScribblesPFM::AdaptiveCircularScribblesPFM() {
+    initSettings();
+}
 
 std::vector<PFMSetting> AdaptiveCircularScribblesPFM::defineSettings() const {
     auto s = BaseAdaptivePFM::defineSettings();
-    s.push_back({"scribble_turns", "Scribble Turns", SettingType::Number, 2.0, SettingValue(), 0.5, 8.0, 0.5, 8.0, 0.5});
-    s.push_back({"radius_scale",   "Radius Scale",   SettingType::Number, 3.0, SettingValue(), 0.5, 20.0, 0.5, 20.0, 0.5});
+    s.push_back({"min_radius", "Min Radius", SettingType::Number, 1.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"max_radius", "Max Radius", SettingType::Number, 8.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"min_velocity", "Min Velocity", SettingType::Number, 2.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"max_velocity", "Max Velocity", SettingType::Number, 10.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"angular_velocity", "Angular Velocity", SettingType::Number, 30.0, SettingValue(), 0.1, 180.0, 0.1, 180.0, 0.5});
+    s.push_back({"curvature", "Curvature", SettingType::Number, 0.5, SettingValue(), 0.0, 1.0, 0.0, 1.0, 0.05});
     return s;
 }
 
 std::vector<DrawingGeometry> AdaptiveCircularScribblesPFM::_process(const cv::Mat& image) {
-    // Apply plotting_resolution scaling
     cv::Mat workImg;
     double plotRes = m_settings["plotting_resolution"].toDouble();
     if (std::abs(plotRes - 1.0) > 1e-4) {
@@ -40,21 +641,72 @@ std::vector<DrawingGeometry> AdaptiveCircularScribblesPFM::_process(const cv::Ma
         workImg = image;
     }
     auto pts = getSeeds(workImg);
-    double turns   = m_settings["scribble_turns"].toDouble();
-    double rscale  = m_settings["radius_scale"].toDouble();
-    std::vector<DrawingGeometry> geoms;
-    for (size_t i = 0; i < pts.size(); ++i) {
+    if (pts.size() < 2) return {};
+
+    emitProgress(0.3f, 0, "Sorting seeds via TSP...");
+    auto sorted_pts = solve_tsp_nn(pts, [this](){ return isCancelled(); });
+    if (sorted_pts.size() < 2) return {};
+
+    float min_radius = get("min_radius").toDouble();
+    float max_radius = get("max_radius").toDouble();
+    float min_velocity = get("min_velocity").toDouble();
+    float max_velocity = get("max_velocity").toDouble();
+    float angular_velocity = get("angular_velocity").toDouble();
+    float curvature = get("curvature").toDouble();
+
+    Path scribble_path;
+    float loop_theta = 0.0f;
+
+    for (size_t i = 0; i < sorted_pts.size() - 1; ++i) {
         if (isCancelled()) break;
-        if (i % 50 == 0) emitProgress(float(i) / pts.size(), (int)geoms.size(), "Adaptive scribbles...");
-        float cx = pts[i].x, cy = pts[i].y;
-        int steps = std::max(12, (int)(turns * 24));
-        Path path;
-        for (int s = 0; s <= steps; ++s) {
-            double t = (double)s / steps * turns * 3.141592653589793 * 2.0;
-            path.push_back({cx + std::cos(t) * (float)rscale,
-                            cy + std::sin(t) * (float)rscale});
+        if (i % 100 == 0) {
+            emitProgress(0.3f + 0.7f * (float(i) / sorted_pts.size()), scribble_path.size(), "Generating circular scribbles...");
         }
-        geoms.push_back(DrawingGeometry{path, 0});
+
+        cv::Point2f p0(sorted_pts[i].first, sorted_pts[i].second);
+        cv::Point2f p1(sorted_pts[i+1].first, sorted_pts[i+1].second);
+
+        float dx = p1.x - p0.x;
+        float dy = p1.y - p0.y;
+        float len = std::hypot(dx, dy);
+        if (len < 1e-4f) continue;
+        dx /= len; dy /= len;
+        float nx = -dy, ny = dx;
+
+        float t = 0.0f;
+        float ds = 1.0f;
+        while (t < len) {
+            float px = p0.x + dx * t;
+            float py = p0.y + dy * t;
+            int xi = std::clamp(int(px), 0, workImg.cols - 1);
+            int yi = std::clamp(int(py), 0, workImg.rows - 1);
+            float luminance = workImg.ptr<uchar>(yi)[xi] / 255.0f;
+
+            float loop_r = min_radius + luminance * (max_radius - min_radius);
+            float local_velocity = min_velocity + luminance * (max_velocity - min_velocity);
+
+            loop_theta += ds * (angular_velocity * 3.14159265f / 180.0f) / std::max(0.1f, local_velocity);
+            t += ds;
+
+            float wx = px + dx * loop_r * std::cos(loop_theta) + nx * loop_r * std::sin(loop_theta);
+            float wy = py + dy * loop_r * std::cos(loop_theta) + ny * loop_r * std::sin(loop_theta);
+            scribble_path.push_back({wx, wy});
+        }
+    }
+
+    std::vector<DrawingGeometry> geoms;
+    if (scribble_path.size() >= 2) {
+        Path smoothed = (curvature < 0.99f && scribble_path.size() >= 4) ?
+                        catmull_rom_chain(scribble_path, 6, curvature) : scribble_path;
+        
+        // Map back to original image coordinates
+        float sx = (float)image.cols / workImg.cols;
+        float sy = (float)image.rows / workImg.rows;
+        for (auto& p : smoothed) {
+            p.first *= sx;
+            p.second *= sy;
+        }
+        geoms.push_back(DrawingGeometry{smoothed, 0});
     }
     return geoms;
 }
@@ -62,6 +714,16 @@ std::vector<DrawingGeometry> AdaptiveCircularScribblesPFM::_process(const cv::Ma
 
 // --- adaptive_dashes_pfm.cpp ---
 // ---------------------------------------------------------------------------
+
+std::vector<PFMSetting> AdaptiveDashesPFM::defineSettings() const {
+    auto s = BaseAdaptivePFM::defineSettings();
+    s.push_back({"align_rotation", "Align Rotation", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1});
+    s.push_back({"min_rotation", "Min Rotation", SettingType::Number, 0.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"max_rotation", "Max Rotation", SettingType::Number, 360.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"min_length", "Min Length", SettingType::Number, 3.0, SettingValue(), 1.0, 50.0, 1.0, 50.0, 0.5});
+    s.push_back({"max_length", "Max Length", SettingType::Number, 12.0, SettingValue(), 1.0, 100.0, 1.0, 100.0, 0.5});
+    return s;
+}
 
 std::vector<DrawingGeometry> AdaptiveDashesPFM::_process(const cv::Mat& image) {
     cv::Mat workImg;
@@ -74,17 +736,55 @@ std::vector<DrawingGeometry> AdaptiveDashesPFM::_process(const cv::Mat& image) {
         workImg = image;
     }
     auto pts = getSeeds(workImg);
+    
+    bool align_rotation = get("align_rotation").toBool();
+    float min_rotation = get("min_rotation").toDouble();
+    float max_rotation = get("max_rotation").toDouble();
+    float min_length = get("min_length").toDouble();
+    float max_length = get("max_length").toDouble();
+    
+    cv::Mat gx, gy;
+    if (align_rotation) {
+        cv::Sobel(workImg, gx, CV_32F, 1, 0, 3);
+        cv::Sobel(workImg, gy, CV_32F, 0, 1, 3);
+    }
+    
     std::vector<DrawingGeometry> geoms;
     for (size_t i = 0; i < pts.size(); ++i) {
         if (isCancelled()) break;
         float cx = pts[i].x, cy = pts[i].y;
-        float angle  = (float)randUniform(0.0, 3.141592653589793);
-        float length = (float)randUniform(3.0, 12.0);
+        
+        float local_angle = 0.0f;
+        if (align_rotation) {
+            int xi = std::clamp((int)cx, 0, workImg.cols - 1);
+            int yi = std::clamp((int)cy, 0, workImg.rows - 1);
+            float dx = gx.at<float>(yi, xi);
+            float dy = gy.at<float>(yi, xi);
+            float edge_angle = std::atan2(dy, dx) + 3.14159265f / 2.0f; // perpendicular to gradient
+            local_angle = edge_angle;
+            if (min_rotation != 0.0f || max_rotation != 360.0f) {
+                local_angle += randUniform(min_rotation, max_rotation) * 3.14159265f / 180.0f;
+            }
+        } else {
+            local_angle = (float)randUniform(min_rotation, max_rotation) * 3.14159265f / 180.0f;
+        }
+        
+        float length = (float)randUniform(min_length, max_length);
         Path path = {
-            {cx, cy},
-            {cx + std::cos(angle) * length, cy + std::sin(angle) * length}
+            {cx - std::cos(local_angle) * length / 2.0f, cy - std::sin(local_angle) * length / 2.0f},
+            {cx + std::cos(local_angle) * length / 2.0f, cy + std::sin(local_angle) * length / 2.0f}
         };
         geoms.push_back(DrawingGeometry{path, 0});
+    }
+    
+    // Scale back to original image size
+    float sx = (float)image.cols / workImg.cols;
+    float sy = (float)image.rows / workImg.rows;
+    for (auto& dg : geoms) {
+        for (auto& p : dg.path) {
+            p.first *= sx;
+            p.second *= sy;
+        }
     }
     emitProgress(1.0f, (int)geoms.size(), "Adaptive dashes done");
     return geoms;
@@ -228,11 +928,18 @@ std::vector<DrawingGeometry> AdaptiveStipplingPFM::_process(const cv::Mat& image
 // --- adaptive_shapes_pfm.cpp ---
 // ---------------------------------------------------------------------------
 
-AdaptiveShapesPFM::AdaptiveShapesPFM() {}
+AdaptiveShapesPFM::AdaptiveShapesPFM() {
+    initSettings();
+}
 
 std::vector<PFMSetting> AdaptiveShapesPFM::defineSettings() const {
     auto s = BaseAdaptivePFM::defineSettings();
     s.push_back({"shape_size", "Shape Size", SettingType::Number, 4.0, SettingValue(), 1.0, 30.0, 1.0, 30.0, 0.5});
+    s.push_back({"shape_type", "Shape Type", SettingType::Enum, "Circle", SettingValue(), 0, 0, 0, 0, 0, {"Circle", "Square", "Star", "Triangle", "Cross", "Multiply", "LP Space", "Random"}});
+    s.push_back({"align_rotation", "Align Rotation", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1});
+    s.push_back({"min_rotation", "Min Rotation", SettingType::Number, 0.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"max_rotation", "Max Rotation", SettingType::Number, 360.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"fill_size", "Fill Size", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1});
     return s;
 }
 
@@ -247,21 +954,58 @@ std::vector<DrawingGeometry> AdaptiveShapesPFM::_process(const cv::Mat& image) {
         workImg = image;
     }
     auto pts = getSeeds(workImg);
-    float size = (float)m_settings["shape_size"].toDouble();
+    
+    std::string shape_type = get("shape_type").toString();
+    bool align_rotation = get("align_rotation").toBool();
+    float min_rotation = get("min_rotation").toDouble();
+    float max_rotation = get("max_rotation").toDouble();
+    bool fill_size = get("fill_size").toBool();
+    float shape_size = get("shape_size").toDouble();
+    
+    cv::Mat gx, gy;
+    if (align_rotation) {
+        cv::Sobel(workImg, gx, CV_32F, 1, 0, 3);
+        cv::Sobel(workImg, gy, CV_32F, 0, 1, 3);
+    }
+    
     std::vector<DrawingGeometry> geoms;
     for (size_t i = 0; i < pts.size(); ++i) {
         if (isCancelled()) break;
         if (i % 50 == 0) emitProgress(float(i) / pts.size(), (int)geoms.size(), "Adaptive shapes...");
         float cx = pts[i].x, cy = pts[i].y;
-        Path path;
-        int shapeType = i % 4;
-        switch (shapeType) {
-            case 0: path = generate_circle(cx, cy, size, 12); break;
-            case 1: path = generate_polygon(cx, cy, size, 4, 45); break;
-            case 2: path = generate_polygon(cx, cy, size, 3, 30); break;
-            case 3: path = generate_polygon(cx, cy, size, 6, 0); break;
+        
+        float local_angle = 0.0f;
+        if (align_rotation) {
+            int xi = std::clamp((int)cx, 0, workImg.cols - 1);
+            int yi = std::clamp((int)cy, 0, workImg.rows - 1);
+            float dx = gx.at<float>(yi, xi);
+            float dy = gy.at<float>(yi, xi);
+            float edge_angle = std::atan2(dy, dx) * 180.0f / 3.14159265f + 90.0f; // perpendicular to gradient
+            local_angle = edge_angle;
+            if (min_rotation != 0.0f || max_rotation != 360.0f) {
+                local_angle += randUniform(min_rotation, max_rotation);
+            }
+        } else {
+            local_angle = randUniform(min_rotation, max_rotation);
         }
+        
+        int xi = std::clamp((int)cx, 0, workImg.cols - 1);
+        int yi = std::clamp((int)cy, 0, workImg.rows - 1);
+        float luminance = workImg.ptr<uchar>(yi)[xi] / 255.0f;
+        
+        float max_r = nearest_seed_radius(cx, cy, pts);
+        Path path = generate_shape_high_fidelity(cx, cy, max_r, luminance, local_angle, shape_type, fill_size, shape_size, m_rng);
         geoms.push_back(DrawingGeometry{path, 0});
+    }
+    
+    // Scale back to original image size
+    float sx = (float)image.cols / workImg.cols;
+    float sy = (float)image.rows / workImg.rows;
+    for (auto& dg : geoms) {
+        for (auto& p : dg.path) {
+            p.first *= sx;
+            p.second *= sy;
+        }
     }
     return geoms;
 }
@@ -432,6 +1176,276 @@ Path trace_streamline_local(const cv::Mat& fx, const cv::Mat& fy, float x, float
         }
         return path;
     }
+static std::vector<DrawingGeometry> trace_spacing_streamlines(
+    PathFindingModule* pfm,
+    const cv::Mat& image,
+    const cv::Mat& fx,
+    const cv::Mat& fy)
+{
+    int w = image.cols;
+    int h = image.rows;
+    double min_spacing = pfm->get("min_spacing").toDouble();
+    double max_spacing = pfm->get("max_spacing").toDouble();
+    double min_length = pfm->get("min_length").toDouble();
+    double max_length = pfm->get("max_length").toDouble();
+    double tone = pfm->get("tone").toDouble();
+    double distortion = pfm->get("distortion").toDouble();
+    double step_size = pfm->get("step_size").toDouble();
+
+    // Create spacing grid
+    double cell_size = std::max(1.0, min_spacing);
+    int grid_cols = std::ceil(w / cell_size);
+    int grid_rows = std::ceil(h / cell_size);
+    std::vector<std::vector<std::vector<cv::Point2f>>> grid(grid_rows, std::vector<std::vector<cv::Point2f>>(grid_cols));
+
+    auto add_point_to_grid = [&](const cv::Point2f& p) {
+        int c = std::clamp(int(p.x / cell_size), 0, grid_cols - 1);
+        int r = std::clamp(int(p.y / cell_size), 0, grid_rows - 1);
+        grid[r][c].push_back(p);
+    };
+
+    auto check_collision = [&](const cv::Point2f& p, double d_sep) {
+        int cx = int(p.x / cell_size);
+        int cy = int(p.y / cell_size);
+        int r_cells = std::ceil(d_sep / cell_size);
+        
+        for (int dy = -r_cells; dy <= r_cells; ++dy) {
+            int ny = cy + dy;
+            if (ny < 0 || ny >= grid_rows) continue;
+            for (int dx = -r_cells; dx <= r_cells; ++dx) {
+                int nx = cx + dx;
+                if (nx < 0 || nx >= grid_cols) continue;
+                for (const auto& opt : grid[ny][nx]) {
+                    float dist = std::hypot(p.x - opt.x, p.y - opt.y);
+                    if (dist < d_sep) return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    auto get_d_sep = [&](float x, float y) {
+        int xi = std::clamp(int(x), 0, w - 1);
+        int yi = std::clamp(int(y), 0, h - 1);
+        float luminance = get_pixel_float(image, yi, xi) / 255.0f;
+        double t_val = std::pow(luminance, 1.0 / std::max(0.01, tone / 50.0));
+        return min_spacing + t_val * (max_spacing - min_spacing);
+    };
+
+    std::vector<DrawingGeometry> geoms;
+    std::queue<cv::Point2f> seed_queue;
+
+    // Seed initially with a regular grid of points
+    for (int y = 20; y < h; y += 40) {
+        for (int x = 20; x < w; x += 40) {
+            seed_queue.push(cv::Point2f(x, y));
+        }
+    }
+
+    int streamline_count = 0;
+    while (!seed_queue.empty() && !pfm->isCancelled()) {
+        cv::Point2f seed = seed_queue.front();
+        seed_queue.pop();
+
+        double seed_d_sep = get_d_sep(seed.x, seed.y);
+        if (check_collision(seed, seed_d_sep)) continue;
+
+        // Trace streamline
+        Path current_path;
+        current_path.push_back({seed.x, seed.y});
+        std::vector<cv::Point2f> added_points = { seed };
+        add_point_to_grid(seed);
+
+        // Forward trace
+        float x = seed.x, y = seed.y;
+        for (int step = 0; step < max_length / step_size; ++step) {
+            int xi = std::clamp(int(x), 0, w - 1);
+            int yi = std::clamp(int(y), 0, h - 1);
+            float vx = fx.at<float>(yi, xi);
+            float vy = fy.at<float>(yi, xi);
+            float mag = std::hypot(vx, vy);
+            if (mag < 1e-6f) break;
+
+            float dx = (vx / mag) * step_size;
+            float dy = (vy / mag) * step_size;
+            if (distortion > 0) {
+                float angle = std::atan2(dy, dx) + pfm->randGauss(0.0, distortion * 0.1);
+                dx = std::cos(angle) * step_size;
+                dy = std::sin(angle) * step_size;
+            }
+
+            x += dx; y += dy;
+            if (x < 0 || x >= w || y < 0 || y >= h) break;
+
+            cv::Point2f next_p(x, y);
+            double local_d_sep = get_d_sep(x, y);
+            if (check_collision(next_p, local_d_sep)) break;
+
+            current_path.push_back({x, y});
+            added_points.push_back(next_p);
+            add_point_to_grid(next_p);
+        }
+
+        // Backward trace
+        x = seed.x; y = seed.y;
+        Path backward_path;
+        for (int step = 0; step < max_length / step_size; ++step) {
+            int xi = std::clamp(int(x), 0, w - 1);
+            int yi = std::clamp(int(y), 0, h - 1);
+            float vx = fx.at<float>(yi, xi);
+            float vy = fy.at<float>(yi, xi);
+            float mag = std::hypot(vx, vy);
+            if (mag < 1e-6f) break;
+
+            float dx = -(vx / mag) * step_size;
+            float dy = -(vy / mag) * step_size;
+            if (distortion > 0) {
+                float angle = std::atan2(dy, dx) + pfm->randGauss(0.0, distortion * 0.1);
+                dx = std::cos(angle) * step_size;
+                dy = std::sin(angle) * step_size;
+            }
+
+            x += dx; y += dy;
+            if (x < 0 || x >= w || y < 0 || y >= h) break;
+
+            cv::Point2f next_p(x, y);
+            double local_d_sep = get_d_sep(x, y);
+            if (check_collision(next_p, local_d_sep)) break;
+
+            backward_path.push_back({x, y});
+            added_points.push_back(next_p);
+            add_point_to_grid(next_p);
+        }
+
+        // Combine paths
+        Path full_path;
+        std::reverse(backward_path.begin(), backward_path.end());
+        full_path.insert(full_path.end(), backward_path.begin(), backward_path.end());
+        full_path.insert(full_path.end(), current_path.begin(), current_path.end());
+
+        double len = path_length(full_path);
+        if (len >= min_length) {
+            DrawingGeometry dg;
+            dg.path = full_path;
+            geoms.push_back(dg);
+            streamline_count++;
+
+            // Seed candidates from the newly added streamline
+            for (size_t k = 0; k < full_path.size(); k += 4) {
+                float px = full_path[k].first;
+                float py = full_path[k].second;
+                double d_sep = get_d_sep(px, py);
+
+                // Compute normal to streamline
+                float tx = 1.0f, ty = 0.0f;
+                if (k + 1 < full_path.size()) {
+                    tx = full_path[k+1].first - px;
+                    ty = full_path[k+1].second - py;
+                } else if (k > 0) {
+                    tx = px - full_path[k-1].first;
+                    ty = py - full_path[k-1].second;
+                }
+                float tmag = std::hypot(tx, ty);
+                if (tmag > 1e-6f) { tx /= tmag; ty /= tmag; }
+                float nx = -ty, ny = tx;
+
+                seed_queue.push(cv::Point2f(px + nx * d_sep * 1.1f, py + ny * d_sep * 1.1f));
+                seed_queue.push(cv::Point2f(px - nx * d_sep * 1.1f, py - ny * d_sep * 1.1f));
+            }
+        } else {
+            // Remove points of short streamline from grid
+            for (const auto& pt : added_points) {
+                int c = std::clamp(int(pt.x / cell_size), 0, grid_cols - 1);
+                int r = std::clamp(int(pt.y / cell_size), 0, grid_rows - 1);
+                auto& cell = grid[r][c];
+                cell.erase(std::remove(cell.begin(), cell.end(), pt), cell.end());
+            }
+        }
+
+        if (streamline_count % 50 == 0) {
+            pfm->emitProgress(0.5f, geoms.size(), "Tracing streamlines...");
+        }
+    }
+    return geoms;
+}
+
+// --- base_streamline_pfm.cpp ---
+BaseMazePFM::BaseMazePFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseMazePFM::defineSettings() const {
+    return {
+        {"complexity", "Complexity", SettingType::Integer, 10, SettingValue(), 1, 50, 1, 50, 1},
+        {"threshold", "Darkness Threshold", SettingType::Percentage, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0}
+    };
+}
+
+std::pair<float, float> BaseMazePFM::transformPoint(float x, float y) { return {x, y}; }
+
+std::vector<DrawingGeometry> BaseMazePFM::_process(const cv::Mat& image) {
+    int comps = m_settings["complexity"].toInt();
+    float thresh = (get("threshold").toDouble() / 100.0f) * 255.0f;
+    int gw = std::max(5, image.cols / (comps * 2));
+    int gh = std::max(5, image.rows / (comps * 2));
+    Path path = generate_dfs_maze(gw, gh, this);
+    if (path.empty()) return {};
+
+    for (auto& p : path) {
+        auto t = transformPoint(p.first, p.second);
+        p.first = t.first; p.second = t.second;
+    }
+
+    float min_x = 1e12f, max_x = -1e12f, min_y = 1e12f, max_y = -1e12f;
+    for (const auto& p : path) {
+        if (p.first < min_x) min_x = p.first; if (p.first > max_x) max_x = p.first;
+        if (p.second < min_y) min_y = p.second; if (p.second > max_y) max_y = p.second;
+    }
+
+    Path scaled;
+    for (const auto& p : path) {
+        float nx = (p.first - min_x) / std::max(1e-5f, max_x - min_x);
+        float ny = (p.second - min_y) / std::max(1e-5f, max_y - min_y);
+        scaled.push_back({nx * image.cols, ny * image.rows});
+    }
+
+    std::vector<DrawingGeometry> geoms;
+    Path current_path;
+    for (size_t i = 0; i < scaled.size(); ++i) {
+        if (isCancelled()) break;
+        int x = std::clamp(int(scaled[i].first), 0, image.cols - 1);
+        int y = std::clamp(int(scaled[i].second), 0, image.rows - 1);
+        
+        if ((255.0f - get_pixel_float(image, y, x)) > thresh) {
+            current_path.push_back(scaled[i]);
+        } else {
+            if (current_path.size() > 1) {
+                DrawingGeometry dg; dg.path = current_path; geoms.push_back(dg);
+            }
+            current_path.clear();
+        }
+    }
+    if (current_path.size() > 1) {
+        DrawingGeometry dg; dg.path = current_path; geoms.push_back(dg);
+    }
+    return geoms;
+}
+
+BaseStreamlinePFM::BaseStreamlinePFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> BaseStreamlinePFM::defineSettings() const {
+    return {
+        {"min_spacing", "Min Spacing", SettingType::Number, 2.0, SettingValue(), 0.5, 20.0, 0.5, 20.0, 0.5},
+        {"max_spacing", "Max Spacing", SettingType::Number, 8.0, SettingValue(), 2.0, 50.0, 2.0, 50.0, 0.5},
+        {"min_length", "Min Length", SettingType::Number, 5.0, SettingValue(), 0.0, 20.0, 0.0, 20.0, 0.5},
+        {"max_length", "Max Length", SettingType::Number, 150.0, SettingValue(), 0.0, 500.0, 0.0, 500.0, 5.0},
+        {"tone", "Tone", SettingType::Number, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
+        {"distortion", "Distortion", SettingType::Number, 0.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
+        {"step_size", "Step Size", SettingType::Number, 1.5, SettingValue(), 0.5, 5.0, 0.5, 5.0, 0.1}
+    };
+}
 
 AmbientFlowPFM::AmbientFlowPFM() {
     initSettings();
@@ -764,48 +1778,152 @@ HatchCircularScribblesPFM::HatchCircularScribblesPFM() {
 }
 
 std::vector<PFMSetting> HatchCircularScribblesPFM::defineSettings() const {
-    return {
-        {"spacing", "Ring Spacing", SettingType::Number, 6.0, SettingValue(), 2.0, 40.0, 2.0, 40.0, 0.5},
-        {"threshold", "Darkness Threshold", SettingType::Percentage, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
-        {"turns", "Turns per Ring", SettingType::Number, 1.5, SettingValue(), 0.5, 4.0, 0.5, 4.0, 0.1}
-    };
+    auto s = BaseMultiHatchPFM::defineSettings();
+    s.push_back({"angle", "Angle", SettingType::Number, 45.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"min_radius", "Min Radius", SettingType::Number, 1.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"max_radius", "Max Radius", SettingType::Number, 8.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"min_velocity", "Min Velocity", SettingType::Number, 2.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"max_velocity", "Max Velocity", SettingType::Number, 10.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5});
+    s.push_back({"angular_velocity", "Angular Velocity", SettingType::Number, 30.0, SettingValue(), 0.1, 180.0, 0.1, 180.0, 0.5});
+    s.push_back({"curvature", "Curvature", SettingType::Number, 0.5, SettingValue(), 0.0, 1.0, 0.0, 1.0, 0.05});
+    return s;
 }
 
 std::vector<DrawingGeometry> HatchCircularScribblesPFM::_process(const cv::Mat& image) {
-    float spacing = m_settings["spacing"].toDouble();
-    float thresh = (m_settings["threshold"].toDouble() / 100.0f) * 255.0f;
-    float turns = m_settings["turns"].toDouble();
+    float angle = get("angle").toDouble();
+    float spacing = get("spacing").toDouble();
+    float thresh = (get("threshold").toDouble() / 100.0f) * 255.0f;
+    float min_radius = get("min_radius").toDouble();
+    float max_radius = get("max_radius").toDouble();
+    float min_velocity = get("min_velocity").toDouble();
+    float max_velocity = get("max_velocity").toDouble();
+    float angular_velocity = get("angular_velocity").toDouble();
+    float curvature = get("curvature").toDouble();
+    bool crosshatch = get("crosshatch").toBool();
+    bool link_ends = get("link_ends").toBool();
+    
+    std::vector<float> angles = { angle };
+    if (crosshatch) {
+        angles.push_back(angle + 90.0f);
+    }
     
     std::vector<DrawingGeometry> geoms;
-    float cx = image.cols / 2.0f;
-    float cy = image.rows / 2.0f;
-    float max_r = std::hypot(cx, cy);
-    int num_rings = int(max_r / spacing);
+    int w = image.cols;
+    int h = image.rows;
+    float diag_len = std::hypot(w, h);
+    int num_lines = int(diag_len / std::max(1.0f, spacing));
     
-    for (int r_idx = 1; r_idx <= num_rings; ++r_idx) {
+    for (float angle_val : angles) {
         if (isCancelled()) break;
-        emitProgress(float(r_idx) / num_rings, geoms.size(), "Circular Scribbles...");
+        float rad = angle_val * 3.141592653589793f / 180.0f;
+        float dx = std::cos(rad);
+        float dy = std::sin(rad);
         
-        float base_r = r_idx * spacing;
-        Path path;
-        int steps = std::max(36, int(2.0f * 3.141592653589793 * base_r * turns));
-        for (int step = 0; step < steps; ++step) {
-            float theta = (float(step) / steps) * 2.0f * 3.141592653589793 * turns;
-            float r = base_r + std::sin(theta * (base_r / 2.0f)) * (spacing * 0.8f);
+        Path angle_path;
+        for (int i = 0; i < num_lines; ++i) {
+            if (isCancelled()) break;
+            if (i % 20 == 0) emitProgress(float(i) / num_lines, geoms.size(), "Circular Hatching...");
             
-            float px = cx + r * std::cos(theta);
-            float py = cy + r * std::sin(theta);
+            float offset = (i - num_lines / 2.0f) * spacing;
+            float cx = w / 2.0f + offset * -dy;
+            float cy = h / 2.0f + offset * dx;
+            float x1 = cx - dx * diag_len;
+            float y1 = cy - dy * diag_len;
+            float x2 = cx + dx * diag_len;
+            float y2 = cy + dy * diag_len;
             
-            if (px >= 0 && px < image.cols && py >= 0 && py < image.rows) {
-                if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
-                    path.push_back({px, py});
+            bool reverse = (i % 2 == 1);
+            float lx = reverse ? -dx : dx;
+            float ly = reverse ? -dy : dy;
+            float start_x = reverse ? x2 : x1;
+            float start_y = reverse ? y2 : y1;
+            
+            Path line_path;
+            float t = 0.0f;
+            float theta = 0.0f;
+            float ds = 1.0f;
+            
+            while (t < diag_len) {
+                float px = start_x + lx * t;
+                float py = start_y + ly * t;
+                
+                if (px >= 0 && px < w && py >= 0 && py < h) {
+                    float pixel = get_pixel_float(image, int(py), int(px));
+                    float darkness = 255.0f - pixel;
+                    float luminance = pixel / 255.0f;
+                    
+                    if (darkness > thresh) {
+                        float local_velocity = min_velocity + luminance * (max_velocity - min_velocity);
+                        float r = min_radius + luminance * (max_radius - min_radius); // Direct luminance mapping
+                        
+                        theta += ds * (angular_velocity * 3.14159265f / 180.0f) / std::max(0.1f, local_velocity);
+                        t += ds;
+                        
+                        float wx = px + lx * r * std::cos(theta) - ly * r * std::sin(theta);
+                        float wy = py + ly * r * std::cos(theta) + lx * r * std::sin(theta);
+                        line_path.push_back({wx, wy});
+                    } else {
+                        if (line_path.size() > 1) {
+                            Path smoothed = (curvature < 0.99f && line_path.size() >= 4) ?
+                                            catmull_rom_chain(line_path, 6, curvature) : line_path;
+                            if (link_ends) {
+                                if (angle_path.empty()) {
+                                    angle_path = smoothed;
+                                } else {
+                                    float last_x = angle_path.back().first;
+                                    float last_y = angle_path.back().second;
+                                    float first_x = smoothed.front().first;
+                                    float first_y = smoothed.front().second;
+                                    float dist = std::hypot(first_x - last_x, first_y - last_y);
+                                    if (dist < spacing * 2.5f) {
+                                        angle_path.insert(angle_path.end(), smoothed.begin(), smoothed.end());
+                                    } else {
+                                        if (angle_path.size() > 1) {
+                                            geoms.push_back(DrawingGeometry{angle_path, 0});
+                                        }
+                                        angle_path = smoothed;
+                                    }
+                                }
+                            } else {
+                                geoms.push_back(DrawingGeometry{smoothed, 0});
+                            }
+                        }
+                        line_path.clear();
+                        t += 2.0f;
+                    }
                 } else {
-                    if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
-                    path.clear();
+                    t += 2.0f;
+                }
+            }
+            if (line_path.size() > 1) {
+                Path smoothed = (curvature < 0.99f && line_path.size() >= 4) ?
+                                catmull_rom_chain(line_path, 6, curvature) : line_path;
+                if (link_ends) {
+                    if (angle_path.empty()) {
+                        angle_path = smoothed;
+                    } else {
+                        float last_x = angle_path.back().first;
+                        float last_y = angle_path.back().second;
+                        float first_x = smoothed.front().first;
+                        float first_y = smoothed.front().second;
+                        float dist = std::hypot(first_x - last_x, first_y - last_y);
+                        if (dist < spacing * 2.5f) {
+                            angle_path.insert(angle_path.end(), smoothed.begin(), smoothed.end());
+                        } else {
+                            if (angle_path.size() > 1) {
+                                geoms.push_back(DrawingGeometry{angle_path, 0});
+                            }
+                            angle_path = smoothed;
+                        }
+                    }
+                } else {
+                    geoms.push_back(DrawingGeometry{smoothed, 0});
                 }
             }
         }
-        if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
+        if (link_ends && angle_path.size() > 1) {
+            DrawingGeometry dg; dg.path = angle_path; geoms.push_back(dg);
+        }
     }
     return geoms;
 }
@@ -894,26 +2012,20 @@ std::vector<DrawingGeometry> HatchLinesPFM::_process(const cv::Mat& image) {
     return geometries;
 }
 
-
-// --- hatch_sawtooth_pfm.cpp ---
-HatchSawtoothPFM::HatchSawtoothPFM() {
-    initSettings();
-}
-
-std::vector<PFMSetting> HatchSawtoothPFM::defineSettings() const {
-    return {
-        {"angle", "Angle", SettingType::Number, 45.0, SettingValue(), -90.0, 90.0, -90.0, 90.0, 5.0},
-        {"spacing", "Spacing", SettingType::Number, 5.0, SettingValue(), 1.0, 50.0, 1.0, 50.0, 0.5},
-        {"threshold", "Darkness Threshold", SettingType::Percentage, 50.0, SettingValue(), 0.0, 100.0, 0.0, 100.0, 1.0},
-        {"tooth_depth", "Tooth Depth", SettingType::Number, 2.0, SettingValue(), 0.5, 15.0, 0.5, 15.0, 0.5}
-    };
-}
-
-std::vector<DrawingGeometry> HatchSawtoothPFM::_process(const cv::Mat& image) {
-    float angle = m_settings["angle"].toDouble();
+std::vector<DrawingGeometry> BaseMultiHatchPFM::_process(const cv::Mat& image) {
     float spacing = m_settings["spacing"].toDouble();
     float thresh = (m_settings["threshold"].toDouble() / 100.0f) * 255.0f;
-    float depth = m_settings["tooth_depth"].toDouble();
+    bool crosshatch = get("crosshatch").toBool();
+    bool link_ends = get("link_ends").toBool();
+    std::vector<float> angles = getAngles();
+    
+    if (crosshatch) {
+        std::vector<float> extra;
+        for (float a : angles) {
+            extra.push_back(a + 90.0f);
+        }
+        angles.insert(angles.end(), extra.begin(), extra.end());
+    }
     
     std::vector<DrawingGeometry> geoms;
     int w = image.cols;
@@ -921,44 +2033,249 @@ std::vector<DrawingGeometry> HatchSawtoothPFM::_process(const cv::Mat& image) {
     float diag_len = std::hypot(w, h);
     int num_lines = int(diag_len / std::max(1.0f, spacing));
     
-    float rad = angle * 3.141592653589793 / 180.0f;
-    float dx = std::cos(rad);
-    float dy = std::sin(rad);
-    
-    for (int i = 0; i < num_lines; ++i) {
+    for (float angle : angles) {
         if (isCancelled()) break;
-        if (i % 20 == 0) emitProgress(float(i) / num_lines, geoms.size(), "Sawtooth Hatching...");
+        float rad = angle * 3.141592653589793 / 180.0f;
+        float dx = std::cos(rad);
+        float dy = std::sin(rad);
         
-        float offset = (i - num_lines / 2.0f) * spacing;
-        float cx = w / 2.0f + offset * -dy;
-        float cy = h / 2.0f + offset * dx;
-        float x1 = cx - dx * diag_len;
-        float y1 = cy - dy * diag_len;
-        float x2 = cx + dx * diag_len;
-        float y2 = cy + dy * diag_len;
-        
-        Path path;
-        int steps = std::max(1, int(diag_len));
-        bool up = true;
-        for (int step = 0; step < steps; step += 3) {
-            float px = x1 + (x2 - x1) * (float(step) / steps);
-            float py = y1 + (y2 - y1) * (float(step) / steps);
+        Path angle_path;
+        for (int i = 0; i < num_lines; ++i) {
+            if (isCancelled()) break;
+            if (i % 20 == 0) emitProgress(float(i) / num_lines, geoms.size(), "Hatching...");
             
-            if (px >= 0 && px < w && py >= 0 && py < h) {
-                float brightness = get_pixel_float(image, int(py), int(px)) / 255.0f;
-                if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
-                    float local_depth = depth * (1.0f - brightness);
-                    float wx = px + (up ? -dy : dy) * local_depth;
-                    float wy = py + (up ? dx : -dx) * local_depth;
-                    path.push_back({wx, wy});
-                    up = !up;
+            float offset = (i - num_lines / 2.0f) * spacing;
+            float cx = w / 2.0f + offset * -dy;
+            float cy = h / 2.0f + offset * dx;
+            float x1 = cx - dx * diag_len;
+            float y1 = cy - dy * diag_len;
+            float x2 = cx + dx * diag_len;
+            float y2 = cy + dy * diag_len;
+            
+            Path line_path;
+            int steps = std::max(1, int(diag_len));
+            
+            bool reverse = (i % 2 == 1);
+            int start_step = reverse ? steps - 1 : 0;
+            int end_step = reverse ? -1 : steps;
+            int step_dir = reverse ? -1 : 1;
+            
+            for (int step = start_step; step != end_step; step += step_dir) {
+                float px = x1 + (x2 - x1) * (float(step) / steps);
+                float py = y1 + (y2 - y1) * (float(step) / steps);
+                if (px >= 0 && px < w && py >= 0 && py < h) {
+                    if ((255.0f - get_pixel_float(image, int(py), int(px))) > thresh) {
+                        line_path.push_back({px, py});
+                    } else {
+                        if (line_path.size() > 1) {
+                            if (link_ends) {
+                                if (angle_path.empty()) {
+                                    angle_path = line_path;
+                                } else {
+                                    float last_x = angle_path.back().first;
+                                    float last_y = angle_path.back().second;
+                                    float first_x = line_path.front().first;
+                                    float first_y = line_path.front().second;
+                                    float dist = std::hypot(first_x - last_x, first_y - last_y);
+                                    if (dist < spacing * 2.5f) {
+                                        angle_path.insert(angle_path.end(), line_path.begin(), line_path.end());
+                                    } else {
+                                        if (angle_path.size() > 1) {
+                                            geoms.push_back(DrawingGeometry{angle_path, 0});
+                                        }
+                                        angle_path = line_path;
+                                    }
+                                }
+                            } else {
+                                DrawingGeometry dg; dg.path = line_path; geoms.push_back(dg);
+                            }
+                        }
+                        line_path.clear();
+                    }
+                }
+            }
+            if (line_path.size() > 1) {
+                if (link_ends) {
+                    if (angle_path.empty()) {
+                        angle_path = line_path;
+                    } else {
+                        float last_x = angle_path.back().first;
+                        float last_y = angle_path.back().second;
+                        float first_x = line_path.front().first;
+                        float first_y = line_path.front().second;
+                        float dist = std::hypot(first_x - last_x, first_y - last_y);
+                        if (dist < spacing * 2.5f) {
+                            angle_path.insert(angle_path.end(), line_path.begin(), line_path.end());
+                        } else {
+                            if (angle_path.size() > 1) {
+                                geoms.push_back(DrawingGeometry{angle_path, 0});
+                            }
+                            angle_path = line_path;
+                        }
+                    }
                 } else {
-                    if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
-                    path.clear();
+                    DrawingGeometry dg; dg.path = line_path; geoms.push_back(dg);
                 }
             }
         }
-        if (path.size() > 1) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
+        if (link_ends && angle_path.size() > 1) {
+            DrawingGeometry dg; dg.path = angle_path; geoms.push_back(dg);
+        }
+    }
+    return geoms;
+}
+
+
+// --- hatch_sawtooth_pfm.cpp ---
+HatchSawtoothPFM::HatchSawtoothPFM() {
+    initSettings();
+}
+
+std::vector<PFMSetting> HatchSawtoothPFM::defineSettings() const {
+    auto s = BaseMultiHatchPFM::defineSettings();
+    s.push_back({"angle", "Angle", SettingType::Number, 45.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"amplitude", "Amplitude", SettingType::Number, 0.5, SettingValue(), 0.01, 2.0, 0.01, 2.0, 0.05});
+    s.push_back({"min_velocity", "Min Velocity", SettingType::Number, 10.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0});
+    s.push_back({"max_velocity", "Max Velocity", SettingType::Number, 40.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0});
+    s.push_back({"curve_tension", "Curve Tension", SettingType::Number, 0.5, SettingValue(), 0.0, 1.0, 0.0, 1.0, 0.05});
+    return s;
+}
+
+std::vector<DrawingGeometry> HatchSawtoothPFM::_process(const cv::Mat& image) {
+    float angle = get("angle").toDouble();
+    float spacing = get("spacing").toDouble();
+    float thresh = (get("threshold").toDouble() / 100.0f) * 255.0f;
+    float amplitude = get("amplitude").toDouble();
+    float min_velocity = get("min_velocity").toDouble();
+    float max_velocity = get("max_velocity").toDouble();
+    float curve_tension = get("curve_tension").toDouble();
+    bool crosshatch = get("crosshatch").toBool();
+    bool link_ends = get("link_ends").toBool();
+    
+    std::vector<float> angles = { angle };
+    if (crosshatch) {
+        angles.push_back(angle + 90.0f);
+    }
+    
+    std::vector<DrawingGeometry> geoms;
+    int w = image.cols;
+    int h = image.rows;
+    float diag_len = std::hypot(w, h);
+    int num_lines = int(diag_len / std::max(1.0f, spacing));
+    
+    for (float angle_val : angles) {
+        if (isCancelled()) break;
+        float rad = angle_val * 3.141592653589793f / 180.0f;
+        float dx = std::cos(rad);
+        float dy = std::sin(rad);
+        
+        Path angle_path;
+        for (int i = 0; i < num_lines; ++i) {
+            if (isCancelled()) break;
+            if (i % 20 == 0) emitProgress(float(i) / num_lines, geoms.size(), "Sawtooth Hatching...");
+            
+            float offset = (i - num_lines / 2.0f) * spacing;
+            float cx = w / 2.0f + offset * -dy;
+            float cy = h / 2.0f + offset * dx;
+            float x1 = cx - dx * diag_len;
+            float y1 = cy - dy * diag_len;
+            float x2 = cx + dx * diag_len;
+            float y2 = cy + dy * diag_len;
+            
+            bool reverse = (i % 2 == 1);
+            float lx = reverse ? -dx : dx;
+            float ly = reverse ? -dy : dy;
+            float start_x = reverse ? x2 : x1;
+            float start_y = reverse ? y2 : y1;
+            
+            Path line_path;
+            float t = 0.0f;
+            float theta = 0.0f;
+            
+            while (t < diag_len) {
+                float px = start_x + lx * t;
+                float py = start_y + ly * t;
+                
+                if (px >= 0 && px < w && py >= 0 && py < h) {
+                    float pixel = get_pixel_float(image, int(py), int(px));
+                    float darkness = 255.0f - pixel;
+                    float luminance = pixel / 255.0f;
+                    
+                    if (darkness > thresh) {
+                        float local_velocity = min_velocity + luminance * (max_velocity - min_velocity);
+                        float width = (spacing * amplitude) * (darkness / 255.0f);
+                        
+                        theta += 2.0f * 3.14159265f / 12.0f;
+                        t += std::max(1.0f, local_velocity / 12.0f);
+                        
+                        float wave = std::asin(std::sin(theta)) * 2.0f / 3.14159265f;
+                        float offset = width * wave;
+                        
+                        float wx = px + -ly * offset;
+                        float wy = py + lx * offset;
+                        line_path.push_back({wx, wy});
+                    } else {
+                        if (line_path.size() > 1) {
+                            Path smoothed = (curve_tension < 0.99f && line_path.size() >= 4) ?
+                                            catmull_rom_chain(line_path, 6, curve_tension) : line_path;
+                            if (link_ends) {
+                                if (angle_path.empty()) {
+                                    angle_path = smoothed;
+                                } else {
+                                    float last_x = angle_path.back().first;
+                                    float last_y = angle_path.back().second;
+                                    float first_x = smoothed.front().first;
+                                    float first_y = smoothed.front().second;
+                                    float dist = std::hypot(first_x - last_x, first_y - last_y);
+                                    if (dist < spacing * 2.5f) {
+                                        angle_path.insert(angle_path.end(), smoothed.begin(), smoothed.end());
+                                    } else {
+                                        if (angle_path.size() > 1) {
+                                            geoms.push_back(DrawingGeometry{angle_path, 0});
+                                        }
+                                        angle_path = smoothed;
+                                    }
+                                }
+                            } else {
+                                geoms.push_back(DrawingGeometry{smoothed, 0});
+                            }
+                        }
+                        line_path.clear();
+                        t += 2.0f;
+                    }
+                } else {
+                    t += 2.0f;
+                }
+            }
+            if (line_path.size() > 1) {
+                Path smoothed = (curve_tension < 0.99f && line_path.size() >= 4) ?
+                                catmull_rom_chain(line_path, 6, curve_tension) : line_path;
+                if (link_ends) {
+                    if (angle_path.empty()) {
+                        angle_path = smoothed;
+                    } else {
+                        float last_x = angle_path.back().first;
+                        float last_y = angle_path.back().second;
+                        float first_x = smoothed.front().first;
+                        float first_y = smoothed.front().second;
+                        float dist = std::hypot(first_x - last_x, first_y - last_y);
+                        if (dist < spacing * 2.5f) {
+                            angle_path.insert(angle_path.end(), smoothed.begin(), smoothed.end());
+                        } else {
+                            if (angle_path.size() > 1) {
+                                geoms.push_back(DrawingGeometry{angle_path, 0});
+                            }
+                            angle_path = smoothed;
+                        }
+                    }
+                } else {
+                    DrawingGeometry dg; dg.path = smoothed; geoms.push_back(dg);
+                }
+            }
+        }
+        if (link_ends && angle_path.size() > 1) {
+            DrawingGeometry dg; dg.path = angle_path; geoms.push_back(dg);
+        }
     }
     return geoms;
 }
@@ -2934,45 +4251,135 @@ SpiralCircularScribblesPFM::SpiralCircularScribblesPFM() {
 
 std::vector<PFMSetting> SpiralCircularScribblesPFM::defineSettings() const {
     return {
-        {"pitch", "Pitch", SettingType::Number, 3.0, SettingValue(), 1.0, 20.0, 1.0, 20.0, 0.5},
-        {"wobble", "Wobble", SettingType::Number, 2.0, SettingValue(), 0.0, 15.0, 0.0, 15.0, 0.5}
+        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.0, SettingValue(), 0.05, 2.0,   0.1,  1.0,  0.05},
+        {"random_seed",         "Random Seed",         SettingType::Integer, 42,  SettingValue(), 0,   999999, 0,   999999, 1},
+        {"pitch",               "Pitch",               SettingType::Number,  3.0, SettingValue(), 1.0,  20.0,   1.0,  20.0,   0.5},
+        {"wobble",              "Wobble",              SettingType::Number,  2.0, SettingValue(), 0.0,  15.0,   0.0,  15.0,   0.5},
+        {"spiral_type",         "Spiral Type",         SettingType::Enum,    "Archimedean", SettingValue(), 0, 0, 0, 0, 0, {"Archimedean", "Parabolic"}},
+        {"spiral_size",         "Spiral Size (%)",     SettingType::Percentage, 100.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"centre_x",            "Centre X (%)",        SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"centre_y",            "Centre Y (%)",        SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"amplitude",           "Amplitude",           SettingType::Number,  1.0, SettingValue(), 0.01, 2.0, 0.01, 2.0, 0.05},
+        {"variable_velocity",   "Variable Velocity",   SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+        {"min_velocity",        "Min Velocity",        SettingType::Number,  10.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0},
+        {"max_velocity",        "Max Velocity",        SettingType::Number,  40.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0},
+        {"ignore_white",        "Ignore White",        SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+        {"min_radius",          "Min Radius",          SettingType::Number, 1.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5},
+        {"max_radius",          "Max Radius",          SettingType::Number, 8.0, SettingValue(), 0.1, 128.0, 0.1, 128.0, 0.5},
+        {"angular_velocity",    "Angular Velocity",    SettingType::Number, 30.0, SettingValue(), 0.1, 180.0, 0.1, 180.0, 0.5},
+        {"curvature",           "Curvature",           SettingType::Number, 0.5, SettingValue(), 0.0, 1.0, 0.0, 1.0, 0.05}
     };
 }
 
 std::vector<DrawingGeometry> SpiralCircularScribblesPFM::_process(const cv::Mat& image) {
-    float pitch = m_settings["pitch"].toDouble();
-    float wobble = m_settings["wobble"].toDouble();
-    int w = image.cols;
-    int h = image.rows;
-    float cx = w / 2.0f;
-    float cy = h / 2.0f;
-    float max_r = std::hypot(cx, cy);
+    cv::Mat workImg;
+    double plotRes = m_settings["plotting_resolution"].toDouble();
+    if (std::abs(plotRes - 1.0) > 1e-4) {
+        int nw = std::max(1, (int)(image.cols * plotRes));
+        int nh = std::max(1, (int)(image.rows * plotRes));
+        cv::resize(image, workImg, cv::Size(nw, nh), 0, 0, cv::INTER_AREA);
+    } else {
+        workImg = image;
+    }
     
+    int w = workImg.cols;
+    int h = workImg.rows;
+    float pitch = get("pitch").toDouble();
+    std::string spiral_type = get("spiral_type").toString();
+    float spiral_size = get("spiral_size").toDouble();
+    float cx = w * (get("centre_x").toDouble() / 100.0f);
+    float cy = h * (get("centre_y").toDouble() / 100.0f);
+    float max_r = std::hypot(cx, cy) * (spiral_size / 100.0f);
+    
+    bool variable_velocity = get("variable_velocity").toBool();
+    float min_velocity = get("min_velocity").toDouble();
+    float max_velocity = get("max_velocity").toDouble();
+    bool ignore_white = get("ignore_white").toBool();
+    
+    float min_radius = get("min_radius").toDouble();
+    float max_radius = get("max_radius").toDouble();
+    float angular_velocity = get("angular_velocity").toDouble();
+    float curvature = get("curvature").toDouble();
+    
+    float a = pitch / (2.0f * 3.14159265f);
+    float max_theta = max_r / std::max(0.01f, a);
+    float parabolic_a = max_r / std::sqrt(std::max(1.0f, max_theta));
+    
+    std::vector<DrawingGeometry> geoms;
     Path path;
     float theta = 0.0f;
     float r = 0.0f;
+    float loop_theta = 0.0f;
     
-    std::vector<DrawingGeometry> geoms;
     while (r < max_r) {
         if (isCancelled()) break;
-        if (int(theta * 100) % 500 == 0) emitProgress(r / max_r, 0, "Spiral Circular Scribbles...");
+        if (int(theta * 100) % 500 == 0) emitProgress(r / max_r, geoms.size(), "Spiral Circular Scribbles...");
         
         int xi = std::clamp(int(cx + r * std::cos(theta)), 0, w - 1);
         int yi = std::clamp(int(cy + r * std::sin(theta)), 0, h - 1);
-        float dark = (255.0f - get_pixel_float(image, yi, xi)) / 255.0f;
+        float pixel = get_pixel_float(workImg, yi, xi);
+        float luminance = pixel / 255.0f;
+        float dark = 1.0f - luminance;
         
-        float disp = std::sin(theta * 5.0f) * wobble * dark;
-        float x = cx + (r + disp) * std::cos(theta);
-        float y = cy + (r + disp) * std::sin(theta);
+        if (ignore_white && luminance > 0.98f) {
+            if (path.size() >= 2) {
+                Path smoothed = (curvature < 0.99f && path.size() >= 4) ?
+                                catmull_rom_chain(path, 6, curvature) : path;
+                geoms.push_back(DrawingGeometry{smoothed, 0});
+            }
+            path.clear();
+            theta += 0.1f;
+            if (spiral_type == "Parabolic") {
+                r = parabolic_a * std::sqrt(theta);
+            } else {
+                r = theta * a;
+            }
+            continue;
+        }
         
-        path.push_back({x, y});
-        theta += 0.12f;
-        r = theta * pitch / (2.0f * 3.141592653589793);
+        float local_velocity = min_velocity;
+        if (variable_velocity) {
+            local_velocity = min_velocity + luminance * (max_velocity - min_velocity);
+        }
+        
+        float loop_r = min_radius + luminance * (max_radius - min_radius); // Direct luminance mapping
+        
+        float tx = -std::sin(theta);
+        float ty = std::cos(theta);
+        float nx = std::cos(theta);
+        float ny = std::sin(theta);
+        
+        float px = cx + r * std::cos(theta);
+        float py = cy + r * std::sin(theta);
+        float wx = px + tx * loop_r * std::cos(loop_theta) + nx * loop_r * std::sin(loop_theta);
+        float wy = py + ty * loop_r * std::cos(loop_theta) + ny * loop_r * std::sin(loop_theta);
+        path.push_back({wx, wy});
+        
+        float ds = 1.0f;
+        loop_theta += ds * (angular_velocity * 3.14159265f / 180.0f) / std::max(0.1f, local_velocity);
+        theta += ds / std::max(1.0f, r);
+        
+        if (spiral_type == "Parabolic") {
+            r = parabolic_a * std::sqrt(theta);
+        } else {
+            r = theta * a;
+        }
     }
     
-    if (path.size() > 1) {
-        DrawingGeometry dg; dg.path = path;
-        geoms.push_back(dg);
+    if (path.size() >= 2) {
+        Path smoothed = (curvature < 0.99f && path.size() >= 4) ?
+                        catmull_rom_chain(path, 6, curvature) : path;
+        geoms.push_back(DrawingGeometry{smoothed, 0});
+    }
+    
+    // Scale back to original image size
+    float sx = (float)image.cols / w;
+    float sy = (float)image.rows / h;
+    for (auto& dg : geoms) {
+        for (auto& p : dg.path) {
+            p.first *= sx;
+            p.second *= sy;
+        }
     }
     return geoms;
 }
@@ -2985,41 +4392,133 @@ SpiralSawtoothPFM::SpiralSawtoothPFM() {
 
 std::vector<PFMSetting> SpiralSawtoothPFM::defineSettings() const {
     return {
-        {"pitch", "Pitch", SettingType::Number, 4.0, SettingValue(), 1.0, 30.0, 1.0, 30.0, 0.5},
-        {"teeth", "Teeth", SettingType::Integer, 8, SettingValue(), 2, 64, 2, 64, 1}
+        {"plotting_resolution", "Plotting Resolution", SettingType::Number,  1.0, SettingValue(), 0.05, 2.0,   0.1,  1.0,  0.05},
+        {"random_seed",         "Random Seed",         SettingType::Integer, 42,  SettingValue(), 0,   999999, 0,   999999, 1},
+        {"pitch",               "Pitch",               SettingType::Number,  4.0, SettingValue(), 1.0,  30.0,   1.0,  30.0,   0.5},
+        {"teeth",               "Teeth",               SettingType::Integer, 8,   SettingValue(), 2,    64,     2,    64,     1},
+        {"spiral_type",         "Spiral Type",         SettingType::Enum,    "Archimedean", SettingValue(), 0, 0, 0, 0, 0, {"Archimedean", "Parabolic"}},
+        {"spiral_size",         "Spiral Size (%)",     SettingType::Percentage, 100.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"centre_x",            "Centre X (%)",        SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"centre_y",            "Centre Y (%)",        SettingType::Percentage, 50.0, SettingValue(), 0, 100, 0, 100, 1},
+        {"amplitude",           "Amplitude",           SettingType::Number,  1.0, SettingValue(), 0.01, 2.0, 0.01, 2.0, 0.05},
+        {"variable_velocity",   "Variable Velocity",   SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1},
+        {"min_velocity",        "Min Velocity",        SettingType::Number,  10.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0},
+        {"max_velocity",        "Max Velocity",        SettingType::Number,  40.0, SettingValue(), 1.0, 360.0, 1.0, 360.0, 1.0},
+        {"ignore_white",        "Ignore White",        SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1},
+        {"connected_lines",     "Connected Lines",     SettingType::Boolean, true, SettingValue(), 0, 1, 0, 1, 1}
     };
 }
 
 std::vector<DrawingGeometry> SpiralSawtoothPFM::_process(const cv::Mat& image) {
-    float pitch = m_settings["pitch"].toDouble();
-    int teeth = m_settings["teeth"].toInt();
-    int w = image.cols;
-    int h = image.rows;
-    float cx = w / 2.0f;
-    float cy = h / 2.0f;
-    float max_r = std::hypot(cx, cy);
+    cv::Mat workImg;
+    double plotRes = m_settings["plotting_resolution"].toDouble();
+    if (std::abs(plotRes - 1.0) > 1e-4) {
+        int nw = std::max(1, (int)(image.cols * plotRes));
+        int nh = std::max(1, (int)(image.rows * plotRes));
+        cv::resize(image, workImg, cv::Size(nw, nh), 0, 0, cv::INTER_AREA);
+    } else {
+        workImg = image;
+    }
     
+    int w = workImg.cols;
+    int h = workImg.rows;
+    float pitch = get("pitch").toDouble();
+    int teeth = get("teeth").toInt();
+    std::string spiral_type = get("spiral_type").toString();
+    float spiral_size = get("spiral_size").toDouble();
+    float cx = w * (get("centre_x").toDouble() / 100.0f);
+    float cy = h * (get("centre_y").toDouble() / 100.0f);
+    float max_r = std::hypot(cx, cy) * (spiral_size / 100.0f);
+    
+    float amplitude = get("amplitude").toDouble();
+    bool variable_velocity = get("variable_velocity").toBool();
+    float min_velocity = get("min_velocity").toDouble();
+    float max_velocity = get("max_velocity").toDouble();
+    bool ignore_white = get("ignore_white").toBool();
+    bool connected_lines = get("connected_lines").toBool();
+    
+    float a = pitch / (2.0f * 3.14159265f);
+    float max_theta = max_r / std::max(0.01f, a);
+    float parabolic_a = max_r / std::sqrt(std::max(1.0f, max_theta));
+    
+    std::vector<DrawingGeometry> geoms;
     Path path;
     float theta = 0.0f;
     float r = 0.0f;
+    float wave_theta = 0.0f;
+    int N = 12; // points per cycle
     
-    std::vector<DrawingGeometry> geoms;
     while (r < max_r) {
         if (isCancelled()) break;
-        if (int(theta * 100) % 500 == 0) emitProgress(r / max_r, 0, "Spiral Sawtooth...");
+        if (int(theta * 100) % 500 == 0) emitProgress(r / max_r, geoms.size(), "Spiral Sawtooth...");
         
-        float tooth = std::sin(theta * teeth) * pitch * 0.3f;
-        float x = cx + (r + tooth) * std::cos(theta);
-        float y = cy + (r + tooth) * std::sin(theta);
+        int xi = std::clamp(int(cx + r * std::cos(theta)), 0, w - 1);
+        int yi = std::clamp(int(cy + r * std::sin(theta)), 0, h - 1);
+        float pixel = get_pixel_float(workImg, yi, xi);
+        float luminance = pixel / 255.0f;
+        float dark = (255.0f - pixel) / 255.0f;
         
-        path.push_back({x, y});
-        theta += 0.15f;
-        r = theta * pitch / (2.0f * 3.141592653589793);
+        if (ignore_white && luminance > 0.98f) {
+            if (path.size() >= 2) {
+                geoms.push_back(DrawingGeometry{path, 0});
+            }
+            path.clear();
+            theta += 0.1f;
+            if (spiral_type == "Parabolic") {
+                r = parabolic_a * std::sqrt(theta);
+            } else {
+                r = theta * a;
+            }
+            continue;
+        }
+        
+        float local_velocity = min_velocity;
+        if (variable_velocity) {
+            local_velocity = min_velocity + luminance * (max_velocity - min_velocity);
+        }
+        
+        float width = (pitch * amplitude) * dark;
+        float wave = std::asin(std::sin(wave_theta)) * 2.0f / 3.14159265f;
+        float offset = width * wave;
+        
+        float tx = -std::sin(theta);
+        float ty = std::cos(theta);
+        
+        float px = cx + r * std::cos(theta);
+        float py = cy + r * std::sin(theta);
+        float wx = px + tx * offset;
+        float wy = py + ty * offset;
+        path.push_back({wx, wy});
+        
+        if (!connected_lines && path.size() >= N) {
+            geoms.push_back(DrawingGeometry{path, 0});
+            path.clear();
+            // Start next path from current point to avoid double dotting
+            path.push_back({wx, wy});
+        }
+        
+        wave_theta += 2.0f * 3.14159265f / N;
+        theta += std::max(0.01f, (local_velocity / N) / std::max(1.0f, r));
+        
+        if (spiral_type == "Parabolic") {
+            r = parabolic_a * std::sqrt(theta);
+        } else {
+            r = theta * a;
+        }
     }
     
-    if (path.size() > 1) {
-        DrawingGeometry dg; dg.path = path;
-        geoms.push_back(dg);
+    if (path.size() >= 2) {
+        geoms.push_back(DrawingGeometry{path, 0});
+    }
+    
+    // Scale back to original image size
+    float sx = (float)image.cols / w;
+    float sy = (float)image.rows / h;
+    for (auto& dg : geoms) {
+        for (auto& p : dg.path) {
+            p.first *= sx;
+            p.second *= sy;
+        }
     }
     return geoms;
 }
@@ -3197,10 +4696,6 @@ Path StippleVariableSquaresPFM::generateShape(float cx, float cy, float r) {
 
 // --- streamlines_edge_field_pfm.cpp ---
 std::vector<DrawingGeometry> StreamlinesEdgeFieldPFM::_process(const cv::Mat& image) {
-    int count = m_settings["line_count"].toInt();
-    int max_len = m_settings["max_length"].toInt();
-    float step = m_settings["step_size"].toDouble();
-    
     cv::Mat gx, gy;
     cv::Sobel(image, gx, CV_32F, 1, 0, 3);
     cv::Sobel(image, gy, CV_32F, 0, 1, 3);
@@ -3211,25 +4706,12 @@ std::vector<DrawingGeometry> StreamlinesEdgeFieldPFM::_process(const cv::Mat& im
     cv::Mat fx = -gy;
     cv::Mat fy = gx;
     
-    std::vector<DrawingGeometry> geoms;
-    for (int i = 0; i < count; ++i) {
-        if (isCancelled()) break;
-        if (i % 20 == 0) emitProgress(float(i) / count, geoms.size(), "Edge Field Streamlines...");
-        float x = randUniform(0, image.cols);
-        float y = randUniform(0, image.rows);
-        Path path = trace_streamline(fx, fy, x, y, max_len, step);
-        if (path.size() >= 2) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
-    }
-    return geoms;
+    return trace_spacing_streamlines(this, image, fx, fy);
 }
 
 
 // --- streamlines_flow_field_pfm.cpp ---
 std::vector<DrawingGeometry> StreamlinesFlowFieldPFM::_process(const cv::Mat& image) {
-    int count = m_settings["line_count"].toInt();
-    int max_len = m_settings["max_length"].toInt();
-    float step = m_settings["step_size"].toDouble();
-    
     cv::Mat gx, gy;
     cv::Sobel(image, gx, CV_32F, 1, 0, 3);
     cv::Sobel(image, gy, CV_32F, 0, 1, 3);
@@ -3240,16 +4722,7 @@ std::vector<DrawingGeometry> StreamlinesFlowFieldPFM::_process(const cv::Mat& im
     cv::Mat fx = gx;
     cv::Mat fy = gy;
     
-    std::vector<DrawingGeometry> geoms;
-    for (int i = 0; i < count; ++i) {
-        if (isCancelled()) break;
-        if (i % 20 == 0) emitProgress(float(i) / count, geoms.size(), "Flow Field Streamlines...");
-        float x = randUniform(0, image.cols);
-        float y = randUniform(0, image.rows);
-        Path path = trace_streamline(fx, fy, x, y, max_len, step);
-        if (path.size() >= 2) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
-    }
-    return geoms;
+    return trace_spacing_streamlines(this, image, fx, fy);
 }
 
 
@@ -3261,9 +4734,6 @@ std::vector<PFMSetting> StreamlinesSuperformulaPFM::defineSettings() const {
 }
 
 std::vector<DrawingGeometry> StreamlinesSuperformulaPFM::_process(const cv::Mat& image) {
-    int count = m_settings["line_count"].toInt();
-    int max_len = m_settings["max_length"].toInt();
-    float step = m_settings["step_size"].toDouble();
     float amp = m_settings["wave_amp"].toDouble();
     
     cv::Mat gx, gy;
@@ -3275,23 +4745,17 @@ std::vector<DrawingGeometry> StreamlinesSuperformulaPFM::_process(const cv::Mat&
     cv::Mat fx = gx;
     cv::Mat fy = gy;
     
-    std::vector<DrawingGeometry> geoms;
-    for (int i = 0; i < count; ++i) {
-        if (isCancelled()) break;
-        if (i % 20 == 0) emitProgress(float(i) / count, geoms.size(), "Superformula Streamlines...");
-        float x = randUniform(0, image.cols);
-        float y = randUniform(0, image.rows);
-        Path path = trace_streamline(fx, fy, x, y, max_len, step);
-        if (path.size() >= 2 && amp > 0) {
+    auto geoms = trace_spacing_streamlines(this, image, fx, fy);
+    if (amp > 0) {
+        for (auto& dg : geoms) {
             Path waved;
-            for (size_t j = 0; j < path.size(); ++j) {
-                float wx = path[j].first + std::sin(j * 0.2f) * amp;
-                float wy = path[j].second + std::cos(j * 0.15f) * amp;
+            for (size_t j = 0; j < dg.path.size(); ++j) {
+                float wx = dg.path[j].first + std::sin(j * 0.2f) * amp;
+                float wy = dg.path[j].second + std::cos(j * 0.15f) * amp;
                 waved.push_back({wx, wy});
             }
-            path = waved;
+            dg.path = waved;
         }
-        if (path.size() >= 2) { DrawingGeometry dg; dg.path = path; geoms.push_back(dg); }
     }
     return geoms;
 }
@@ -3567,14 +5031,63 @@ int VoronoiLettersPFM::getLloydIters() const {
 
 
 // --- voronoi_shapes_pfm.cpp ---
+std::vector<PFMSetting> VoronoiShapesPFM::defineSettings() const {
+    auto s = BaseVoronoiExtraPFM::defineSettings();
+    s.push_back({"shape_size", "Shape Size", SettingType::Number, 4.0, SettingValue(), 1.0, 30.0, 1.0, 30.0, 0.5});
+    s.push_back({"shape_type", "Shape Type", SettingType::Enum, "Circle", SettingValue(), 0, 0, 0, 0, 0, {"Circle", "Square", "Star", "Triangle", "Cross", "Multiply", "LP Space", "Random"}});
+    s.push_back({"align_rotation", "Align Rotation", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1});
+    s.push_back({"min_rotation", "Min Rotation", SettingType::Number, 0.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"max_rotation", "Max Rotation", SettingType::Number, 360.0, SettingValue(), -360.0, 360.0, -360.0, 360.0, 5.0});
+    s.push_back({"fill_size", "Fill Size", SettingType::Boolean, false, SettingValue(), 0, 1, 0, 1, 1});
+    return s;
+}
+
 std::vector<DrawingGeometry> VoronoiShapesPFM::_process(const cv::Mat& image) {
     auto pts = getSeeds(image);
+    if (pts.empty()) return {};
+    
+    std::string shape_type = get("shape_type").toString();
+    bool align_rotation = get("align_rotation").toBool();
+    float min_rotation = get("min_rotation").toDouble();
+    float max_rotation = get("max_rotation").toDouble();
+    bool fill_size = get("fill_size").toBool();
+    float shape_size = get("shape_size").toDouble();
+    
+    cv::Mat gx, gy;
+    if (align_rotation) {
+        cv::Sobel(image, gx, CV_32F, 1, 0, 3);
+        cv::Sobel(image, gy, CV_32F, 0, 1, 3);
+    }
+    
     std::vector<DrawingGeometry> geoms(pts.size());
     #pragma omp parallel for schedule(dynamic, 64)
     for (int i = 0; i < (int)pts.size(); ++i) {
-        float r = nearest_seed_radius(pts[i].x, pts[i].y, pts);
-        int sides = 3 + (i % 5);
-        geoms[i].path = generate_polygon(pts[i].x, pts[i].y, r, sides);
+        float cx = pts[i].x, cy = pts[i].y;
+        
+        float local_angle = 0.0f;
+        std::mt19937 local_rng(42 + i);
+        if (align_rotation) {
+            int xi = std::clamp((int)cx, 0, image.cols - 1);
+            int yi = std::clamp((int)cy, 0, image.rows - 1);
+            float dx = gx.at<float>(yi, xi);
+            float dy = gy.at<float>(yi, xi);
+            float edge_angle = std::atan2(dy, dx) * 180.0f / 3.14159265f + 90.0f; // perpendicular to gradient
+            local_angle = edge_angle;
+            if (min_rotation != 0.0f || max_rotation != 360.0f) {
+                std::uniform_real_distribution<float> dist(min_rotation, max_rotation);
+                local_angle += dist(local_rng);
+            }
+        } else {
+            std::uniform_real_distribution<float> dist(min_rotation, max_rotation);
+            local_angle = dist(local_rng);
+        }
+        
+        int xi = std::clamp((int)cx, 0, image.cols - 1);
+        int yi = std::clamp((int)cy, 0, image.rows - 1);
+        float luminance = image.ptr<uchar>(yi)[xi] / 255.0f;
+        
+        float max_r = nearest_seed_radius(cx, cy, pts);
+        geoms[i].path = generate_shape_high_fidelity(cx, cy, max_r, luminance, local_angle, shape_type, fill_size, shape_size, local_rng);
     }
     return geoms;
 }

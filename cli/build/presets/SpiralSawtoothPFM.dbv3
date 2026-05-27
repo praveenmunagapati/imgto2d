@@ -1,0 +1,24 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "SpiralSawtoothPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "amplitude": 1,
+        "centre_x": 50,
+        "centre_y": 50,
+        "connected_lines": true,
+        "ignore_white": false,
+        "max_velocity": 40,
+        "min_velocity": 10,
+        "pitch": 4,
+        "plotting_resolution": 1,
+        "random_seed": 42,
+        "spiral_size": 100,
+        "spiral_type": "Archimedean",
+        "teeth": 8,
+        "variable_velocity": true
+    },
+    "filter_chain": []
+}

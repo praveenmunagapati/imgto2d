@@ -1,0 +1,13 @@
+{
+    "image_path": "../cli/0.jpg",
+    "pfm_name": "GridLettersPFM",
+    "colour_separation": "Grayscale",
+    "pen_colors": ["#0F0F3C"],
+    "pen_width_mm": 0.3,
+    "pfm_settings": {
+        "cols": 40,
+        "rows": 40,
+        "threshold": 50
+    },
+    "filter_chain": []
+}
