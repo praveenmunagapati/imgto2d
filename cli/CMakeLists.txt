@@ -28,21 +28,25 @@ find_package(OpenMP REQUIRED)
 
 # ---- Executable ----
 add_executable(imgto2d_standalone_cli
-    main_cli.cpp
-    pfms.cpp
-    filters_raw.cpp
-    project_processor.cpp
-    export_svg.cpp
-    mask_manager.cpp
-    color_separation.cpp
-    coordinates.cpp
-    path_optimizer.cpp
-    gcode_exporter.cpp
-    hpgl_exporter.cpp
+    src/app/main_cli.cpp
+    src/algorithms/pfms.cpp
+    src/algorithms/filters_raw.cpp
+    src/pipeline/project_processor.cpp
+    src/exporters/export_svg.cpp
+    src/pipeline/mask_manager.cpp
+    src/pipeline/color_separation.cpp
+    src/core/coordinates.cpp
+    src/pipeline/path_optimizer.cpp
+    src/exporters/gcode_exporter.cpp
+    src/exporters/hpgl_exporter.cpp
 )
 
 target_include_directories(imgto2d_standalone_cli PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/exporters
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
     ${OpenCV_INCLUDE_DIRS}
 )
 
@@ -55,12 +59,15 @@ install(TARGETS imgto2d_standalone_cli RUNTIME DESTINATION bin)
 
 # ---- Presets Generator ----
 add_executable(dump_presets
-    dump_presets.cpp
-    pfms.cpp
-    color_separation.cpp
+    src/app/dump_presets.cpp
+    src/algorithms/pfms.cpp
+    src/pipeline/color_separation.cpp
 )
 target_include_directories(dump_presets PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
     ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(dump_presets PRIVATE

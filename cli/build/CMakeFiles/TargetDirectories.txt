@@ -1,8 +1,5 @@
 C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/imgto2d_standalone_cli.dir
 C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/dump_presets.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/edit_cache.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/rebuild_cache.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/list_install_components.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/install.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/install/local.dir
-C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/install/strip.dir
+C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/INSTALL.dir
+C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/sir/Desktop/imgto2d/cli/build/CMakeFiles/ZERO_CHECK.dir
