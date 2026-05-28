@@ -10,15 +10,28 @@ endif()
 
 find_package(OpenCV REQUIRED)
 
-# Include the core backend engine
-add_subdirectory(../architecture architecture_build)
-
 set(SOURCES
     src/main.cpp
     src/ProjectParser.cpp
+    src/Project.cpp
+    src/Exporters.cpp
+    src/DrawingPipeline.cpp
+    src/PathOptimizer.cpp
+    src/ImageFilter.cpp
+    src/PFM_Sketch.cpp
+    src/PFM_Streamline.cpp
+    src/PFM_Spiral.cpp
+    src/PFM_Hatch.cpp
+    src/PFM_Adaptive.cpp
+    src/PFM_LBG.cpp
+    src/PFM_Voronoi.cpp
+    src/PFM_Grid.cpp
+    src/PFM_Composite.cpp
+    src/PFM_Special.cpp
+    src/GeometryUtils.cpp
 )
 
 add_executable(dbv3_cli ${SOURCES})
 
-target_include_directories(dbv3_cli PRIVATE src ../architecture/include)
-target_link_libraries(dbv3_cli PRIVATE DrawingBotCore ${OpenCV_LIBS})
+target_include_directories(dbv3_cli PRIVATE src include)
+target_link_libraries(dbv3_cli PRIVATE ${OpenCV_LIBS})
