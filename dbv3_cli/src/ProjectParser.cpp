@@ -9,8 +9,88 @@
 #include "PFM_LBG.h"
 
 using json = nlohmann::json;
+#include <filesystem>
+#include <cctype>
 
 namespace dbv3 {
+
+    void mergePresetValues(json& target, const json& presetSettingList) {
+        for (auto& el : presetSettingList.items()) {
+            std::string key = el.key();
+            std::string valStr;
+            if (el.value().is_string()) {
+                valStr = el.value().get<std::string>();
+            } else {
+                continue; // Expected strings from jsonMap presets
+            }
+            
+            // Convert Title Case to snake_case
+            std::string snakeKey;
+            for (char c : key) {
+                if (c == ' ') snakeKey += '_';
+                else snakeKey += std::tolower(c);
+            }
+            
+            if (!target.contains(snakeKey)) {
+                if (valStr == "true") target[snakeKey] = true;
+                else if (valStr == "false") target[snakeKey] = false;
+                else {
+                    try {
+                        size_t pos;
+                        float f = std::stof(valStr, &pos);
+                        if (pos == valStr.length()) {
+                            // Can be int or float. Let's just store as float for nlohmann to figure out
+                            // or if it has no '.', parse as int
+                            if (valStr.find('.') != std::string::npos) {
+                                target[snakeKey] = f;
+                            } else {
+                                target[snakeKey] = std::stoi(valStr);
+                            }
+                        } else {
+                            target[snakeKey] = valStr;
+                        }
+                    } catch(...) {
+                        target[snakeKey] = valStr;
+                    }
+                }
+            }
+        }
+    }
+
+    void applyPresetSettings(json& settingsNode, const std::string& presetsDir) {
+        if (!settingsNode.contains("preset_sub_type") || !settingsNode.contains("preset_name")) return;
+        std::string targetSubType = settingsNode.value("preset_sub_type", "");
+        std::string targetName = settingsNode.value("preset_name", "");
+        
+        if (targetSubType.empty() || targetName.empty()) return;
+
+        if (std::filesystem::exists(presetsDir)) {
+            for (const auto& entry : std::filesystem::directory_iterator(presetsDir)) {
+                if (entry.path().extension() == ".json") {
+                    std::ifstream f(entry.path());
+                    if (f.is_open()) {
+                        json pj;
+                        try {
+                            f >> pj;
+                            if (pj.contains("jsonMap")) {
+                                for (auto& presetItem : pj["jsonMap"]) {
+                                    if (presetItem.value("presetSubType", "") == targetSubType &&
+                                        presetItem.value("presetName", "") == targetName) {
+                                        if (presetItem.contains("data") && presetItem["data"].contains("settingList")) {
+                                            mergePresetValues(settingsNode, presetItem["data"]["settingList"]);
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch(...) {
+                            // Ignore parse errors on individual preset files
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     template<typename T>
     void parseShapesBase(const json& j, T* pfm) {
@@ -41,10 +121,10 @@ namespace dbv3 {
         pfm->settings.azimuthAngleMax = j.value("azimuth_angle_max", 180.0f);
         pfm->settings.polarAngleMin = j.value("polar_angle_min", -180.0f);
         pfm->settings.polarAngleMax = j.value("polar_angle_max", 180.0f);
-        pfm->settings.curvature = j.value("curvature", 0.5f);
+        pfm->settings.curvature = j.value("curvature", j.value("curve_tension", 0.5f));
         pfm->settings.edgeRetention = j.value("edge_retention", true);
-        pfm->settings.edgeThresholdA = j.value("edge_threshold_a", 100.0f);
-        pfm->settings.edgeThresholdB = j.value("edge_threshold_b", 200.0f);
+        pfm->settings.edgeThresholdA = j.value("edge_threshold_a", j.value("edge_threshold", 100.0f));
+        pfm->settings.edgeThresholdB = j.value("edge_threshold_b", j.value("edge_threshold", 200.0f));
     }
 
     template<typename T>
@@ -60,8 +140,8 @@ namespace dbv3 {
         pfm->settings.drawingDeltaAngle = j.value("drawing_delta_angle", 0.0f);
         pfm->settings.lineDensity = j.value("line_density", 50.0f);
         pfm->settings.lineMinLength = j.value("line_min_length", 2);
-        pfm->settings.lineMaxLength = j.value("line_max_length", 50);
-        pfm->settings.lineMaxLimit = j.value("line_max_limit", -1);
+        pfm->settings.lineMaxLength = j.value("line_max_length", j.value("max_line_length", 50));
+        pfm->settings.lineMaxLimit = j.value("line_max_limit", pfm->settings.lineMaxLimit);
         pfm->settings.angleTests = j.value("angle_tests", 12);
         pfm->settings.unlimitedTests = j.value("unlimited_tests", false);
         pfm->settings.squiggleMinLength = j.value("squiggle_min_length", 0);
@@ -88,7 +168,7 @@ namespace dbv3 {
         pfm->settings.ignoreWhite = j.value("ignore_white", true);
     }
 
-    std::shared_ptr<DrawingBot::Project> ProjectParser::parse(const std::string& filepath) {
+    std::shared_ptr<DrawingBot::Project> ProjectParser::parse(const std::string& filepath, const std::string& presetsDir) {
         std::ifstream f(filepath);
         if (!f.is_open()) {
             std::cerr << "ProjectParser: Failed to open project file: " << filepath << std::endl;
@@ -144,11 +224,12 @@ namespace dbv3 {
         
         if (j.contains("pfm_settings")) {
             auto settingsNode = j["pfm_settings"];
+            applyPresetSettings(settingsNode, presetsDir);
             
             if (pfmName == "VoronoiShapesPFM") {
                 auto pfm = new DrawingBot::VoronoiShapes();
                 parseShapesBase(settingsNode, pfm);
-                pfm->settings.pointLimit = settingsNode.value("cell_count", 800);
+                pfm->settings.pointLimit = settingsNode.value("cell_count", settingsNode.value("point_count", 800));
                 pv.pfmConfig = pfm;
             } else if (pfmName == "SketchLinesPFM") {
                 auto pfm = new DrawingBot::SketchLines();
@@ -204,7 +285,7 @@ namespace dbv3 {
             } else {
                 std::cout << "[ProjectParser] Warning: Unmapped PFM type '" << pfmName << "', falling back to VoronoiShapes.\n";
                 auto pfm = new DrawingBot::VoronoiShapes();
-                pfm->settings.pointLimit = settingsNode.value("cell_count", 800);
+                pfm->settings.pointLimit = settingsNode.value("cell_count", settingsNode.value("point_count", 800));
                 pv.pfmConfig = pfm;
             }
         }

@@ -5,19 +5,21 @@
 #include "DrawingPipeline.h"
 
 void printUsage() {
-    std::cout << "Usage: dbv3_cli -c <project.dbv3> [-i <override_image.jpg>] [-o <output_file>]\n";
+    std::cout << "Usage: dbv3_cli -c <project.dbv3> [-i <override_image.jpg>] [-o <output_file>] [-p <presets_dir>]\n";
 }
 
 int main(int argc, char** argv) {
     std::string configFile = "";
     std::string overrideImage = "";
     std::string outputFile = "output.gcode";
+    std::string presetsDir = "presets";
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-c" && i + 1 < argc) configFile = argv[++i];
         else if (arg == "-i" && i + 1 < argc) overrideImage = argv[++i];
         else if (arg == "-o" && i + 1 < argc) outputFile = argv[++i];
+        else if (arg == "-p" && i + 1 < argc) presetsDir = argv[++i];
     }
 
     if (configFile.empty()) {
@@ -27,7 +29,7 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "[CLI] Parsing Project File: " << configFile << "\n";
-    auto project = dbv3::ProjectParser::parse(configFile);
+    auto project = dbv3::ProjectParser::parse(configFile, presetsDir);
     
     if (!project) {
         std::cerr << "Error: Failed to parse project configuration.\n";
