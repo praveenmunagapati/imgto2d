@@ -1,0 +1,97 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START MOSAICRECTANGLESPFM PRESET: DEFAULT",
+    "gcode_end": "; END MOSAICRECTANGLESPFM PRESET: DEFAULT",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "MosaicRectanglesPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Mosaic Rectangles",
+    "preset_name": "Default",
+    "column_padding_percent": 5,
+    "drawing_styles": {
+      "styles": [
+        {
+          "enabled": true,
+          "name": "Sketch Lines PFM",
+          "pfm": "Sketch Lines PFM",
+          "settings": {},
+          "weight": 100
+        },
+        {
+          "enabled": true,
+          "name": "Sketch Squares PFM",
+          "pfm": "Sketch Squares PFM",
+          "settings": {
+            "neighbour_tests": 4,
+            "max_line_length": 30
+          },
+          "weight": 100
+        },
+        {
+          "enabled": true,
+          "name": "Sketch Curves PFM",
+          "pfm": "Sketch Curves PFM",
+          "settings": {
+            "neighbour_tests": 50,
+            "squiggle_length": 20,
+            "min_line_length": 15,
+            "start_angle_min": -360,
+            "start_angle_max": 360
+          },
+          "weight": 100
+        },
+        {
+          "enabled": false,
+          "name": "Sketch Shapes PFM",
+          "pfm": "Sketch Shapes PFM",
+          "settings": {
+            "min_line_length": 30,
+            "max_line_length": 150
+          },
+          "weight": 100
+        }
+      ]
+    },
+    "columns": 5,
+    "rows": 5,
+    "row_padding_percent": 5
+  }
+}

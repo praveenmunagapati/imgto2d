@@ -1,0 +1,68 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START ADAPTIVECIRCULARSCRIBBLESPFM PRESET: DETAILED SCRIBBLES",
+    "gcode_end": "; END ADAPTIVECIRCULARSCRIBBLESPFM PRESET: DETAILED SCRIBBLES",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "AdaptiveCircularScribblesPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Adaptive Circular Scribbles",
+    "preset_name": "Detailed Scribbles",
+    "plotting_resolution": 1.0,
+    "angular_velocity": 1.0,
+    "max_radius": 6.0,
+    "min_velocity": 0.5,
+    "ignore_white": false,
+    "merge_tsp_paths": true,
+    "min_radius": 2.5,
+    "edge_threshold": 250.0,
+    "azimuth_angle_min": -45.0,
+    "polar_angle_min": 0.0,
+    "stipple_min_radius": 1.0,
+    "use_accurate_tsp": false,
+    "polar_angle_max": 45.0,
+    "edge_retention": false,
+    "stipple_max_radius": 10.0,
+    "azimuth_angle_max": 0.0,
+    "curve_tension": 1.0,
+    "max_velocity": 2.5,
+    "random_seed": 0
+  }
+}

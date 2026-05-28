@@ -1,0 +1,78 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START SKETCHLINESPFM PRESET: DIGITAL",
+    "gcode_end": "; END SKETCHLINESPFM PRESET: DIGITAL",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "SketchLinesPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Sketch Lines PFM",
+    "preset_name": "Digital",
+    "shading_delta_angle": 180.0,
+    "shading_threshold": 90,
+    "start_angle_min": 90,
+    "erase_min": 50,
+    "distortion": 0.0,
+    "edge_power": 0.0,
+    "erase_radius_max": 1.0,
+    "sobel_power": 0.0,
+    "should_lift_pen": true,
+    "line_max_length": 72,
+    "line_max_limit": -1,
+    "drawing_delta_angle": 360.0,
+    "luminance_power": 100.0,
+    "start_angle_max": 90,
+    "angularity": 0.0,
+    "random_seed": 0,
+    "unlimited_tests": false,
+    "squiggle_max_deviation": 25.0,
+    "plotting_resolution": 1.0,
+    "erase_radius_min": 1.0,
+    "shading": true,
+    "squiggle_max_length": 500,
+    "directionality": 0.0,
+    "angle_tests": 5,
+    "tone": 100.0,
+    "line_min_length": 12,
+    "erase_max": 125,
+    "squiggle_min_length": 25,
+    "line_density": 75.0
+  }
+}

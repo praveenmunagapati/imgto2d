@@ -18,6 +18,7 @@ namespace DrawingBot {
 
     private:
         std::shared_ptr<Project> m_project;
+        cv::Mat m_processedImage;
         
         // Core Processing Stages
         cv::Mat loadInput(const std::string& path);

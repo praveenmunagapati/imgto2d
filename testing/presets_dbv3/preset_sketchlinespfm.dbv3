@@ -1,0 +1,57 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START SKETCHLINESPFM PRESET: GLITCHY HORIZONTAL",
+    "gcode_end": "; END SKETCHLINESPFM PRESET: GLITCHY HORIZONTAL",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "SketchLinesPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Sketch Lines PFM",
+    "preset_name": "Glitchy Horizontal",
+    "neighbour_tests": 30,
+    "squiggle_length": 100,
+    "shading_threshold": 10.0,
+    "max_line_length": 50,
+    "start_angle_min": -10,
+    "start_angle_max": 10,
+    "shading": true,
+    "adjust_brightness": 70
+  }
+}

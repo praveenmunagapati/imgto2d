@@ -19,8 +19,15 @@ namespace DrawingBot {
             if (input.empty()) return std::vector<PlotPath>();
 
             cv::Mat canvas = applyDrawingArea(input);
+            std::cout << "[PIPELINE] Input Size: " << input.cols << "x" << input.rows << "\n";
+            std::cout << "[PIPELINE] Canvas Size: " << canvas.cols << "x" << canvas.rows << "\n";
             cv::Mat filtered = applyFilterChains(canvas);
+            std::cout << "[PIPELINE] Filtered Size: " << filtered.cols << "x" << filtered.rows << "\n";
             cv::Mat masked = applyMasks(filtered);
+            std::cout << "[PIPELINE] Masked Size: " << masked.cols << "x" << masked.rows << "\n";
+            cv::Scalar meanVal = cv::mean(masked);
+            std::cout << "[PIPELINE] Masked Mean (B,G,R): " << meanVal[0] << ", " << meanVal[1] << ", " << meanVal[2] << "\n";
+            m_processedImage = masked.clone();
             
             std::vector<cv::Mat> channels = separateColors(masked);
             std::vector<PlotPath> paths = executePFMs(channels);
@@ -52,11 +59,23 @@ namespace DrawingBot {
     cv::Mat DrawingPipeline::applyDrawingArea(const cv::Mat& input) {
         if (input.empty()) return input;
         
-        int w = m_project->drawingArea.width > 0 ? std::min((int)m_project->drawingArea.width, input.cols) : input.cols;
-        int h = m_project->drawingArea.height > 0 ? std::min((int)m_project->drawingArea.height, input.rows) : input.rows;
+        if (m_project->drawingArea.useOriginalSizing) {
+            return input.clone();
+        }
         
-        if (w <= 0 || h <= 0) return input.clone();
-        return input(cv::Rect(0, 0, w, h)).clone();
+        float pixelsPerUnit = 10.0f;
+        if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) pixelsPerUnit = 100.0f;
+        else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) pixelsPerUnit = 254.0f;
+        else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::PIXELS) pixelsPerUnit = 1.0f;
+        
+        int targetW = std::round(m_project->drawingArea.width * pixelsPerUnit);
+        int targetH = std::round(m_project->drawingArea.height * pixelsPerUnit);
+        
+        if (targetW <= 0 || targetH <= 0) return input.clone();
+        
+        cv::Mat resized;
+        cv::resize(input, resized, cv::Size(targetW, targetH), 0, 0, cv::INTER_CUBIC);
+        return resized;
     }
 
     cv::Mat DrawingPipeline::applyFilterChains(const cv::Mat& input) {
@@ -189,6 +208,7 @@ namespace DrawingBot {
         if (m_project->versions.empty() || m_project->versions.back().pfmConfig == nullptr) return paths;
 
         for (size_t i = 0; i < channels.size(); ++i) {
+            std::cout << "[PIPELINE] Channel " << i << " Mean: " << cv::mean(channels[i])[0] << " Size: " << channels[i].cols << "x" << channels[i].rows << "\n";
             auto generated = m_project->versions.back().pfmConfig->generate(channels[i]);
             for (auto& path : generated) {
                 path.penIndex = i; // Assign pen identity
@@ -231,12 +251,39 @@ namespace DrawingBot {
     bool DrawingPipeline::exportResults(const std::string& outputPath, const std::vector<PlotPath>& paths) {
         std::cout << "Exporting results to: " << outputPath << "\n";
         
+        if (!m_processedImage.empty()) {
+            std::string processedPath = outputPath;
+            size_t dotPos = processedPath.find_last_of('.');
+            if (dotPos != std::string::npos) {
+                processedPath = processedPath.substr(0, dotPos);
+            }
+            size_t slashPos = processedPath.find_last_of("\\/");
+            if (slashPos != std::string::npos) {
+                processedPath = processedPath.substr(0, slashPos + 1) + "processed_" + processedPath.substr(slashPos + 1);
+            } else {
+                processedPath = "processed_" + processedPath;
+            }
+            size_t outPos = processedPath.find("processed_output_");
+            if (outPos != std::string::npos) {
+                processedPath.replace(outPos, 17, "processed_");
+            }
+            processedPath += ".png";
+            std::cout << "[CLI] Saving intermediate processed image: " << processedPath << "\n";
+            cv::imwrite(processedPath, m_processedImage);
+        }
+        
         // Physical Scaling Gap Fix
         float scale = 0.264583f; // Default 96 DPI pixels to mm
         if (!m_project->drawingArea.useOriginalSizing) {
-            if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::MM) scale = 1.0f;
-            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) scale = 10.0f;
-            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) scale = 25.4f;
+            float pixelsPerUnit = 10.0f;
+            if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) pixelsPerUnit = 100.0f;
+            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) pixelsPerUnit = 254.0f;
+            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::PIXELS) pixelsPerUnit = 1.0f;
+            
+            scale = 1.0f / pixelsPerUnit;
+            if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::MM) scale *= 1.0f;
+            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) scale *= 10.0f;
+            else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) scale *= 25.4f;
         }
         
         std::vector<PlotPath> scaledPaths = paths;
@@ -249,6 +296,55 @@ namespace DrawingBot {
         
         if (outputPath.find(".gcode") != std::string::npos || outputPath.find(".nc") != std::string::npos) {
             Exporter::exportGCode(scaledPaths, outputPath, m_project->gcodeSettings, m_project->drawingArea.width, m_project->drawingArea.height, 3000.0f);
+            
+            // Automatically render and save the final drawing as an image alongside the G-Code
+            std::string pngPath = outputPath;
+            size_t dotPos = pngPath.find_last_of('.');
+            if (dotPos != std::string::npos) {
+                pngPath = pngPath.substr(0, dotPos);
+            }
+            pngPath += ".png";
+            
+            int targetW = m_project->drawingArea.useOriginalSizing ? 1000 : std::round(m_project->drawingArea.width * 10.0f);
+            int targetH = m_project->drawingArea.useOriginalSizing ? 1000 : std::round(m_project->drawingArea.height * 10.0f);
+            if (targetW <= 0) targetW = 1000;
+            if (targetH <= 0) targetH = 1000;
+            
+            cv::Mat canvas(targetH, targetW, CV_8UC3, cv::Scalar(255, 255, 255));
+            
+            float scale = 1.0f;
+            if (!m_project->drawingArea.useOriginalSizing) {
+                float pixelsPerUnit = 10.0f;
+                if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) pixelsPerUnit = 100.0f;
+                else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) pixelsPerUnit = 254.0f;
+                else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::PIXELS) pixelsPerUnit = 1.0f;
+                
+                scale = 10.0f / pixelsPerUnit;
+            }
+            
+            cv::Scalar penColors[] = {
+                cv::Scalar(0, 0, 0),       // Black
+                cv::Scalar(255, 0, 0),     // Blue
+                cv::Scalar(0, 255, 0),     // Green
+                cv::Scalar(0, 0, 255),     // Red
+                cv::Scalar(255, 255, 0),   // Cyan
+                cv::Scalar(255, 0, 255),   // Magenta
+                cv::Scalar(0, 255, 255)    // Yellow
+            };
+            
+            for (const auto& path : paths) {
+                if (path.points.empty()) continue;
+                cv::Scalar color = penColors[path.penIndex % 7];
+                for (size_t i = 1; i < path.points.size(); ++i) {
+                    cv::Point p1(std::round(path.points[i-1].x * scale), std::round(path.points[i-1].y * scale));
+                    cv::Point p2(std::round(path.points[i].x * scale), std::round(path.points[i].y * scale));
+                    cv::line(canvas, p1, p2, color, 2, cv::LINE_AA);
+                }
+            }
+            
+            std::cout << "[CLI] Automatically saving rendered vector drawing image: " << pngPath << "\n";
+            cv::imwrite(pngPath, canvas);
+            
             return true;
         } else if (outputPath.find(".hpgl") != std::string::npos || outputPath.find(".plt") != std::string::npos) {
             // HPGL uses plotter units (1 unit = 0.025mm), so multiply mm by 40
@@ -263,6 +359,46 @@ namespace DrawingBot {
             return true;
         } else if (outputPath.find(".svg") != std::string::npos) {
             Exporter::exportSVG(scaledPaths, outputPath, 1000, 1000);
+            return true;
+        } else if (outputPath.find(".png") != std::string::npos || outputPath.find(".jpg") != std::string::npos || outputPath.find(".jpeg") != std::string::npos) {
+            int targetW = m_project->drawingArea.useOriginalSizing ? 1000 : std::round(m_project->drawingArea.width * 10.0f);
+            int targetH = m_project->drawingArea.useOriginalSizing ? 1000 : std::round(m_project->drawingArea.height * 10.0f);
+            if (targetW <= 0) targetW = 1000;
+            if (targetH <= 0) targetH = 1000;
+            
+            cv::Mat canvas(targetH, targetW, CV_8UC3, cv::Scalar(255, 255, 255));
+            
+            float scale = 1.0f;
+            if (!m_project->drawingArea.useOriginalSizing) {
+                float pixelsPerUnit = 10.0f;
+                if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::CM) pixelsPerUnit = 100.0f;
+                else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::INCHES) pixelsPerUnit = 254.0f;
+                else if (m_project->drawingArea.inputUnits == DrawingArea::InputUnits::PIXELS) pixelsPerUnit = 1.0f;
+                
+                scale = 10.0f / pixelsPerUnit;
+            }
+            
+            cv::Scalar penColors[] = {
+                cv::Scalar(0, 0, 0),       // Black
+                cv::Scalar(255, 0, 0),     // Blue
+                cv::Scalar(0, 255, 0),     // Green
+                cv::Scalar(0, 0, 255),     // Red
+                cv::Scalar(255, 255, 0),   // Cyan
+                cv::Scalar(255, 0, 255),   // Magenta
+                cv::Scalar(0, 255, 255)    // Yellow
+            };
+            
+            for (const auto& path : paths) {
+                if (path.points.empty()) continue;
+                cv::Scalar color = penColors[path.penIndex % 7];
+                for (size_t i = 1; i < path.points.size(); ++i) {
+                    cv::Point p1(std::round(path.points[i-1].x * scale), std::round(path.points[i-1].y * scale));
+                    cv::Point p2(std::round(path.points[i].x * scale), std::round(path.points[i].y * scale));
+                    cv::line(canvas, p1, p2, color, 2, cv::LINE_AA);
+                }
+            }
+            
+            cv::imwrite(outputPath, canvas);
             return true;
         }
         

@@ -1,0 +1,177 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START MOSAICVORONOIPFM PRESET: ADAPTIVE SHAPES",
+    "gcode_end": "; END MOSAICVORONOIPFM PRESET: ADAPTIVE SHAPES",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "MosaicVoronoiPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Mosaic Voronoi",
+    "preset_name": "Adaptive Shapes",
+    "plotting_resolution": 1.0,
+    "drawing_styles": {
+      "styles": [
+        {
+          "enabled": true,
+          "name": "Adaptive Shapes",
+          "pfm": "Adaptive Shapes",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "max_sample_radius": 20.0,
+            "min_sample_radius": 0.5,
+            "ignore_white": false,
+            "shape_type": "Circle",
+            "brightness": 1.0,
+            "fill_size": 100.0,
+            "min_rotation": 0.0,
+            "contrast": 1.25,
+            "random_seed": 0,
+            "align_rotation": true,
+            "max_rotation": 360.0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Adaptive Letters",
+          "pfm": "Adaptive Letters",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "max_sample_radius": 20.0,
+            "ignore_white": false,
+            "brightness": 1.0,
+            "min_rotation": 0.0,
+            "contrast": 1.25,
+            "svg_font": "EMSCasualHand",
+            "font": "Arial",
+            "min_sample_radius": 0.5,
+            "regex_filter": "",
+            "fill_size": 100.0,
+            "style": "Plain",
+            "display_style": "Random",
+            "random_seed": 0,
+            "text_filter": "",
+            "align_rotation": true,
+            "max_rotation": 360.0,
+            "use_svg_fonts": true
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Adaptive Shapes",
+          "pfm": "Adaptive Shapes",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "max_sample_radius": 20.0,
+            "min_sample_radius": 0.5,
+            "ignore_white": false,
+            "shape_type": "Square",
+            "brightness": 1.0,
+            "fill_size": 150.0,
+            "min_rotation": 0.0,
+            "contrast": 1.25,
+            "random_seed": 0,
+            "align_rotation": true,
+            "max_rotation": 0.0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Adaptive Shapes",
+          "pfm": "Adaptive Shapes",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "max_sample_radius": 20.0,
+            "min_sample_radius": 0.5,
+            "ignore_white": false,
+            "shape_type": "Circle",
+            "brightness": 1.0,
+            "fill_size": 150.0,
+            "min_rotation": 0.0,
+            "contrast": 1.25,
+            "random_seed": 0,
+            "align_rotation": true,
+            "max_rotation": 0.0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Adaptive Shapes",
+          "pfm": "Adaptive Shapes",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "max_sample_radius": 20.0,
+            "min_sample_radius": 0.5,
+            "ignore_white": false,
+            "shape_type": "Random",
+            "brightness": 1.0,
+            "fill_size": 150.0,
+            "min_rotation": 0.0,
+            "contrast": 1.25,
+            "random_seed": 0,
+            "align_rotation": true,
+            "max_rotation": 0.0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        }
+      ]
+    },
+    "offset_cells": 0.0,
+    "density_power": 5,
+    "luminance_power": 5,
+    "voronoi_style": "Classic",
+    "point_count": 50,
+    "random_seed": 0,
+    "voronoi_iterations": 5
+  }
+}

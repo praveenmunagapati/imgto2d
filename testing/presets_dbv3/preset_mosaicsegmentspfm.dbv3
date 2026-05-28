@@ -1,0 +1,129 @@
+{
+  "image_path": "c:\\Users\\sir\\Desktop\\imgto2d\\testing\\test_input.jpg",
+  "drawing_area": {
+    "use_original_sizing": false,
+    "width_mm": 210.0,
+    "height_mm": 297.0,
+    "input_units": "mm"
+  },
+  "hpgl_settings": {
+    "hpgl_rotation": 0.0,
+    "pen_velocity": 10,
+    "pen_force": 1,
+    "initial_pen": 1
+  },
+  "gcode_settings": {
+    "offset_x": 0.0,
+    "offset_y": 0.0,
+    "curve_flatness": 0.1,
+    "center_zero_point": true,
+    "comment_type": 0,
+    "gcode_start": "; START MOSAICSEGMENTSPFM PRESET: DEFAULT",
+    "gcode_end": "; END MOSAICSEGMENTSPFM PRESET: DEFAULT",
+    "gcode_pen_down": "M3 S1000",
+    "gcode_pen_up": "M3 S0"
+  },
+  "image_filters": {
+    "filters": [
+      {
+        "type": "Gain",
+        "settings": {
+          "Gain": 1.6,
+          "Bias": 60.0
+        }
+      },
+      {
+        "type": "Unsharp Mask",
+        "settings": {
+          "Radius": 2.0,
+          "Amount": 1.5
+        }
+      }
+    ]
+  },
+  "pfm_name": "MosaicSegmentsPFM",
+  "pfm_settings": {
+    "preset_sub_type": "Mosaic Segments",
+    "preset_name": "Default",
+    "plotting_resolution": 1.0,
+    "drawing_styles": {
+      "styles": [
+        {
+          "enabled": false,
+          "name": "Hatch Sawtooth",
+          "pfm": "Hatch Sawtooth",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "line_spacing": 7.0,
+            "amplitude": 1.0,
+            "min_velocity": 0.2,
+            "angle": 125.0,
+            "crosshatch": false,
+            "curve_tension": 0.5,
+            "max_velocity": 4.0,
+            "random_seed": 0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Spiral PFM",
+          "pfm": "Spiral PFM",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "amplitude": 1.0,
+            "spiral_size": 100.0,
+            "centre_x": 50.0,
+            "min_velocity": 50.0,
+            "ignore_white": false,
+            "centre_y": 50.0,
+            "ring_spacing": 7.0,
+            "connected_lines": true,
+            "spiral_type": "Archimedean",
+            "max_velocity": 150.0,
+            "variable_velocity": true,
+            "random_seed": 0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        },
+        {
+          "enabled": true,
+          "name": "Spiral Circular Scribbles",
+          "pfm": "Spiral Circular Scribbles",
+          "settings": {
+            "plotting_resolution": 1.0,
+            "amplitude": 1.0,
+            "angular_velocity": 20.0,
+            "spiral_size": 100.0,
+            "centre_x": 50.0,
+            "min_velocity": 10.0,
+            "ignore_white": false,
+            "centre_y": 50.0,
+            "azimuth_angle_min": -45.0,
+            "polar_angle_min": 0.0,
+            "ring_spacing": 7.0,
+            "polar_angle_max": 45.0,
+            "azimuth_angle_max": 0.0,
+            "spiral_type": "Archimedean",
+            "curve_tension": 0.5,
+            "max_velocity": 100.0,
+            "variable_velocity": true,
+            "random_seed": 0
+          },
+          "weight": 100,
+          "argb": -1,
+          "drawingsetslot": 0
+        }
+      ]
+    },
+    "offset_cells": 0.0,
+    "compactness": 40,
+    "segments": 200,
+    "iterations": 10,
+    "random_seed": 0
+  }
+}

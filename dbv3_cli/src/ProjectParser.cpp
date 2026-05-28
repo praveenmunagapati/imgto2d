@@ -695,8 +695,6 @@ namespace dbv3 {
         pfm->settings.brightness = j.value("brightness", 1.0f);
         pfm->settings.contrast = j.value("contrast", 1.0f);
         pfm->settings.ignoreWhite = j.value("ignore_white", true);
-        
-        j.value("sampling_type", 0);
         j.value("target_spacing", 0.0f);
         j.value("use_accurate_tsp", false);
     }
@@ -1517,7 +1515,7 @@ namespace dbv3 {
 
         // Load image filters polymorphic array
         std::vector<DrawingBot::ImageFilter*> filters;
-        json filterBlock;
+        json filterBlock = json::object();
         if (j.contains("image_filters") && j["image_filters"].is_object()) filterBlock = j["image_filters"];
         else if (j.contains("imageFilters") && j["imageFilters"].is_object()) filterBlock = j["imageFilters"];
         

@@ -55,6 +55,11 @@ namespace DrawingBot {
                     for (int x = boundingBox.x; x < boundingBox.x + boundingBox.width; x+=2) {
                         if (cv::pointPolygonTest(facets[i], cv::Point2f(x, y), false) >= 0) {
                             float luma = getLuma(workImg.at<cv::Vec3b>(y, x));
+                            static int printCount = 0;
+                            if (printCount < 10) {
+                                std::cout << "[DEBUG_LUMA] x=" << x << " y=" << y << " luma=" << luma << "\n";
+                                printCount++;
+                            }
                             float normLuma = luma / 255.0f;
                             float weight = 1.0f - normLuma;
                             weight = std::pow(weight, densityPower / 10.0f);
