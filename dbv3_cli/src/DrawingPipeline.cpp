@@ -248,7 +248,7 @@ namespace DrawingBot {
         }
         
         if (outputPath.find(".gcode") != std::string::npos || outputPath.find(".nc") != std::string::npos) {
-            Exporter::exportGCode(scaledPaths, outputPath, 3000.0f);
+            Exporter::exportGCode(scaledPaths, outputPath, m_project->gcodeSettings, m_project->drawingArea.width, m_project->drawingArea.height, 3000.0f);
             return true;
         } else if (outputPath.find(".hpgl") != std::string::npos || outputPath.find(".plt") != std::string::npos) {
             // HPGL uses plotter units (1 unit = 0.025mm), so multiply mm by 40
@@ -259,7 +259,7 @@ namespace DrawingBot {
                     pt.y *= 40.0f;
                 }
             }
-            Exporter::exportHPGL(hpglPaths, outputPath);
+            Exporter::exportHPGL(hpglPaths, outputPath, m_project->hpglSettings);
             return true;
         } else if (outputPath.find(".svg") != std::string::npos) {
             Exporter::exportSVG(scaledPaths, outputPath, 1000, 1000);
