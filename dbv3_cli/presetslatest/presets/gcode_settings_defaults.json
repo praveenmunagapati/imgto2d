@@ -1,0 +1,14 @@
+{
+  "jsonMap": [
+    {
+      "presetType": "gcode_settings",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Default",
+      "userCreated": false,
+      "data": {
+        "settingList": {}
+      }
+    }
+  ]
+}

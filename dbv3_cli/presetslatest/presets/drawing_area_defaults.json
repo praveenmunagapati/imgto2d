@@ -1,0 +1,391 @@
+{
+  "jsonMap": [
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Original Sizing",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "useOriginalSizing": "true"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A0 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "1189.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "841.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A1 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "841.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "594.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A2 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "594.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "420.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A3 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "420.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "297.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A4 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "297.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "210.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A5 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "210.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "148.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A6 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "148.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "105.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A7 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "105.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "74.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A8 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "105.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "52.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A9 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "52.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "37.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "A10 Paper",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "drawingAreaHeight": "37.0",
+          "useOriginalSizing": "false",
+          "drawingAreaWidth": "26.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "ANSI A",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "279.0",
+          "drawingAreaWidth": "216.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "ANSI B",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "432.0",
+          "drawingAreaWidth": "279.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "ANSI C",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "559.0",
+          "drawingAreaWidth": "432.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "ANSI D",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "864.0",
+          "drawingAreaWidth": "559.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "ANSI E",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "1118.0",
+          "drawingAreaWidth": "864.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch A",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "305.0",
+          "drawingAreaWidth": "229.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch B",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "457.0",
+          "drawingAreaWidth": "305.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch C",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "610.0",
+          "drawingAreaWidth": "457.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch D",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "914.0",
+          "drawingAreaWidth": "610.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch E",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "1219.0",
+          "drawingAreaWidth": "914.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "Arch E1",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "1067.0",
+          "drawingAreaWidth": "762.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "US Letter",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "279.0",
+          "drawingAreaWidth": "216.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "US Legal",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "mm",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "356.0",
+          "drawingAreaWidth": "216.0"
+        }
+      }
+    },
+    {
+      "presetType": "drawing_area",
+      "version": 1,
+      "presetSubType": "System",
+      "presetName": "US Executive",
+      "userCreated": false,
+      "data": {
+        "settingList": {
+          "inputUnits": "inches",
+          "useOriginalSizing": "false",
+          "drawingAreaHeight": "10.5",
+          "drawingAreaWidth": "7.2"
+        }
+      }
+    }
+  ]
+}
