@@ -12,6 +12,9 @@ namespace DrawingBot {
         // Starts the pipeline asynchronously. Returns a future with the resulting paths.
         std::future<std::vector<PlotPath>> runAsync();
         
+        // Callback for progress updates (percent, message)
+        std::function<void(int, const std::string&)> progressCallback = nullptr;
+        
         // Batch processing orchestration
         std::future<void> runBatchAsync(const BatchSettings& batchSettings);
         bool exportResults(const std::string& outputPath, const std::vector<PlotPath>& paths);

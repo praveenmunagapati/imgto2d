@@ -13,27 +13,38 @@ namespace DrawingBot {
 
     std::future<std::vector<PlotPath>> DrawingPipeline::runAsync() {
         return std::async(std::launch::async, [this]() {
+            if (progressCallback) progressCallback(5, "Loading image...");
             std::cout << "Starting drawing pipeline...\n";
 
             cv::Mat input = loadInput(m_project->sourceImagePath);
             if (input.empty()) return std::vector<PlotPath>();
 
+            if (progressCallback) progressCallback(10, "Applying drawing area...");
             cv::Mat canvas = applyDrawingArea(input);
             std::cout << "[PIPELINE] Input Size: " << input.cols << "x" << input.rows << "\n";
             std::cout << "[PIPELINE] Canvas Size: " << canvas.cols << "x" << canvas.rows << "\n";
+            
+            if (progressCallback) progressCallback(20, "Applying filters...");
             cv::Mat filtered = applyFilterChains(canvas);
             std::cout << "[PIPELINE] Filtered Size: " << filtered.cols << "x" << filtered.rows << "\n";
+            
+            if (progressCallback) progressCallback(30, "Applying masks...");
             cv::Mat masked = applyMasks(filtered);
             std::cout << "[PIPELINE] Masked Size: " << masked.cols << "x" << masked.rows << "\n";
             cv::Scalar meanVal = cv::mean(masked);
             std::cout << "[PIPELINE] Masked Mean (B,G,R): " << meanVal[0] << ", " << meanVal[1] << ", " << meanVal[2] << "\n";
             m_processedImage = masked.clone();
             
+            if (progressCallback) progressCallback(40, "Separating colors...");
             std::vector<cv::Mat> channels = separateColors(masked);
+            
+            if (progressCallback) progressCallback(50, "Generating paths...");
             std::vector<PlotPath> paths = executePFMs(channels);
             
+            if (progressCallback) progressCallback(85, "Optimizing paths...");
             optimizePaths(paths);
 
+            if (progressCallback) progressCallback(100, "Completed successfully");
             std::cout << "Pipeline completed successfully.\n";
             return paths;
         });

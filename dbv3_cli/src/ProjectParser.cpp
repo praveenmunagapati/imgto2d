@@ -860,6 +860,8 @@ namespace dbv3 {
             pfm->settings.curvature = settingsNode.value("curvature", 1.0f);
             pfm->settings.sineFactor = settingsNode.value("sine_factor", 1.0f);
             pfm->settings.cosFactor = settingsNode.value("cos_factor", 1.0f);
+            pfm->settings.centreX = settingsNode.value("centre_x", 0.5f);
+            pfm->settings.centreY = settingsNode.value("centre_y", 0.5f);
             basePfm = pfm;
         } else if (pfmName == "SketchCatmullRomsPFM") {
             auto pfm = new DrawingBot::SketchCatmullRoms();
@@ -945,10 +947,13 @@ namespace dbv3 {
         } else if (pfmName == "AdaptiveDashesPFM") {
             auto pfm = new DrawingBot::AdaptiveDashes();
             parseAdaptiveBase(settingsNode, pfm);
+            parseShapesBase(settingsNode, pfm);
+            pfm->settings.distortion = settingsNode.value("distortion", 0.0f);
             basePfm = pfm;
         } else if (pfmName == "AdaptiveTreePFM") {
             auto pfm = new DrawingBot::AdaptiveTree();
             parseAdaptiveBase(settingsNode, pfm);
+            pfm->settings.createCurves = settingsNode.value("create_curves", true);
             basePfm = pfm;
         } else if (pfmName == "AdaptiveTSPPFM") {
             auto pfm = new DrawingBot::AdaptiveTSP();
@@ -1152,6 +1157,10 @@ namespace dbv3 {
                 pfm->settings.luminancePower = settingsNode.value("luminance_power", 5.0f);
                 pfm->settings.voronoiIterations = settingsNode.value("voronoi_iterations", 1);
                 pfm->settings.offsetCells = settingsNode.value("offset_cells", 0.0f);
+                pfm->settings.pointDensity = settingsNode.value("density", 500.0f);
+                pfm->settings.voronoiAccuracy = settingsNode.value("voronoi_accuracy", 1.0f);
+                pfm->settings.ignoreWhite = settingsNode.value("ignore_white", true);
+                pfm->settings.tileCount = settingsNode.value("tile_count", 0);
                 settingsNode.value("voronoi_style", 0);
                 mosaicPfm = pfm;
                 stylesRef = &pfm->drawingStyles;

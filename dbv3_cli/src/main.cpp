@@ -4,8 +4,10 @@
 #include "ProjectParser.h"
 #include "DrawingPipeline.h"
 
+#include "ServerHelper.hpp"
+
 void printUsage() {
-    std::cout << "Usage: dbv3_cli -c <project.dbv3> [-i <override_image.jpg>] [-o <output_file>] [-p <presets_dir>]\n";
+    std::cout << "Usage: dbv3_cli -c <project.dbv3> [-i <override_image.jpg>] [-o <output_file>] [-p <presets_dir>] [--server]\n";
 }
 
 int main(int argc, char** argv) {
@@ -13,6 +15,7 @@ int main(int argc, char** argv) {
     std::string overrideImage = "";
     std::string outputFile = "output.gcode";
     std::string presetsDir = "presets";
+    bool runServer = false;
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
@@ -20,6 +23,12 @@ int main(int argc, char** argv) {
         else if (arg == "-i" && i + 1 < argc) overrideImage = argv[++i];
         else if (arg == "-o" && i + 1 < argc) outputFile = argv[++i];
         else if (arg == "-p" && i + 1 < argc) presetsDir = argv[++i];
+        else if (arg == "--server") runServer = true;
+    }
+
+    if (runServer) {
+        startServer(8080, presetsDir);
+        return 0;
     }
 
     if (configFile.empty()) {

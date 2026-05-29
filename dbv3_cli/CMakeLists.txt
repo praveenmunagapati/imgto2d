@@ -34,4 +34,8 @@ set(SOURCES
 add_executable(dbv3_cli ${SOURCES})
 
 target_include_directories(dbv3_cli PRIVATE src include)
-target_link_libraries(dbv3_cli PRIVATE ${OpenCV_LIBS})
+if(WIN32)
+    target_link_libraries(dbv3_cli PRIVATE ${OpenCV_LIBS} ws2_32 crypt32)
+else()
+    target_link_libraries(dbv3_cli PRIVATE ${OpenCV_LIBS} pthread)
+endif()
