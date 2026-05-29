@@ -15,12 +15,101 @@
 #include "ImageFilter.h"
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
 
 using json = nlohmann::json;
 #include <filesystem>
 #include <cctype>
 
 namespace dbv3 {
+
+    std::string resolveDisplayPFMName(const std::string& displayName) {
+        static const std::unordered_map<std::string, std::string> nameMap = {
+            // Sketch family
+            {"Sketch Lines PFM", "SketchLinesPFM"},
+            {"Sketch Lines", "SketchLinesPFM"},
+            {"Sketch Squares PFM", "SketchSquaresPFM"},
+            {"Sketch Squares", "SketchSquaresPFM"},
+            {"Sketch Curves PFM", "SketchCurvesPFM"},
+            {"Sketch Curves", "SketchCurvesPFM"},
+            {"Sketch Shapes PFM", "SketchShapesPFM"},
+            {"Sketch Shapes", "SketchShapesPFM"},
+            {"Sketch Waves PFM", "SketchWavesPFM"},
+            {"Sketch Waves", "SketchWavesPFM"},
+            {"Sketch Flow Field PFM", "SketchFlowFieldPFM"},
+            {"Sketch Flow Field", "SketchFlowFieldPFM"},
+            {"Sketch Superformula PFM", "SketchSuperformulaPFM"},
+            {"Sketch Superformula", "SketchSuperformulaPFM"},
+            {"Sketch Catmull Roms PFM", "SketchCatmullRomsPFM"},
+            {"Sketch Catmull Roms", "SketchCatmullRomsPFM"},
+            {"Sketch Quad Beziers PFM", "SketchQuadBeziersPFM"},
+            {"Sketch Quad Beziers", "SketchQuadBeziersPFM"},
+            {"Sketch Cubic Beziers PFM", "SketchCubicBeziersPFM"},
+            {"Sketch Cubic Beziers", "SketchCubicBeziersPFM"},
+            {"Sketch Sobel Edges PFM", "SketchSobelEdgesPFM"},
+            {"Sketch Sobel Edges", "SketchSobelEdgesPFM"},
+            {"Sketch Sweeping Curves PFM", "SketchSweepingCurvesPFM"},
+            {"Sketch Sweeping Curves", "SketchSweepingCurvesPFM"},
+            // Adaptive family
+            {"Adaptive Shapes", "AdaptiveShapesPFM"},
+            {"Adaptive Circular Scribbles", "AdaptiveCircularScribblesPFM"},
+            {"Adaptive Diagram", "AdaptiveDiagramPFM"},
+            {"Adaptive Triangulation", "AdaptiveTriangulationPFM"},
+            {"Adaptive Stippling", "AdaptiveStipplingPFM"},
+            {"Adaptive Dashes", "AdaptiveDashesPFM"},
+            {"Adaptive Tree", "AdaptiveTreePFM"},
+            {"Adaptive TSP", "AdaptiveTSPPFM"},
+            {"Adaptive Letters", "AdaptiveLettersPFM"},
+            // Voronoi family
+            {"Voronoi Shapes", "VoronoiShapesPFM"},
+            {"Voronoi TSP", "VoronoiTSPPFM"},
+            {"Voronoi Triangulation", "VoronoiTriangulationPFM"},
+            {"Voronoi Tree", "VoronoiTreePFM"},
+            {"Voronoi Stippling", "VoronoiStipplingPFM"},
+            {"Voronoi Dashes", "VoronoiDashesPFM"},
+            {"Voronoi Diagram", "VoronoiDiagramPFM"},
+            {"Voronoi Letters", "VoronoiLettersPFM"},
+            // LBG family
+            {"LBG Stippling", "LBGStipplingPFM"},
+            {"LBG Circular Scribbles", "LBGCircularScribblesPFM"},
+            {"LBG Shapes", "LBGShapesPFM"},
+            {"LBG Triangulation", "LBGTriangulationPFM"},
+            {"LBG Tree", "LBGTreePFM"},
+            {"LBG Dashes", "LBGDashesPFM"},
+            {"LBG Letters", "LBGLettersPFM"},
+            {"LBG Diagram", "LBGDiagramPFM"},
+            {"LBG Quad Tiles", "LBGQuadTilesPFM"},
+            {"LBG TSP", "LBGTSPPFM"},
+            // Grid family
+            {"Grid Shapes", "GridShapesPFM"},
+            {"Grid Dashes", "GridDashesPFM"},
+            {"Grid Letters", "GridLettersPFM"},
+            // Hatch family
+            {"Hatch Circular Scribbles", "HatchCircularScribblesPFM"},
+            {"Hatch Sawtooth", "HatchSawtoothPFM"},
+            // Spiral family
+            {"Spiral Sawtooth", "SpiralSawtoothPFM"},
+            {"Spiral PFM", "SpiralSawtoothPFM"},
+            {"Spiral Circular Scribbles", "SpiralCircularScribblesPFM"},
+            // Streamline family
+            {"Streamlines Edge Field", "StreamlinesEdgeFieldPFM"},
+            {"Streamlines Flow Field", "StreamlinesFlowFieldPFM"},
+            {"Streamlines Superformula", "StreamlinesSuperformulaPFM"},
+            // Special
+            {"ECS Drawing", "ECSDrawingPFM"},
+            {"SVG Converter", "SVGConverterPFM"},
+            {"Pen Calibration", "PenCalibrationPFM"},
+            // Mosaic/Composite
+            {"Mosaic Rectangles", "MosaicRectanglesPFM"},
+            {"Mosaic Voronoi", "MosaicVoronoiPFM"},
+            {"Mosaic Segments", "MosaicSegmentsPFM"},
+            {"Mosaic Triangulation", "MosaicTriangulationPFM"},
+            {"Mosaic Custom", "MosaicCustomPFM"},
+            {"Layers PFM", "LayersPFM"},
+        };
+        auto it = nameMap.find(displayName);
+        return (it != nameMap.end()) ? it->second : displayName;
+    }
 
     void applyNonPFMPreset(json& target, const std::string& presetType, const std::string& presetName, const std::string& presetsDir) {
         if (presetName.empty()) return;
@@ -36,8 +125,13 @@ namespace dbv3 {
                                 for (auto& presetItem : pj["jsonMap"]) {
                                     if (presetItem.value("presetType", "") == presetType &&
                                         presetItem.value("presetName", "") == presetName) {
-                                        if (presetItem.contains("data") && presetItem["data"].contains("settingList")) {
-                                            for (auto& el : presetItem["data"]["settingList"].items()) {
+                                        json presetSettingsData;
+                                        if (presetItem.contains("data")) {
+                                            if (presetItem["data"].contains("settingList")) presetSettingsData = presetItem["data"]["settingList"];
+                                            else if (presetItem["data"].contains("settings")) presetSettingsData = presetItem["data"]["settings"];
+                                        }
+                                        if (!presetSettingsData.is_null() && presetSettingsData.is_object()) {
+                                            for (auto& el : presetSettingsData.items()) {
                                                 std::string key = el.key();
                                                 std::string snakeKey;
                                                 for (char c : key) {
@@ -253,7 +347,27 @@ namespace dbv3 {
                     if (c == ' ') sk += '_';
                     else sk += std::tolower(c);
                 }
-                sNode[sk] = el.value();
+                if (el.value().is_string()) {
+                    std::string valStr = el.value().get<std::string>();
+                    if (valStr == "true") sNode[sk] = true;
+                    else if (valStr == "false") sNode[sk] = false;
+                    else {
+                        try {
+                            size_t pos;
+                            float fv = std::stof(valStr, &pos);
+                            if (pos == valStr.length()) {
+                                if (valStr.find('.') != std::string::npos) sNode[sk] = fv;
+                                else sNode[sk] = std::stoi(valStr);
+                            } else {
+                                sNode[sk] = valStr;
+                            }
+                        } catch(...) {
+                            sNode[sk] = valStr;
+                        }
+                    }
+                } else {
+                    sNode[sk] = el.value();
+                }
             }
 
             DrawingBot::ImageFilter* filter = nullptr;
@@ -580,6 +694,10 @@ namespace dbv3 {
                 if (!target.contains(snakeKey)) {
                     target[snakeKey] = el.value();
                 }
+            } else {
+                if (!target.contains(snakeKey)) {
+                    target[snakeKey] = el.value();
+                }
             }
         }
     }
@@ -603,9 +721,14 @@ namespace dbv3 {
                                 for (auto& presetItem : pj["jsonMap"]) {
                                     if (presetItem.value("presetSubType", "") == targetSubType &&
                                         presetItem.value("presetName", "") == targetName) {
-                                        if (presetItem.contains("data") && presetItem["data"].contains("settingList")) {
-                                            mergePresetValues(settingsNode, presetItem["data"]["settingList"]);
-                                            return;
+                                        if (presetItem.contains("data")) {
+                                            json sl;
+                                            if (presetItem["data"].contains("settingList")) sl = presetItem["data"]["settingList"];
+                                            else if (presetItem["data"].contains("settings")) sl = presetItem["data"]["settings"];
+                                            if (!sl.is_null() && sl.is_object()) {
+                                                mergePresetValues(settingsNode, sl);
+                                                return;
+                                            }
                                         }
                                     }
                                 }
@@ -1148,6 +1271,7 @@ namespace dbv3 {
                 pfm->settings.rows = settingsNode.value("rows", 8);
                 pfm->settings.columnPaddingPercent = settingsNode.value("column_padding_%", 5.0f);
                 pfm->settings.rowPaddingPercent = settingsNode.value("row_padding_%", 5.0f);
+                pfm->settings.drawOutlines = settingsNode.value("draw_outlines", true);
                 mosaicPfm = pfm;
                 stylesRef = &pfm->drawingStyles;
             } else if (pfmName == "MosaicVoronoiPFM") {
@@ -1162,6 +1286,7 @@ namespace dbv3 {
                 pfm->settings.ignoreWhite = settingsNode.value("ignore_white", true);
                 pfm->settings.tileCount = settingsNode.value("tile_count", 0);
                 settingsNode.value("voronoi_style", 0);
+                pfm->settings.drawOutlines = settingsNode.value("draw_outlines", true);
                 mosaicPfm = pfm;
                 stylesRef = &pfm->drawingStyles;
             } else if (pfmName == "MosaicSegmentsPFM") {
@@ -1170,6 +1295,7 @@ namespace dbv3 {
                 pfm->settings.iterations = settingsNode.value("iterations", 10);
                 pfm->settings.compactness = settingsNode.value("compactness", 40.0f);
                 pfm->settings.offsetCells = settingsNode.value("offset_cells", 0.0f);
+                pfm->settings.drawOutlines = settingsNode.value("draw_outlines", true);
                 mosaicPfm = pfm;
                 stylesRef = &pfm->drawingStyles;
             } else if (pfmName == "MosaicTriangulationPFM") {
@@ -1184,6 +1310,7 @@ namespace dbv3 {
                 pfm->settings.tileCount = settingsNode.value("tile_count", 5);
                 pfm->settings.offsetCells = settingsNode.value("offset_cells", 0.0f);
                 pfm->settings.triangulateCorners = settingsNode.value("triangulate_corners", true);
+                pfm->settings.drawOutlines = settingsNode.value("draw_outlines", true);
                 mosaicPfm = pfm;
                 stylesRef = &pfm->drawingStyles;
             } else if (pfmName == "MosaicCustomPFM") {
@@ -1211,12 +1338,12 @@ namespace dbv3 {
                     for (auto& s : settingsNode["drawing_styles"]["styles"]) {
                         if (s.value("enabled", true)) {
                             std::string sName = s.value("name", "");
-                            std::string sPfm = s.value("pfm", "");
+                            std::string sPfm = resolveDisplayPFMName(s.value("pfm", ""));
                             float sWeight = s.value("weight", 100.0f);
                             json subSettings;
                             if (s.contains("settings")) subSettings = s["settings"];
                             
-                            // Re-snake-case the subsettings
+                            // Re-snake-case the subsettings and convert string values to typed values
                             json snakeSettings;
                             for (auto& el : subSettings.items()) {
                                 std::string key = el.key();
@@ -1225,7 +1352,27 @@ namespace dbv3 {
                                     if (c == ' ') snakeKey += '_';
                                     else snakeKey += std::tolower(c);
                                 }
-                                snakeSettings[snakeKey] = el.value();
+                                if (el.value().is_string()) {
+                                    std::string valStr = el.value().get<std::string>();
+                                    if (valStr == "true") snakeSettings[snakeKey] = true;
+                                    else if (valStr == "false") snakeSettings[snakeKey] = false;
+                                    else {
+                                        try {
+                                            size_t pos;
+                                            float fv = std::stof(valStr, &pos);
+                                            if (pos == valStr.length()) {
+                                                if (valStr.find('.') != std::string::npos) snakeSettings[snakeKey] = fv;
+                                                else snakeSettings[snakeKey] = std::stoi(valStr);
+                                            } else {
+                                                snakeSettings[snakeKey] = valStr;
+                                            }
+                                        } catch(...) {
+                                            snakeSettings[snakeKey] = valStr;
+                                        }
+                                    }
+                                } else {
+                                    snakeSettings[snakeKey] = el.value();
+                                }
                             }
                             
                             DrawingBot::PFMBase* childPfm = createPFM(sPfm, snakeSettings, presetsDir);
@@ -1540,7 +1687,7 @@ namespace dbv3 {
         project->filterChain = filters;
 
         DrawingBot::ProjectVersion pv;
-        std::string pfmName = j.value("pfm_name", "");
+        std::string pfmName = resolveDisplayPFMName(j.value("pfm_name", ""));
         
         if (j.contains("pfm_settings")) {
             auto settingsNode = j["pfm_settings"];
